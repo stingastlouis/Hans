@@ -1,7 +1,6 @@
 <?php include 'includes/header.php'; ?>
 
 <?php
-// Fetch categories from the database
 include '../configs/db.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
@@ -64,7 +63,6 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Add Category Modal -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -85,7 +83,6 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Modify Category Modal -->
 <div class="modal fade" id="modifyCategoryModal" tabindex="-1" aria-labelledby="modifyCategoryModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -107,7 +104,6 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Success Message -->
 <div class="modal fade" id="SuccessMessage" tabindex="-1" aria-labelledby="successMessgeModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -124,7 +120,6 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 
-<!-- Delete Category Modal -->
 <div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -150,16 +145,13 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <?php include 'includes/footer.php'; ?>
 
 <script>
-    // If success=1 is passed in the URL, show the SuccessMessage modal
     
     <?php if ($success): ?>
         var myModal = new bootstrap.Modal(document.getElementById('SuccessMessage'));
         myModal.show();
-
-        // Hide the modal after 3 seconds
         setTimeout(function() {
             myModal.hide();
-        }, 3000); // 3000 milliseconds = 3 seconds
+        }, 3000);
     <?php endif; ?>
 </script>
 
@@ -177,16 +169,16 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <script>
     document.getElementById('searchInput').addEventListener('input', function () {
-    var query = this.value.toLowerCase(); // Get the search query in lowercase
-    var rows = document.querySelectorAll('#dataTable tbody tr'); // Get all table rows
+    var query = this.value.toLowerCase(); 
+    var rows = document.querySelectorAll('#dataTable tbody tr'); 
     rows.forEach(function (row) {
-        var categoryName = row.querySelector('td:nth-child(2)').textContent.toLowerCase(); // Get the category name (2nd column)
+        var categoryName = row.querySelector('td:nth-child(2)').textContent.toLowerCase(); 
 
-        // Check if the category name matches the query
+        
         if (categoryName.includes(query)) {
-            row.style.display = ''; // Show the row
+            row.style.display = ''; 
         } else {
-            row.style.display = 'none'; // Hide the row
+            row.style.display = 'none'; 
         }
     });
 });

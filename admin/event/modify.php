@@ -8,13 +8,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $price = $_POST['price'];
     $discount = $_POST['discount'];
 
-    // Handle image upload
     if (!empty($_FILES['image']['name'])) {
         $targetDir = "../../assets/uploads/";
         $imageName = basename($_FILES['image']['name']);
         $targetFilePath = $targetDir . $imageName;
-
-        // Validate and move uploaded file
         if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFilePath)) {
             $imagePath = $imageName;
         } else {
@@ -22,8 +19,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
     }
-
-    // Update the event in the database
     if (isset($imagePath)) {
         $stmt = $conn->prepare("UPDATE Event SET Name = :name, Description = :description, ImagePath = :image, Price = :price, DiscountPrice = :discount WHERE Id = :id");
         $stmt->bindParam(':image', $imageName, PDO::PARAM_STR);

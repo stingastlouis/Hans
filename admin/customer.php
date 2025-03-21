@@ -1,12 +1,9 @@
 <?php include 'includes/header.php'; ?>
 
 <?php
-// Fetch customer and roles from the database
 include '../configs/db.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
-
-// Fetch customer members with their roles
 $stmt = $conn->prepare("
     SELECT c.*, 
            s.Name AS LatestStatus
@@ -25,12 +22,10 @@ $stmt = $conn->prepare("
 $stmt->execute();
 $customerMembers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch roles for dropdown
 $stmt2 = $conn->prepare("SELECT * FROM Role");
 $stmt2->execute();
 $roles = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch statuses
 $stmt3 = $conn->prepare("SELECT * FROM Status");
 $stmt3->execute();
 $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
@@ -102,8 +97,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-
-<!-- Edit Customer Modal -->
 <div class="modal fade" id="editCustomerModal" tabindex="-1" aria-labelledby="editCustomerModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -145,7 +138,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Reset Password Modal -->
 <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -197,7 +189,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 <?php include 'includes/footer.php'; ?>
 
 <script>
-    // Delete customer event listener
     document.querySelectorAll('.btn-del').forEach(function(button) {
         button.addEventListener('click', function() {
             var customerId = this.getAttribute('data-id');
@@ -205,7 +196,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
         });
     });
 
-    // Edit customer event listener
     document.querySelectorAll('.edit-customer-btn').forEach(button => {
         button.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
@@ -214,20 +204,18 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
             const phone = this.getAttribute('data-phone');
             const roleId = this.getAttribute('data-role-id');
 
-            // Populate the edit form
             document.getElementById('editCustomerId').value = id;
             document.getElementById('editCustomerFullname').value = fullname;
             document.getElementById('editCustomerEmail').value = email;
             document.getElementById('editCustomerPhone').value = phone;
             document.getElementById('editCustomerRole').value = roleId;
 
-            // Show the modal
             const modal = new bootstrap.Modal(document.getElementById('editCustomerModal'));
             modal.show();
         });
     });
 
-    // Reset password event listener
+
     document.querySelectorAll('.reset-password-btn').forEach(button => {
         button.addEventListener('click', function() {
             const customerId = this.getAttribute('data-id');
@@ -235,7 +223,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
         });
     });
 
-    // Password confirmation validation
     document.querySelector('#resetPasswordModal form').addEventListener('submit', function(e) {
         const password = document.getElementById('newPassword').value;
         const confirm = document.getElementById('confirmPassword').value;
@@ -292,13 +279,11 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('hidden.bs.modal', function () {
-            // Clear all forms within this modal
             const forms = this.getElementsByTagName('form');
             for (let form of forms) {
                 form.reset();
             }
             
-            // Additionally ensure the password field is reset to type="password"
             const passwordFields = this.querySelectorAll('input[type="text"][id$="Password"]');
             passwordFields.forEach(field => {
                 field.type = 'password';

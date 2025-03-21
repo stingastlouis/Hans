@@ -2,45 +2,53 @@
 include '../../configs/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $eventId = $_POST['event_id'];
-    $name = $_POST['name'];
-    $description = $_POST['description'];
-    $price = $_POST['price'];
-    $discount = $_POST['discount'];
+    $productId = $_POST['product_id'];
+    $name = $_POST['product_name'];
+    $description = $_POST['product_description'];
+    $price = $_POST['product_price'];
+    $discount = $_POST['product_discount'];
+    $stock = $_POST['product_stock'];
+    $category_id = $_POST['product_category_id'];
 
-    // Handle image upload
-    if (!empty($_FILES['image']['name'])) {
+    $imagePath = null;
+
+    if (!empty($_FILES['product_image']['name'])) {
         $targetDir = "../../assets/uploads/";
-        $imageName = basename($_FILES['image']['name']);
+        $imageName = basename($_FILES['product_image']['name']);
         $targetFilePath = $targetDir . $imageName;
 
-        // Validate and move uploaded file
-        if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFilePath)) {
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true); //note: grant access to create directory if not exists 777 -> read,write,execute. true is to enable recursive  directory creation
+        }
+
+        if (move_uploaded_file($_FILES['product_image']['tmp_name'], $targetFilePath)) {
             $imagePath = $imageName;
         } else {
-            header("Location: ../event.php?error=upload_failed");
+            header("Location: ../product.php?error=upload_failed");
             exit();
         }
     }
 
-    // Update the event in the database
-    if (isset($imagePath)) {
-        $stmt = $conn->prepare("UPDATE Event SET Name = :name, Description = :description, ImagePath = :image, Price = :price, DiscountPrice = :discount WHERE Id = :id");
-        $stmt->bindParam(':image', $imageName, PDO::PARAM_STR);
+    if ($imagePath !== null) {
+        $stmt = $conn->prepare("UPDATE Products SET Name = :name, Description = :description, ImagePath = :image, Price = :price, DiscountPrice = :discount, Stock = :stock, CategoryId = :categoryId WHERE Id = :id");
+        $stmt->bindParam(':image', $imagePath, PDO::PARAM_STR);
     } else {
-        $stmt = $conn->prepare("UPDATE Event SET Name = :name, Description = :description, Price = :price, DiscountPrice = :discount WHERE Id = :id");
+        $stmt = $conn->prepare("UPDATE Products SET Name = :name, Description = :description, Price = :price, DiscountPrice = :discount, Stock = :stock, CategoryId = :categoryId WHERE Id = :id");
     }
 
     $stmt->bindParam(':name', $name, PDO::PARAM_STR);
     $stmt->bindParam(':description', $description, PDO::PARAM_STR);
     $stmt->bindParam(':price', $price, PDO::PARAM_STR);
     $stmt->bindParam(':discount', $discount, PDO::PARAM_STR);
-    $stmt->bindParam(':id', $eventId, PDO::PARAM_INT);
+    $stmt->bindParam(':stock', $stock, PDO::PARAM_INT);
+    $stmt->bindParam(':categoryId', $category_id, PDO::PARAM_INT);
+    $stmt->bindParam(':id', $productId, PDO::PARAM_INT);
+    
     $stmt->execute();
 
-    header("Location: ../event.php?success=1");
+    header("Location: ../product.php?success=1");
     exit();
 } else {
-    header("Location: ../event.php?error=invalid_request");
+    header("Location: ../product.php?error=invalid_request");
     exit();
 }

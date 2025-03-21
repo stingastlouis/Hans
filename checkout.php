@@ -1,14 +1,10 @@
 <?php
-// Include database connection
 include './configs/db.php';
-
-// Example Cart Data (In a real-world scenario, fetch this from a session or database)
 session_start();
 $cartItems = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
-$customerId = $_SESSION['customerId'] ?? 1; // Replace with actual logged-in customer ID
-$paymentMethodId = 1; // Default payment method
+$customerId = $_SESSION['customerId'] ?? 1; 
+$paymentMethodId = 1;
 
-// Calculate Totals
 $totalAmount = 0;
 $taxRate = 0.15;
 foreach ($cartItems as $item) {
@@ -67,15 +63,12 @@ $grandTotal = $totalAmount + $tax;
         document.getElementById('complete-process').addEventListener('click', async () => {
             const form = document.getElementById('checkout-form');
             const formData = new FormData(form);
-
-            // Convert form data to JSON
             const data = {
                 customerId: formData.get('customerId'),
                 paymentMethodId: formData.get('paymentMethodId'),
                 cartItems: JSON.parse(formData.get('cartItems'))
             };
 
-            // Send data to the backend
             const response = await fetch('./processCheckout.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

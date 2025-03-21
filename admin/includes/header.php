@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../assets/css/Nunito.css">
     <link rel="stylesheet" href="../assets/fonts/fontawesome-all.min.css">
-    <!-- <link rel="stylesheet" href="../assets/css/header-admin.style.css"> -->
     <link rel="stylesheet" href="../assets/css/dropdown.css">
 </head>
 
@@ -23,13 +22,13 @@
                 </a>
                 <hr class="sidebar-divider my-0">
                 <ul class="navbar-nav text-light" id="accordionSidebar">
-                    <li class="nav-item custom-nav-item"><a class="nav-link active" href="index.html"><svg></svg><span>Dashboard</span></a></li>
-                    <li class="nav-item custom-nav-item"><a class="nav-link" href="category.php"><svg></svg><span>Category</span></a></li>
-                    <li class="nav-item custom-nav-item"><a class="nav-link" href="role.php"><svg></svg><span>Role</span></a></li>
-                    <li class="nav-item custom-nav-item"><a class="nav-link" href="event.php"><svg></svg><span>Event</span></a></li>
-                    <li class="nav-item custom-nav-item"><a class="nav-link" href="product.php"><svg></svg><span>Product</span></a></li>
-                    <li class="nav-item custom-nav-item"><a class="nav-link" href="staff.php"><svg></svg><span>Staff</span></a></li>
-                    <li class="nav-item custom-nav-item"><a class="nav-link" href="product.php"><svg></svg><span>Installation</span></a></li>
+                    <li class="nav-item custom-nav-item"><a class="nav-link active" href="index.html"> <span>Dashboard</span></a></li>
+                    <li class="nav-item custom-nav-item"><a class="nav-link" href="category.php"> <span>Category</span></a></li>
+                    <li class="nav-item custom-nav-item"><a class="nav-link" href="role.php"> <span>Role</span></a></li>
+                    <li class="nav-item custom-nav-item"><a class="nav-link" href="event.php"> <span>Event</span></a></li>
+                    <li class="nav-item custom-nav-item"><a class="nav-link" href="product.php"> <span>Product</span></a></li>
+                    <li class="nav-item custom-nav-item"><a class="nav-link" href="staff.php"> <span>Staff</span></a></li>
+                    <li class="nav-item custom-nav-item"><a class="nav-link" href="product.php"> <span>Installation</span></a></li>
                 </ul>
                 <div class="text-center d-none d-md-inline"><button class="btn rounded-circle border-0" id="sidebarToggle" type="button"></button></div>
             </div>

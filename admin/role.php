@@ -1,7 +1,6 @@
 <?php include 'includes/header.php'; ?>
 
 <?php
-// Fetch categories from the database
 include '../configs/db.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
@@ -52,7 +51,6 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?= htmlspecialchars($role['Name']) ?></td>
                                 <td><?= htmlspecialchars($role['DateCreated']) ?></td>
                                 <td>
-                                    <!-- <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modifyRoleModal">Edit</button> -->
                                     <button class="btn btn-danger btn-del" data-bs-toggle="modal" data-bs-target="#deleteRoleModal" data-id="<?= $role['Id'] ?>">Delete</button>
                                 </td>
                             </tr>
@@ -64,7 +62,6 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Add Role Modal -->
 <div class="modal fade" id="addRoleModal" tabindex="-1" aria-labelledby="addRoleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -85,7 +82,6 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Modify Role Modal -->
 <div class="modal fade" id="modifyRoleModal" tabindex="-1" aria-labelledby="modifyRoleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -107,7 +103,7 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Success Message -->
+
 <div class="modal fade" id="SuccessMessage" tabindex="-1" aria-labelledby="successMessgeModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -124,7 +120,6 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 
-<!-- Delete Role Modal -->
 <div class="modal fade" id="deleteRoleModal" tabindex="-1" aria-labelledby="deleteRoleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -150,16 +145,13 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <?php include 'includes/footer.php'; ?>
 
 <script>
-    // If success=1 is passed in the URL, show the SuccessMessage modal
-    
     <?php if ($success): ?>
         var myModal = new bootstrap.Modal(document.getElementById('SuccessMessage'));
         myModal.show();
 
-        // Hide the modal after 3 seconds
         setTimeout(function() {
             myModal.hide();
-        }, 3000); // 3000 milliseconds = 3 seconds
+        }, 3000);
     <?php endif; ?>
 </script>
 
@@ -177,16 +169,15 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <script>
     document.getElementById('searchInput').addEventListener('input', function () {
-    var query = this.value.toLowerCase(); // Get the search query in lowercase
-    var rows = document.querySelectorAll('#dataTable tbody tr'); // Get all table rows
+    var query = this.value.toLowerCase(); 
+    var rows = document.querySelectorAll('#dataTable tbody tr'); 
     rows.forEach(function (row) {
-        var roleName = row.querySelector('td:nth-child(2)').textContent.toLowerCase(); // Get the role name (2nd column)
+        var roleName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
 
-        // Check if the role name matches the query
         if (roleName.includes(query)) {
-            row.style.display = ''; // Show the row
+            row.style.display = ''; 
         } else {
-            row.style.display = 'none'; // Hide the row
+            row.style.display = 'none';
         }
     });
 });

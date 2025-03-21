@@ -1,7 +1,6 @@
 <?php include 'includes/header.php'; ?>
 
 <?php
-// Fetch events from the database
 include '../configs/db.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
@@ -96,7 +95,6 @@ $statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Add Event Modal -->
 <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -133,7 +131,6 @@ $statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Delete Event Modal -->
 <div class="modal fade" id="deleteEventModal" tabindex="-1" aria-labelledby="deleteEventModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -215,7 +212,6 @@ $statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 <script>
-    // Attach data to the modal when "Edit" is clicked
     document.querySelectorAll('.edit-event-btn').forEach(button => {
         button.addEventListener('click', event => {
             const id = button.getAttribute('data-id');

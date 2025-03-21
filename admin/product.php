@@ -1,12 +1,9 @@
 <?php include 'includes/header.php'; ?>
 
 <?php
-// Fetch products and categories from the database
 include '../configs/db.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
-
-// Fetch products
 $stmt = $conn->prepare("SELECT e.*, s.Name AS LatestStatus FROM Products e
 LEFT JOIN (
     SELECT es.ProductId, MAX(es.Id) AS LatestStatusId
@@ -18,12 +15,10 @@ LEFT JOIN Status s ON es.StatusId = s.Id;");
 $stmt->execute();
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch statuses
 $stmt2 = $conn->prepare("SELECT * FROM Status");
 $stmt2->execute();
 $statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch categories
 $stmt3 = $conn->prepare("SELECT * FROM Categories");
 $stmt3->execute();
 $categories = $stmt3->fetchAll(PDO::FETCH_ASSOC);
@@ -100,7 +95,6 @@ $categories = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Add Product Modal -->
 <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -150,7 +144,6 @@ $categories = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Delete Product Modal -->
 <div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -174,7 +167,6 @@ $categories = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 
 <?php include 'includes/footer.php'; ?>
 
-<!-- Edit Product Modal -->
 <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -236,7 +228,6 @@ $categories = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Delete Product Modal -->
 <div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -259,7 +250,6 @@ $categories = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 <script>
-    // Delete product event listener
     document.querySelectorAll('.btn-del').forEach(function(button) {
         button.addEventListener('click', function() {
             var productId = this.getAttribute('data-id');
@@ -267,7 +257,6 @@ $categories = $stmt3->fetchAll(PDO::FETCH_ASSOC);
         });
     });
 
-    // Edit product event listener
     document.querySelectorAll('.edit-product-btn').forEach(button => {
         button.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
@@ -278,7 +267,6 @@ $categories = $stmt3->fetchAll(PDO::FETCH_ASSOC);
             const discount = this.getAttribute('data-discount');
             const stock = this.getAttribute('data-stock');
 
-            // Populate the edit form
             document.getElementById('editProductId').value = id;
             document.getElementById('editProductName').value = name;
             document.getElementById('editProductCategory').value = categoryId;
@@ -287,7 +275,7 @@ $categories = $stmt3->fetchAll(PDO::FETCH_ASSOC);
             document.getElementById('editProductDiscount').value = discount;
             document.getElementById('editProductStock').value = stock;
 
-            // Show the modal
+
             const modal = new bootstrap.Modal(document.getElementById('editProductModal'));
             modal.show();
         });

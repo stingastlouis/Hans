@@ -1,12 +1,10 @@
 <?php include 'includes/header.php'; ?>
 
 <?php
-// Fetch staff and roles from the database
+
 include '../configs/db.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
-
-// Fetch staff members with their roles
 $stmt = $conn->prepare("
     SELECT s.*, 
            r.Name AS RoleName,
@@ -106,7 +104,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Add Staff Modal -->
 <div class="modal fade" id="addStaffModal" tabindex="-1" aria-labelledby="addStaffModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -153,7 +150,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Edit Staff Modal -->
 <div class="modal fade" id="editStaffModal" tabindex="-1" aria-labelledby="editStaffModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -195,7 +191,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Reset Password Modal -->
 <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -222,7 +217,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Delete Staff Modal -->
 <div class="modal fade" id="deleteStaffModal" tabindex="-1" aria-labelledby="deleteStaffModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -247,7 +241,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 <?php include 'includes/footer.php'; ?>
 
 <script>
-    // Delete staff event listener
     document.querySelectorAll('.btn-del').forEach(function(button) {
         button.addEventListener('click', function() {
             var staffId = this.getAttribute('data-id');
@@ -255,7 +248,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
         });
     });
 
-    // Edit staff event listener
     document.querySelectorAll('.edit-staff-btn').forEach(button => {
         button.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
@@ -263,29 +255,22 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
             const email = this.getAttribute('data-email');
             const phone = this.getAttribute('data-phone');
             const roleId = this.getAttribute('data-role-id');
-
-            // Populate the edit form
             document.getElementById('editStaffId').value = id;
             document.getElementById('editStaffFullname').value = fullname;
             document.getElementById('editStaffEmail').value = email;
             document.getElementById('editStaffPhone').value = phone;
             document.getElementById('editStaffRole').value = roleId;
-
-            // Show the modal
             const modal = new bootstrap.Modal(document.getElementById('editStaffModal'));
             modal.show();
         });
     });
 
-    // Reset password event listener
     document.querySelectorAll('.reset-password-btn').forEach(button => {
         button.addEventListener('click', function() {
             const staffId = this.getAttribute('data-id');
             document.getElementById('resetPasswordStaffId').value = staffId;
         });
     });
-
-    // Password confirmation validation
     document.querySelector('#resetPasswordModal form').addEventListener('submit', function(e) {
         const password = document.getElementById('newPassword').value;
         const confirm = document.getElementById('confirmPassword').value;
@@ -342,13 +327,11 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('hidden.bs.modal', function () {
-            // Clear all forms within this modal
             const forms = this.getElementsByTagName('form');
             for (let form of forms) {
                 form.reset();
             }
             
-            // Additionally ensure the password field is reset to type="password"
             const passwordFields = this.querySelectorAll('input[type="text"][id$="Password"]');
             passwordFields.forEach(field => {
                 field.type = 'password';
