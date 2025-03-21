@@ -1,0 +1,9 @@
+.form-select-sm {
+    min-width: 180px;
+    max-width: 180px;
+}
+.btn-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}

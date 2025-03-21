@@ -1,0 +1,295 @@
+<?php include 'includes/header.php'; ?>
+
+<?php
+// Fetch products and categories from the database
+include '../configs/db.php';
+
+$success = isset($_GET["success"]) ? $_GET["success"] : null;
+
+// Fetch products
+$stmt = $conn->prepare("SELECT e.*, s.Name AS LatestStatus FROM Products e
+LEFT JOIN (
+    SELECT es.ProductId, MAX(es.Id) AS LatestStatusId
+    FROM ProductStatus es
+    GROUP BY es.ProductId
+) latest_es ON e.Id = latest_es.ProductId
+LEFT JOIN ProductStatus es ON latest_es.LatestStatusId = es.Id
+LEFT JOIN Status s ON es.StatusId = s.Id;");
+$stmt->execute();
+$products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch statuses
+$stmt2 = $conn->prepare("SELECT * FROM Status");
+$stmt2->execute();
+$statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch categories
+$stmt3 = $conn->prepare("SELECT * FROM Categories");
+$stmt3->execute();
+$categories = $stmt3->fetchAll(PDO::FETCH_ASSOC);
+?>
+
+<div class="container-fluid">
+    <h3 class="text-dark mb-4">Products</h3>
+    <div class="card shadow">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <p class="text-primary m-0 fw-bold">Product List</p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                Add Product
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
+                <table class="table my-0" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Price</th>
+                            <th>Discount Price</th>
+                            <th>Stock</th>
+                            <th>Image</th>
+                            <th>Latest Status</th>
+                            <th>Date Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($products as $product): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($product['Id']) ?></td>
+                                <td><?= htmlspecialchars($product['Name']) ?></td>
+                                <td><?= htmlspecialchars($product['CategoryId']) ?></td>
+                                <td><?= htmlspecialchars($product['Description']) ?></td>
+                                <td><?= htmlspecialchars($product['Price']) ?></td>
+                                <td><?= htmlspecialchars($product['DiscountPrice']) ?></td>
+                                <td><?= htmlspecialchars($product['Stock']) ?></td>
+                                <td>
+                                    <img src="../assets/uploads/<?= htmlspecialchars($product['ImagePath']) ?>" alt="<?= htmlspecialchars($product['Name']) ?>" style="width: 100px; height: auto;">
+                                </td>
+                                <td><?= htmlspecialchars($product['LatestStatus']) ?: 'No Status' ?></td>
+                                <td><?= htmlspecialchars($product['DateCreated']) ?></td>
+                                <td style="padding:10px">
+                                    <button class='btn btn-warning btn-sm edit-product-btn' 
+                                        data-id='<?= $product['Id'] ?>' 
+                                        data-name='<?= $product['Name'] ?>' 
+                                        data-category-id='<?= $product['CategoryId'] ?>' 
+                                        data-description='<?= $product['Description'] ?>' 
+                                        data-price='<?= $product['Price'] ?>'
+                                        data-discount='<?= $product['DiscountPrice'] ?>' 
+                                        data-stock='<?= $product['Stock'] ?>'>Edit</button>
+                                    <button class="btn btn-danger btn-sm btn-del" data-bs-toggle="modal" data-bs-target="#deleteProductModal" data-id="<?= $product['Id'] ?>">Delete</button>
+                                    <form method="POST" action="status/add_productStatus.php" style="display: inline;">
+                                        <input type="hidden" name="product_id" value="<?= $product['Id'] ?>">
+                                        <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                                            <option value="" disabled selected>Change Status</option>
+                                            <?php foreach ($statuses as $status): ?>
+                                                <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addProductModalLabel">Add Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="product/add_product.php" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="productName" class="form-label">Product Name</label>
+                        <input type="text" class="form-control" id="productName" name="product_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="productCategory" class="form-label">Category</label>
+                        <select class="form-select" id="productCategory" name="product_category_id" required>
+                            <option value="" disabled selected>Select Category</option>
+                            <?php foreach ($categories as $category): ?>
+                                <option value="<?= $category['Id'] ?>"><?= htmlspecialchars($category['Name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="productDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="productDescription" name="product_description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="productPrice" class="form-label">Price</label>
+                        <input type="number" step="0.01" class="form-control" id="productPrice" name="product_price" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="productDiscountPrice" class="form-label">Discount Price</label>
+                        <input type="number" step="0.01" class="form-control" id="productDiscountPrice" name="product_discount">
+                    </div>
+                    <div class="mb-3">
+                        <label for="productStock" class="form-label">Stock</label>
+                        <input type="number" class="form-control" id="productStock" name="product_stock" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="productImage" class="form-label">Product Image</label>
+                        <input type="file" class="form-control" id="productImage" name="product_image" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Product</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Product Modal -->
+<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteProductModalLabel">Delete Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this product?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="product/delete_product.php" method="POST">
+                    <input type="hidden" id="productIdToDelete" name="product_id">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php include 'includes/footer.php'; ?>
+
+<!-- Edit Product Modal -->
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editProductForm" method="POST" action="product/modify.php" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="product_id" id="editProductId">
+                    
+                    <div class="mb-3">
+                        <label for="editProductName" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="editProductName" name="product_name">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editProductCategory" class="form-label">Category</label>
+                        <select class="form-select" id="editProductCategory" name="product_category_id">
+                            <option value="" disabled>Select Category</option>
+                            <?php foreach ($categories as $category): ?>
+                                <option value="<?= $category['Id'] ?>"><?= htmlspecialchars($category['Name']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editProductDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="editProductDescription" name="product_description" rows="3"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editProductPrice" class="form-label">Price</label>
+                        <input type="number" step="0.01" class="form-control" id="editProductPrice" name="product_price">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editProductDiscount" class="form-label">Discount Price</label>
+                        <input type="number" step="0.01" class="form-control" id="editProductDiscount" name="product_discount">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editProductStock" class="form-label">Stock</label>
+                        <input type="number" class="form-control" id="editProductStock" name="product_stock">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editProductImage" class="form-label">Product Image</label>
+                        <input type="file" class="form-control" id="editProductImage" name="product_image" accept="image/*">
+                        <small class="form-text text-muted">Leave empty to keep current image</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Product Modal -->
+<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteProductModalLabel">Delete Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this product?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="product/delete_product.php" method="POST">
+                    <input type="hidden" id="productIdToDelete" name="product_id">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Delete product event listener
+    document.querySelectorAll('.btn-del').forEach(function(button) {
+        button.addEventListener('click', function() {
+            var productId = this.getAttribute('data-id');
+            document.getElementById('productIdToDelete').value = productId;
+        });
+    });
+
+    // Edit product event listener
+    document.querySelectorAll('.edit-product-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            const categoryId = this.getAttribute('data-category-id');
+            const description = this.getAttribute('data-description');
+            const price = this.getAttribute('data-price');
+            const discount = this.getAttribute('data-discount');
+            const stock = this.getAttribute('data-stock');
+
+            // Populate the edit form
+            document.getElementById('editProductId').value = id;
+            document.getElementById('editProductName').value = name;
+            document.getElementById('editProductCategory').value = categoryId;
+            document.getElementById('editProductDescription').value = description;
+            document.getElementById('editProductPrice').value = price;
+            document.getElementById('editProductDiscount').value = discount;
+            document.getElementById('editProductStock').value = stock;
+
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('editProductModal'));
+            modal.show();
+        });
+    });
+</script>
