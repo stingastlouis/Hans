@@ -7,15 +7,21 @@
 
     try {
         $stmt = $conn->prepare("
-            SELECT p.*, 
-                   ps.StatusId, 
-                   s.Name AS StatusName 
-            FROM Products p
-            LEFT JOIN ProductStatus ps ON p.Id = ps.ProductId
-            LEFT JOIN Status s ON ps.StatusId = s.Id
-            WHERE s.Name != 'INACTIVE'
-            ORDER BY p.DateCreated DESC;
-        ");
+    SELECT p.*, 
+           ps.StatusId, 
+           s.Name AS StatusName
+    FROM Products p
+    LEFT JOIN ProductStatus ps ON p.Id = ps.ProductId
+    LEFT JOIN Status s ON ps.StatusId = s.Id
+    WHERE ps.Id = (
+        SELECT MAX(ps_inner.Id) 
+        FROM ProductStatus ps_inner 
+        WHERE ps_inner.ProductId = p.Id
+    )
+    AND LOWER(s.Name) = 'active'
+    ORDER BY p.DateCreated DESC;
+");
+
         $stmt->execute();
         $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

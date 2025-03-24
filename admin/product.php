@@ -4,25 +4,41 @@
 include '../configs/db.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
-$stmt = $conn->prepare("SELECT e.*, s.Name AS LatestStatus FROM Products e
-LEFT JOIN (
-    SELECT es.ProductId, MAX(es.Id) AS LatestStatusId
-    FROM ProductStatus es
-    GROUP BY es.ProductId
-) latest_es ON e.Id = latest_es.ProductId
-LEFT JOIN ProductStatus es ON latest_es.LatestStatusId = es.Id
-LEFT JOIN Status s ON es.StatusId = s.Id;");
-$stmt->execute();
-$products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$stmt2 = $conn->prepare("SELECT * FROM Status");
-$stmt2->execute();
-$statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+try {
+    $stmt = $conn->prepare("
+        SELECT e.*, 
+               COALESCE(s.Name, 'No Status') AS LatestStatus, 
+               COALESCE(c.Name, 'No Category') AS CategoryName
+        FROM Products e
+        LEFT JOIN (
+            SELECT es.ProductId, MAX(es.Id) AS LatestStatusId
+            FROM ProductStatus es
+            GROUP BY es.ProductId
+        ) latest_es ON e.Id = latest_es.ProductId
+        LEFT JOIN ProductStatus es ON latest_es.LatestStatusId = es.Id
+        LEFT JOIN Status s ON es.StatusId = s.Id
+        LEFT JOIN Categories c ON e.CategoryId = c.Id;
+    ");
+    $stmt->execute();
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt->closeCursor();  
 
-$stmt3 = $conn->prepare("SELECT * FROM Categories");
-$stmt3->execute();
-$categories = $stmt3->fetchAll(PDO::FETCH_ASSOC);
+    $stmt2 = $conn->prepare("SELECT * FROM Status");
+    $stmt2->execute();
+    $statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+    $stmt2->closeCursor(); 
+
+    $stmt3 = $conn->prepare("SELECT * FROM Categories");
+    $stmt3->execute();
+    $categories = $stmt3->fetchAll(PDO::FETCH_ASSOC);
+    $stmt3->closeCursor(); 
+
+} catch (PDOException $e) {
+    die("SQL Error: " . $e->getMessage()); 
+}
 ?>
+
 
 <div class="container-fluid">
     <h3 class="text-dark mb-4">Products</h3>
@@ -56,7 +72,7 @@ $categories = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                             <tr>
                                 <td><?= htmlspecialchars($product['Id']) ?></td>
                                 <td><?= htmlspecialchars($product['Name']) ?></td>
-                                <td><?= htmlspecialchars($product['CategoryId']) ?></td>
+                                <td><?= htmlspecialchars($product['CategoryName']) ?></td>
                                 <td><?= htmlspecialchars($product['Description']) ?></td>
                                 <td><?= htmlspecialchars($product['Price']) ?></td>
                                 <td><?= htmlspecialchars($product['DiscountPrice']) ?></td>

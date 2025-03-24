@@ -30,9 +30,9 @@ $activeClassName = 'active';
             <div class="collapse navbar-collapse" id="navcol-1">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item"><a class="nav-link <?php echo $request == "$subDomain/" ? 'active' : ''; ?>" href="/hans/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link <?php echo $request == "$subDomain/events" ? 'active' : ''; ?>" href="/">Events</a></li>
+                    <li class="nav-item"><a class="nav-link <?php echo $request == "$subDomain/events" ? 'active' : ''; ?>" href="/hans/">Events</a></li>
                     <li class="nav-item"><a class="nav-link <?php echo $request == "$subDomain/products" ? 'active' : ''; ?>" href="/hans/product.php">Products</a></li>
-                    <li class="nav-item"><a class="nav-link <?php echo $request == "$subDomain/about" ? 'active' : ''; ?>" href="contact.php">About us</a></li>
+                    <li class="nav-item"><a class="nav-link <?php echo $request == "$subDomain/about" ? 'active' : ''; ?>" href="/hans/contact.php">About us</a></li>
                     <li class="nav-item"><a class="nav-link <?php echo $request == "$subDomain/contact" ? 'active' : ''; ?>" href="/hans/contact.php">Contact us</a></li>
                 </ul>
                 <a class="btn btn-primary shadow" role="button" href="signup.html" style="margin-right: 10px">Sign up</a>
