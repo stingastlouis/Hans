@@ -40,10 +40,10 @@
                                 <p class="card-text">' . htmlspecialchars($product['Description']) . '</p>
                                 <p class="card-text">
                                     ' . ($hasDiscount ? '
-                                        <strong style="font-size: 1.5rem; color: red;">$' . number_format($product['DiscountPrice'], 2) . '</strong>
-                                        <span style="text-decoration: line-through; color: grey; font-size: 1rem;">$' . number_format($product['Price'], 2) . '</span>
+                                        <strong style="font-size: 1.5rem; color: red;">Rs ' . number_format($product['DiscountPrice'], 2) . '</strong>
+                                        <span style="text-decoration: line-through; color: grey; font-size: 1rem;">Rs ' . number_format($product['Price'], 2) . '</span>
                                     ' : '
-                                        <strong>$' . number_format($product['Price'], 2) . '</strong>
+                                        <strong>Rs ' . number_format($product['Price'], 2) . '</strong>
                                     ') . '
                                 </p>
                                 <p class="card-text">
@@ -80,7 +80,7 @@
     <ul id="cart-items" class="list-group"></ul>
     <div class="d-flex justify-content-between">
         <strong>Total:</strong>
-        <span id="cart-total">$0.00</span>
+        <span id="cart-total">Rs 0.00</span>
     </div>
     <button id="checkout-button" class="btn btn-success btn-block mt-3">Checkout</button>
 </div>

@@ -54,10 +54,10 @@ function updateCartUI(cart) {
     listItem.innerHTML = `
             <div>
                 <strong>${product.name}</strong><br>
-                $${product.price.toFixed(2)} x ${product.quantity}
+                Rs ${product.price.toFixed(2)} x ${product.quantity}
             </div>
             <div>
-                <span>$${productTotal.toFixed(2)}</span>
+                <span>Rs ${productTotal.toFixed(2)}</span>
                 <button class="btn btn-danger btn-sm remove-from-cart" data-id="${
                   product.id
                 }">Remove</button>
@@ -66,7 +66,7 @@ function updateCartUI(cart) {
     cartItems.appendChild(listItem);
   });
 
-  cartTotal.textContent = `$${total.toFixed(2)}`;
+  cartTotal.textContent = `Rs ${total.toFixed(2)}`;
 
   cartContainer.style.display = cart.length > 0 ? "block" : "none";
 }
