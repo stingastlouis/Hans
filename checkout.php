@@ -86,14 +86,13 @@ $grandTotal = $totalAmount + $tax;
         },
         onApprove: function(data, actions) {
             return actions.order.capture().then(function(details) {
-                // Send transaction details to the backend
                 fetch('./processCheckout.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         paymentMethodId: <?= $paymentMethodId ?>,
                         cartItems: <?= json_encode($cartItems) ?>,
-                        transactionId: details.id,  // Capture PayPal Transaction ID
+                        transactionId: details.id,  
                         amount: details.purchase_units[0].amount.value
                     })
                 })

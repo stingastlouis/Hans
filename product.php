@@ -76,7 +76,4 @@
     </div>
 </div>
 
-<?php include "cartview.php"; ?>
-
-
 <?php include "includes/footer.php" ?>

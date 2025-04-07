@@ -1,12 +1,10 @@
 <?php
 session_start();
 if (!isset($_SESSION['orderSuccess']) || $_SESSION['orderSuccess'] !== true) {
-    // If not, redirect the user to the checkout page
     header("Location: checkout.php");
     exit();
 }
 
-// Clear the session variable after successful access
 unset($_SESSION['orderSuccess']);
 ?>
 

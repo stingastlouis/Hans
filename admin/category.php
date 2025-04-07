@@ -51,7 +51,6 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?= htmlspecialchars($category['Name']) ?></td>
                                 <td><?= htmlspecialchars($category['DateCreated']) ?></td>
                                 <td>
-                                    <!-- <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#modifyCategoryModal">Edit</button> -->
                                     <button class="btn btn-danger btn-del" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal" data-id="<?= $category['Id'] ?>">Delete</button>
                                 </td>
                             </tr>
