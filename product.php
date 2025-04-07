@@ -54,6 +54,7 @@
                                     <button class="btn btn-primary add-to-cart" 
                                         data-id="' . htmlspecialchars($product['Id']) . '" 
                                         data-name="' . htmlspecialchars($product['Name']) . '" 
+                                        data-type="product"
                                         data-price="' . number_format($hasDiscount ? $product['DiscountPrice'] : $product['Price'], 2) . '" 
                                         data-stock="' . intval($product['Stock']) . '" 
                                         ' . ($isOutOfStock ? 'disabled' : '') . '>
@@ -75,16 +76,7 @@
     </div>
 </div>
 
-<div id="cart-container">
-    <h4>Cart</h4>
-    <ul id="cart-items" class="list-group"></ul>
-    <div class="d-flex justify-content-between">
-        <strong>Total:</strong>
-        <span id="cart-total">Rs 0.00</span>
-    </div>
-    <button id="checkout-button" class="btn btn-success btn-block mt-3">Checkout</button>
-</div>
+<?php include "cartview.php"; ?>
 
-<script src="./cart/cart.js"></script>
 
 <?php include "includes/footer.php" ?>

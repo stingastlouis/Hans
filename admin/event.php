@@ -6,23 +6,39 @@ include '../configs/db.php';
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
 $stmt = $conn->prepare("
     SELECT e.*, 
-       s.Name AS LatestStatus 
-FROM Event e
-LEFT JOIN (
-    SELECT es.EventId, 
-           MAX(es.Id) AS LatestStatusId
-    FROM EventStatus es
-    GROUP BY es.EventId
-) latest_es ON e.Id = latest_es.EventId
-LEFT JOIN EventStatus es ON latest_es.LatestStatusId = es.Id
-LEFT JOIN Status s ON es.StatusId = s.Id;
+           s.Name AS LatestStatus, 
+           GROUP_CONCAT(
+               CONCAT(p.Name, ' (', ep.Quantity, ')') 
+               SEPARATOR ', '
+           ) AS ProductDetails
+    FROM Event e
+    LEFT JOIN (
+        SELECT es.EventId, 
+               MAX(es.Id) AS LatestStatusId
+        FROM EventStatus es
+        GROUP BY es.EventId
+    ) latest_es ON e.Id = latest_es.EventId
+    LEFT JOIN EventStatus es ON latest_es.LatestStatusId = es.Id
+    LEFT JOIN Status s ON es.StatusId = s.Id
+    LEFT JOIN EventProducts ep ON e.Id = ep.EventId
+    LEFT JOIN Products p ON ep.ProductId = p.Id
+    GROUP BY e.Id, s.Name
+    ORDER BY e.Id DESC
 ");
+
 $stmt->execute();
 $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $stmt2 = $conn->prepare("SELECT * FROM Status");
 $stmt2->execute();
 $statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+$productQuery = $conn->prepare("SELECT Id, Name FROM Products");
+$productQuery->execute();
+$prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
+
+
+
 ?>
 
 <div class="container-fluid">
@@ -46,6 +62,7 @@ $statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                             <th>Discount Price</th>
                             <th>Image</th>
                             <th>Latest Status</th>
+                            <th>Products</th> 
                             <th>Date Created</th>                            
                             <th>Actions</th>
                         </tr>
@@ -62,18 +79,19 @@ $statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                     <img src="../assets/uploads/<?= htmlspecialchars($event['ImagePath']) ?>" alt="<?= htmlspecialchars($event['Name']) ?>" style="width: 100px; height: auto;">
                                 </td>
                                 <td><?= htmlspecialchars($event['LatestStatus']) ?: 'No Status' ?></td>
+                                <td>
+                                    <?php 
+                                    echo htmlspecialchars($event['ProductDetails']) ?: 'No products linked';
+                                    ?>
+                                </td>
                                 <td><?= htmlspecialchars($event['DateCreated']) ?></td>                              
                                 <td style="padding:10px">
-
-                                <?php
-                                echo "
                                     <button class='btn btn-warning btn-sm edit-event-btn' 
-                                        data-id='{$event['Id']}' 
-                                        data-name='{$event['Name']}' 
-                                        data-description='{$event['Description']}' 
-                                        data-price='{$event['Price']}' 
-                                        data-discount='{$event['DiscountPrice']}'>Edit</button>";
-                                ?>
+                                        data-id='<?= $event['Id'] ?>' 
+                                        data-name='<?= $event['Name'] ?>' 
+                                        data-description='<?= $event['Description'] ?>' 
+                                        data-price='<?= $event['Price'] ?>' 
+                                        data-discount='<?= $event['DiscountPrice'] ?>'>Edit</button>
                                     <button style="font-size: 12px;" class="btn btn-danger btn-del" data-bs-toggle="modal" data-bs-target="#deleteEventModal" data-id="<?= $event['Id'] ?>">Delete</button>
                                     <form method="POST" action="status/add_eventStatus.php" style="display: inline;">
                                         <input type="hidden" name="event_id" value="<?= $event['Id'] ?>">
@@ -85,7 +103,6 @@ $statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                                         </select>
                                     </form>
                                 </td>
-
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -124,12 +141,29 @@ $statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
                         <label for="eventImage" class="form-label">Event Image</label>
                         <input type="file" class="form-control" id="eventImage" name="event_image" accept="image/*" required>
                     </div>
+
+                    <div class="mb-3">
+                        <label for="eventProducts" class="form-label">Select Products</label>
+                        <div id="eventProducts">
+                            <?php foreach ($prods as $product): ?>
+                                <div>
+                                    <input type="checkbox" id="product_<?php echo $product['Id']; ?>" name="product_ids[]" value="<?php echo $product['Id']; ?>">
+                                    <label for="product_<?php echo $product['Id']; ?>"><?php echo $product['Name']; ?></label>
+                                    <input type="number" name="quantity_<?php echo $product['Id']; ?>" class="form-control form-control-sm" placeholder="Quantity" min="1" value="1" style="width: 80px; display: inline-block;">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn btn-primary">Add Event</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+
+
 
 <div class="modal fade" id="deleteEventModal" tabindex="-1" aria-labelledby="deleteEventModalLabel" aria-hidden="true">
     <div class="modal-dialog">

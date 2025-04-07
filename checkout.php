@@ -26,6 +26,7 @@ $grandTotal = $totalAmount + $tax;
         <thead>
             <tr>
                 <th>Product Name</th>
+                <th>Type</th>
                 <th>Quantity</th>
                 <th>Unit Price</th>
                 <th>Subtotal</th>
@@ -35,6 +36,7 @@ $grandTotal = $totalAmount + $tax;
             <?php foreach ($cartItems as $item): ?>
                 <tr>
                     <td><?= htmlspecialchars($item['name']) ?></td>
+                    <td><?= ucfirst(htmlspecialchars($item['type'])) ?></td> <!-- Shows the Type -->
                     <td><?= intval($item['quantity']) ?></td>
                     <td>Rs <?= number_format($item['price'], 2) ?></td>
                     <td>Rs <?= number_format($item['price'] * $item['quantity'], 2) ?></td>
@@ -43,11 +45,11 @@ $grandTotal = $totalAmount + $tax;
         </tbody>
         <tfoot>
             <tr>
-                <th colspan="3" class="text-end">Tax (<?= $taxRate * 100 ?>%)</th>
+                <th colspan="4" class="text-end">Tax (<?= $taxRate * 100 ?>%)</th>
                 <th>Rs <?= number_format($tax, 2) ?></th>
             </tr>
             <tr>
-                <th colspan="3" class="text-end">Total</th>
+                <th colspan="4" class="text-end">Total</th>
                 <th>Rs <?= number_format($grandTotal, 2) ?></th>
             </tr>
         </tfoot>
@@ -55,10 +57,9 @@ $grandTotal = $totalAmount + $tax;
 
     <?php if (isset($_SESSION['customerId'])): ?>
         <form id="checkout-form">
-            <input type="hidden" name="customerId" value="<?= $customerId ?>">
             <input type="hidden" name="paymentMethodId" value="<?= $paymentMethodId ?>">
             <input type="hidden" name="cartItems" value='<?= json_encode($cartItems) ?>'>
-            <button type="button" id="complete-process" class="btn btn-primary btn-lg">Complete Process</button>
+            <div id="paypal-button-container"></div>
         </form>
     <?php else: ?>
         <a href="login.php" class="btn btn-warning btn-lg">Log in to Checkout</a>
@@ -70,30 +71,43 @@ $grandTotal = $totalAmount + $tax;
 
     </div>
 
-    <script>
-        document.getElementById('complete-process').addEventListener('click', async () => {
-            const form = document.getElementById('checkout-form');
-            const formData = new FormData(form);
-            const data = {
-                customerId: formData.get('customerId'),
-                paymentMethodId: formData.get('paymentMethodId'),
-                cartItems: JSON.parse(formData.get('cartItems'))
-            };
+<script src="https://www.paypal.com/sdk/js?client-id=AYDMJVEgkRqU66bGWK-uzYtGKsJsLzVfx5OSKIn2j6y_tISbzHdvhEbyDXFU5dngERPjuoT1AUvRVygB&currency=USD"></script>
 
-            const response = await fetch('./processCheckout.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+<script>
+    paypal.Buttons({
+        createOrder: function(data, actions) {
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: '<?= number_format($grandTotal, 2, '.', '') ?>' // Grand total
+                    }
+                }]
             });
-
-            const result = await response.json();
-            if (result.success) {
-                alert('Order placed successfully! Order ID: ' + result.orderId);
-                window.location.href = 'order-success.php';
-            } else {
-                alert('Error: ' + result.message);
-            }
-        });
-    </script>
+        },
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+                // Send transaction details to the backend
+                fetch('./processCheckout.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paymentMethodId: <?= $paymentMethodId ?>,
+                        cartItems: <?= json_encode($cartItems) ?>,
+                        transactionId: details.id,  // Capture PayPal Transaction ID
+                        amount: details.purchase_units[0].amount.value
+                    })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        window.location.href = 'order-success.php';
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                });
+            });
+        }
+    }).render('#paypal-button-container');
+</script>
 
 <?php include './includes/footer.php'?>

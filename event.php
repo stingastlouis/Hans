@@ -1,4 +1,4 @@
-<?php include "includes/header.php" ?>
+<?php include "includes/header.php"; ?>
 <div class="container py-4">
     <h1 class="text-center mb-4">Event Page</h1>
     <div class="row">
@@ -6,11 +6,11 @@
     include './configs/db.php';
 
     try {
-        $stmt = $conn->prepare("    
+        $stmt = $conn->prepare("
             SELECT e.*, 
                    es.StatusId, 
                    s.Name AS StatusName
-            FROM Events e
+            FROM Event e
             LEFT JOIN EventStatus es ON e.Id = es.EventId
             LEFT JOIN Status s ON es.StatusId = s.Id
             WHERE es.Id = (
@@ -24,17 +24,45 @@
         $stmt->execute();
         $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $eventProducts = [];
+        $stmt = $conn->prepare("
+            SELECT ep.EventId, p.Name AS ProductName, ep.Quantity
+            FROM EventProducts ep
+            JOIN Products p ON ep.ProductId = p.Id
+        ");
+        $stmt->execute();
+        $productData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($productData as $product) {
+            $eventProducts[$product['EventId']][] = [
+                'name' => $product['ProductName'],
+                'quantity' => $product['Quantity']
+            ];
+        }
+
         if (!empty($events)) {
             echo '<div class="row">';
             foreach ($events as $event) {
                 echo ' 
                     <div class="col-md-4 mb-4">
-                        <div class="card" style="height: 400px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div class="card" style="height: 450px; display: flex; flex-direction: column; justify-content: space-between;">
                             <img src="./assets/uploads/' . htmlspecialchars($event['ImagePath']) . '" class="card-img-top" alt="' . htmlspecialchars($event['Name']) . '" style="object-fit: cover; height: 200px;">
                             <div class="card-body d-flex flex-column">
                                 <h5 class="card-title">' . htmlspecialchars($event['Name']) . '</h5>
                                 <p class="card-text">' . htmlspecialchars($event['Description']) . '</p>
-                                <p class="card-text"><strong>Price:</strong> Rs ' . number_format($event['Price'], 2) . '</p>
+                                <p class="card-text"><strong>Price:</strong> Rs ' . number_format($event['Price'], 2) . '</p>';
+
+                if (!empty($eventProducts[$event['Id']])) {
+                    echo '<p class="card-text"><strong>Included Products:</strong></p><ul>';
+                    foreach ($eventProducts[$event['Id']] as $product) {
+                        echo '<li>' . htmlspecialchars($product['name']) . ' (Qty: ' . $product['quantity'] . ')</li>';
+                    }
+                    echo '</ul>';
+                } else {
+                    echo '<p class="card-text"><em>No associated products</em></p>';
+                }
+
+                echo '
                                 <div class="mt-auto">
                                     <button class="btn btn-primary add-to-cart" 
                                         data-id="' . htmlspecialchars($event['Id']) . '" 
@@ -58,17 +86,5 @@
     ?>
     </div>
 </div>
-
-<div id="cart-container">
-    <h4>Cart</h4>
-    <ul id="cart-items" class="list-group"></ul>
-    <div class="d-flex justify-content-between">
-        <strong>Total:</strong>
-        <span id="cart-total">Rs 0.00</span>
-    </div>
-    <button id="checkout-button" class="btn btn-success btn-block mt-3">Checkout</button>
-</div>
-
-<script src="./cart/cart.js"></script>
-
-<?php include "includes/footer.php" ?>
+<?php include "cartview.php"; ?>
+<?php include "includes/footer.php"; ?>

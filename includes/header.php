@@ -38,7 +38,7 @@ $isLoggedIn = isset($_SESSION['customerId']);
             <div class="collapse navbar-collapse" id="navcol-1">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/" ? 'active' : ''; ?>" href="/hans/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/events" ? 'active' : ''; ?>" href="/hans/events.php">Events</a></li>
+                    <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/events" ? 'active' : ''; ?>" href="/hans/event.php">Events</a></li>
                     <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/products" ? 'active' : ''; ?>" href="/hans/product.php">Products</a></li>
                     <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/about" ? 'active' : ''; ?>" href="/hans/about.php">About us</a></li>
                     <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/contact" ? 'active' : ''; ?>" href="/hans/contact.php">Contact us</a></li>

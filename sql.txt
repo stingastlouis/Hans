@@ -1,0 +1,228 @@
+CREATE DATABASE light_service;
+
+
+
+-- Create table for Role
+CREATE TABLE `Role`  (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    DateCreated DATETIME NOT NULL
+);
+
+-- Create table for Status
+CREATE TABLE `Status` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Description TEXT,
+    DateCreated DATETIME NOT NULL
+);
+
+-- Create table for PaymentMethod
+CREATE TABLE `PaymentMethod` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Description TEXT,
+    DateCreated DATETIME NOT NULL
+);
+
+
+-- Create table for Customer
+CREATE TABLE `Customer` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Fullname VARCHAR(100) NOT NULL,
+    Email VARCHAR(255) NOT NULL,
+    Address TEXT NOT NULL,
+    Phone VARCHAR(15) NOT NULL,
+    Password TEXT NOT NULL,
+    DateCreated DATETIME NOT NULL
+);
+
+-- Create table for Staff
+CREATE TABLE `Staff` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Fullname VARCHAR(100) NOT NULL,
+    Email VARCHAR(255) NOT NULL,
+    Phone VARCHAR(15) NOT NULL,
+    RoleId INT,
+    PasswordHash TEXT,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (RoleId) REFERENCES Role(Id) ON DELETE CASCADE
+);
+
+-- Create table for StaffStatus
+CREATE TABLE `StaffStatus` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    StaffId INT,
+    StatusId INT,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (StaffId) REFERENCES Staff(Id) ON DELETE CASCADE,
+    FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE
+);
+
+-- Create table for Categories
+CREATE TABLE `Categories` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    DateCreated DATETIME NOT NULL
+);
+
+-- Create table for Products
+CREATE TABLE `Products` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL,
+    CategoryId INT,
+    Description TEXT,
+    ImagePath TEXT,
+    Price DOUBLE NOT NULL,
+    DiscountPrice DOUBLE,
+    Stock INT NOT NULL,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (CategoryId) REFERENCES Categories(Id) ON DELETE CASCADE
+);
+
+CREATE TABLE `Order` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    CustomerId INT NOT NULL,
+    PaymentMethodId INT,
+    Tax DOUBLE NOT NULL DEFAULT 0,
+    TotalAmount DOUBLE NOT NULL,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (CustomerId) REFERENCES Customer(Id) ON DELETE CASCADE,
+    FOREIGN KEY (PaymentMethodId) REFERENCES PaymentMethod(Id) ON DELETE SET NULL
+);
+
+-- Create table for OrderStatus
+CREATE TABLE `OrderStatus` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    OrderId INT,
+    StatusId INT,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE,
+    FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE
+);
+
+CREATE TABLE `OrderItem` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    OrderId INT NOT NULL,
+    ProductId INT NOT NULL,
+    Quantity INT NOT NULL,
+    UnitPrice DOUBLE NOT NULL,
+    Subtotal DOUBLE NOT NULL,
+    OrderType ENUM('product', 'event') NOT NULL,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE,
+    FOREIGN KEY (ProductId) REFERENCES Products(Id) ON DELETE CASCADE
+);
+
+
+
+-- Create table for Event
+CREATE TABLE `Event` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    ImagePath TEXT,
+    Description TEXT,
+    Price DOUBLE NOT NULL,
+    DiscountPrice DOUBLE,
+    DateCreated DATETIME NOT NULL
+);
+
+CREATE TABLE Payment (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    CustomerId INT NOT NULL,
+    OrderId INT NOT NULL,
+    PaymentMethodId INT NOT NULL,
+    TransactionId INT NOT NULL,
+    Amount DOUBLE NOT NULL,
+    DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (CustomerId) REFERENCES Customer(Id) ON DELETE CASCADE,
+    FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE,
+    FOREIGN KEY (PaymentMethodId) REFERENCES PaymentMethod(Id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE `EventProducts` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    EventId INT NOT NULL,
+    ProductId INT NOT NULL,
+    Quantity INT DEFAULT 1,
+    DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (EventId) REFERENCES Event(Id) ON DELETE CASCADE,
+    FOREIGN KEY (ProductId) REFERENCES Products(Id) ON DELETE CASCADE,
+    UNIQUE (EventId, ProductId)
+);
+
+
+-- Create table for EventStatus
+CREATE TABLE `EventStatus` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    EventId INT,
+    StatusId INT,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (EventId) REFERENCES Event(Id) ON DELETE CASCADE,
+    FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE
+);
+
+-- Create table for OrderEvent
+CREATE TABLE `OrderEvent` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    OrderId INT,
+    EventId INT,
+    Quantity INT NOT NULL,
+    FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE,
+    FOREIGN KEY (EventId) REFERENCES Event(Id) ON DELETE CASCADE
+);
+
+-- Create table for OrderEventStatus
+CREATE TABLE `OrderEventStatus` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    OrderEventId INT,
+    StatusId INT,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (OrderEventId) REFERENCES OrderEvent(Id) ON DELETE CASCADE,
+    FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE
+);
+
+-- Create table for CustomerStatus
+CREATE TABLE `CustomerStatus` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    UserId INT,
+    StatusId INT,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (UserId) REFERENCES Customer(Id) ON DELETE CASCADE
+);
+
+-- Create table for ProductStatus
+CREATE TABLE `ProductStatus` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    ProductId INT,
+    StatusId INT,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (ProductId) REFERENCES Products(Id) ON DELETE CASCADE
+);
+
+-- Create table for Installation
+CREATE TABLE `Installation` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    StaffId INT,
+    OrderId INT,
+    InstallationDate DATETIME NOT NULL,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (StaffId) REFERENCES Staff(Id) ON DELETE CASCADE,
+    FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE
+);
+
+-- Create table for InstallationStatus
+CREATE TABLE `InstallationStatus` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    InstallationId INT,
+    StatusId INT,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (InstallationId) REFERENCES Installation(Id) ON DELETE CASCADE
+);
+
+
+
+
+
+

@@ -9,23 +9,25 @@ function saveCart(cart) {
   localStorage.setItem(cartKey, JSON.stringify(cart));
 }
 
-function addToCart(id, name, price, quantity) {
+function addToCart(id, name, price, quantity, type) {
   const cart = loadCart();
-  const existingProduct = cart.find((product) => product.id === id);
+  const existingItem = cart.find(
+    (item) => item.id === id && item.type === type
+  );
 
-  if (existingProduct) {
-    existingProduct.quantity += quantity;
+  if (existingItem) {
+    existingItem.quantity += quantity;
   } else {
-    cart.push({ id, name, price, quantity });
+    cart.push({ id, name, price, quantity, type });
   }
 
   saveCart(cart);
   updateCartUI(cart);
 }
 
-function removeFromCart(id) {
+function removeFromCart(id, type) {
   let cart = loadCart();
-  cart = cart.filter((product) => product.id !== id);
+  cart = cart.filter((item) => !(item.id === id && item.type === type));
   saveCart(cart);
   updateCartUI(cart);
 }
@@ -40,9 +42,9 @@ function updateCartUI(cart) {
   cartItems.innerHTML = "";
 
   let total = 0;
-  cart.forEach((product) => {
-    const productTotal = product.price * product.quantity;
-    total += productTotal;
+  cart.forEach((item) => {
+    const itemTotal = item.price * item.quantity;
+    total += itemTotal;
 
     const listItem = document.createElement("li");
     listItem.classList.add(
@@ -53,14 +55,14 @@ function updateCartUI(cart) {
     );
     listItem.innerHTML = `
             <div>
-                <strong>${product.name}</strong><br>
-                Rs ${product.price.toFixed(2)} x ${product.quantity}
+                <strong>${item.name} (${item.type})</strong><br>
+                Rs ${item.price.toFixed(2)} x ${item.quantity}
             </div>
             <div>
-                <span>Rs ${productTotal.toFixed(2)}</span>
+                <span>Rs ${itemTotal.toFixed(2)}</span>
                 <button class="btn btn-danger btn-sm remove-from-cart" data-id="${
-                  product.id
-                }">Remove</button>
+                  item.id
+                }" data-type="${item.type}">Remove</button>
             </div>
         `;
     cartItems.appendChild(listItem);
@@ -77,17 +79,18 @@ function initCart() {
   document.addEventListener("click", function (event) {
     if (event.target.classList.contains("add-to-cart")) {
       const button = event.target;
-      const productId = button.getAttribute("data-id");
-      const productName = button.getAttribute("data-name");
-      const productPrice = parseFloat(button.getAttribute("data-price"));
-      const productStock = parseInt(button.getAttribute("data-stock"));
+      const id = button.getAttribute("data-id");
+      const name = button.getAttribute("data-name");
+      const price = parseFloat(button.getAttribute("data-price"));
+      const type = button.getAttribute("data-type");
+      const stock = parseInt(button.getAttribute("data-stock"));
       const quantityInput = button
         .closest(".d-flex")
         .querySelector(".quantity-input");
       const quantity = parseInt(quantityInput.value);
 
-      if (quantity > 0 && quantity <= productStock) {
-        addToCart(productId, productName, productPrice, quantity);
+      if (quantity > 0 && quantity <= stock) {
+        addToCart(id, name, price, quantity, type);
       } else {
         alert("Invalid quantity!");
       }
@@ -96,8 +99,9 @@ function initCart() {
 
   document.addEventListener("click", function (event) {
     if (event.target.classList.contains("remove-from-cart")) {
-      const productId = event.target.getAttribute("data-id");
-      removeFromCart(productId);
+      const id = event.target.getAttribute("data-id");
+      const type = event.target.getAttribute("data-type");
+      removeFromCart(id, type);
     }
   });
 }
