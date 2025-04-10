@@ -41,17 +41,18 @@ $isLoggedIn = isset($_SESSION['customerId']);
                     <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/contact" ? 'active' : ''; ?>" href="/hans/contact.php">Contact us</a></li>
                 </ul>
 
-                <?php if (!$isLoggedIn): ?>
-                    <a class="btn btn-primary shadow" role="button" href="/hans/register.php" style="margin-right: 10px">Sign up</a>
-                    <a class="btn btn-primary shadow" role="button" href="/hans/login.php">Sign in</a>
-                <?php else: ?>
-                    <div style="width:25%; display:flex; justify-content: space-evenly;">
-                    <a href="#" id="cart-icon" class="btn btn-outline-secondary position-relative me-2">
+                <a href="#" id="cart-icon" class="btn btn-outline-secondary position-relative me-2">
                         🛒 cart
                         <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                             0
                         </span>
                     </a>
+                <?php if (!$isLoggedIn): ?>
+                    <a class="btn btn-primary shadow" role="button" href="/hans/register.php" style="margin-right: 10px">Sign up</a>
+                    <a class="btn btn-primary shadow" role="button" href="/hans/login.php">Sign in</a>
+                <?php else: ?>
+                    <div style="width:25%; display:flex; justify-content: space-evenly;">
+                    
 
                         <a class="btn btn-primary shadow" role="button" href="/hans/profile.php">Profile</a>
                         <a class="btn btn-danger shadow" role="button" href="/hans/logout.php">Logout</a>
