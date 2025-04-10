@@ -67,7 +67,7 @@ if ($stmt->execute()) {
                 exit();
             }
         } elseif ($itemType === 'event') {
-            $eventId = $item['eventId'];
+            $eventId = $item['id'];
 
             $eventProductsQuery = "SELECT ProductId, Quantity FROM `EventProducts` WHERE EventId = :eventId";
             $eventProductsStmt = $conn->prepare($eventProductsQuery);

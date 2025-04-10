@@ -1,4 +1,4 @@
-<?php include "includes/header.php"; ?>
+<?php include "includes/header.php"; ?> 
 <div class="container py-4">
     <h1 class="text-center mb-4">Event Page</h1>
     <div class="row">
@@ -6,30 +6,26 @@
     include './configs/db.php';
 
     try {
-        $stmt = $conn->prepare("
-            SELECT e.*, 
-                   es.StatusId, 
-                   s.Name AS StatusName
-            FROM Event e
-            LEFT JOIN EventStatus es ON e.Id = es.EventId
-            LEFT JOIN Status s ON es.StatusId = s.Id
-            WHERE es.Id = (
-                SELECT MAX(es_inner.Id) 
-                FROM EventStatus es_inner 
-                WHERE es_inner.EventId = e.Id
-            )
-            AND LOWER(s.Name) = 'active'
-            ORDER BY e.DateCreated DESC;
-        ");
+        $stmt = $conn->prepare("SELECT e.*, 
+                                       es.StatusId, 
+                                       s.Name AS StatusName
+                                FROM Event e
+                                LEFT JOIN EventStatus es ON e.Id = es.EventId
+                                LEFT JOIN Status s ON es.StatusId = s.Id
+                                WHERE es.Id = (
+                                    SELECT MAX(es_inner.Id) 
+                                    FROM EventStatus es_inner 
+                                    WHERE es_inner.EventId = e.Id
+                                )
+                                AND LOWER(s.Name) = 'active'
+                                ORDER BY e.DateCreated DESC;");
         $stmt->execute();
         $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $eventProducts = [];
-        $stmt = $conn->prepare("
-            SELECT ep.EventId, p.Name AS ProductName, ep.Quantity
-            FROM EventProducts ep
-            JOIN Products p ON ep.ProductId = p.Id
-        ");
+        $stmt = $conn->prepare("SELECT ep.EventId, p.Name AS ProductName, ep.Quantity
+                                FROM EventProducts ep
+                                JOIN Products p ON ep.ProductId = p.Id");
         $stmt->execute();
         $productData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -64,7 +60,7 @@
 
                 echo '
                                 <div class="mt-auto">
-                                    <button class="btn btn-primary add-to-cart" 
+                                    <button class="btn btn-primary add-to-event-cart" 
                                         data-id="' . htmlspecialchars($event['Id']) . '" 
                                         data-name="' . htmlspecialchars($event['Name']) . '" 
                                         data-price="' . number_format($event['Price'], 2) . '" 
@@ -86,4 +82,22 @@
     ?>
     </div>
 </div>
-<?php include "includes/footer.php"; ?>
+
+<?php include "includes/footer.php"; ?> 
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener("click", function(event) {
+    if (event.target.classList.contains("add-to-event-cart")) {
+      const button = event.target;
+      const id = button.getAttribute("data-id");
+      const name = button.getAttribute("data-name");
+      const price = parseFloat(button.getAttribute("data-price"));
+      const type = button.getAttribute("data-type");
+      const quantity = 1; 
+
+      addToCart(id, name, price, quantity, type);
+    }
+  });
+});
+</script>

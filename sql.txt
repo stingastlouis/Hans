@@ -110,11 +110,8 @@ CREATE TABLE `OrderItem` (
     Subtotal DOUBLE NOT NULL,
     OrderType ENUM('product', 'event') NOT NULL,
     DateCreated DATETIME NOT NULL,
-    FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE,
-    FOREIGN KEY (ProductId) REFERENCES Products(Id) ON DELETE CASCADE
+    FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE
 );
-
-
 
 -- Create table for Event
 CREATE TABLE `Event` (
@@ -140,7 +137,6 @@ CREATE TABLE Payment (
     FOREIGN KEY (PaymentMethodId) REFERENCES PaymentMethod(Id) ON DELETE CASCADE
 );
 
-
 CREATE TABLE `EventProducts` (
     Id INT AUTO_INCREMENT PRIMARY KEY,
     EventId INT NOT NULL,
@@ -160,26 +156,6 @@ CREATE TABLE `EventStatus` (
     StatusId INT,
     DateCreated DATETIME NOT NULL,
     FOREIGN KEY (EventId) REFERENCES Event(Id) ON DELETE CASCADE,
-    FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE
-);
-
--- Create table for OrderEvent
-CREATE TABLE `OrderEvent` (
-    Id INT AUTO_INCREMENT PRIMARY KEY,
-    OrderId INT,
-    EventId INT,
-    Quantity INT NOT NULL,
-    FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE,
-    FOREIGN KEY (EventId) REFERENCES Event(Id) ON DELETE CASCADE
-);
-
--- Create table for OrderEventStatus
-CREATE TABLE `OrderEventStatus` (
-    Id INT AUTO_INCREMENT PRIMARY KEY,
-    OrderEventId INT,
-    StatusId INT,
-    DateCreated DATETIME NOT NULL,
-    FOREIGN KEY (OrderEventId) REFERENCES OrderEvent(Id) ON DELETE CASCADE,
     FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE
 );
 
