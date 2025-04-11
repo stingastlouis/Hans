@@ -14,18 +14,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Invalid email format.";
     } else {
         try {
-            $stmt = $conn->prepare("SELECT Id, fullname, password FROM Customer WHERE email = ?");
+            $stmt = $conn->prepare("
+                SELECT c.Id, c.Fullname, c.Password, st.Name AS status_name
+                FROM Customer c
+                LEFT JOIN CustomerStatus cs ON cs.UserId = c.Id
+                LEFT JOIN Status st ON st.Id = cs.StatusId
+                WHERE c.Email = ?
+                AND cs.DateCreated = (
+                    SELECT MAX(cs2.DateCreated)
+                    FROM CustomerStatus cs2
+                    WHERE cs2.UserId = c.Id
+                )
+            ");
+
             $stmt->execute([$email]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($user && password_verify($password, $user['password'])) {
-                $_SESSION['customerId'] = $user['Id'];
-                $_SESSION['customer_fullname'] = $user['fullname'];
-                
-                session_regenerate_id(true);
-                
-                header("Location: product.php");
-                exit;
+        
+            if ($user && password_verify($password, $user['Password'])) {
+                if ($user['status_name'] !== 'ACTIVE') {
+                    $error = "Your account is not active. Please contact support.";
+                } else {
+                    $_SESSION['customerId'] = $user['Id'];
+                    $_SESSION['customer_fullname'] = $user['fullname'];
+                    
+                    session_regenerate_id(true);
+                    
+                    header("Location: product.php");
+                    exit;
+                }
             } else {
                 $error = "Invalid email or password.";
             }

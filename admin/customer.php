@@ -60,7 +60,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?= htmlspecialchars($customer['Fullname']) ?></td>
                                 <td><?= htmlspecialchars($customer['Email']) ?></td>
                                 <td><?= htmlspecialchars($customer['Phone']) ?></td>
-                                <td><?= htmlspecialchars($customer['RoleName']) ?></td>
+                                <td><?= htmlspecialchars($customer['Address']) ?></td>
                                 <td><?= htmlspecialchars($customer['LatestStatus']) ?: 'No Status' ?></td>
                                 <td><?= htmlspecialchars($customer['DateCreated']) ?></td>
                                 <td>

@@ -182,6 +182,7 @@ CREATE TABLE `Installation` (
     Id INT AUTO_INCREMENT PRIMARY KEY,
     StaffId INT,
     OrderId INT,
+    Location Text,
     InstallationDate DATETIME NOT NULL,
     DateCreated DATETIME NOT NULL,
     FOREIGN KEY (StaffId) REFERENCES Staff(Id) ON DELETE CASCADE,

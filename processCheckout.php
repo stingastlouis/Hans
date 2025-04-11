@@ -14,6 +14,8 @@ $paymentMethodId = $data['paymentMethodId'];
 $cartItems = $data['cartItems'];
 $transactionId = $data['transactionId'];
 $amount = $data['amount'];
+$installationRequired = $data['installationRequired'];
+$latLng = $data['latLng'];
 $_SESSION['orderSuccess'] = true;
 
 $taxRate = 0.15;  
@@ -108,7 +110,32 @@ if ($stmt->execute()) {
     $stmt->bindValue(':amount', $amount, PDO::PARAM_STR);
     $stmt->execute();
 
+    if ($installationRequired) {
+        $installationQuery = "INSERT INTO `Installation` (OrderId, `Location`, DateCreated) 
+                              VALUES (:orderId, :Location, NOW())";
+        $stmt = $conn->prepare($installationQuery);
+        $stmt->bindValue(':orderId', $orderId, PDO::PARAM_INT);
+        $stmt->bindValue(':Location', $latLng, PDO::PARAM_STR);
+        $stmt->execute();
+        $installationId = $conn->lastInsertId();
+
+        $statusIdQuery = "SELECT Id FROM Status WHERE Name = 'IN PROGRESS' LIMIT 1";
+        $stmt = $conn->prepare($statusIdQuery);
+        $stmt->execute();
+
+
+        $statusQuery = "INSERT INTO `InstallationStatus` (InstallationId, StatusId, DateCreated) 
+                        VALUES (:installationId, :statusId, NOW())";
+        $stmt = $conn->prepare($statusQuery);
+        $stmt->bindValue(':installationId', $installationId, PDO::PARAM_INT);
+        $stmt->bindValue(':statusId', $statusIdQuery, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
     echo json_encode(['success' => true, 'orderId' => $orderId]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Failed to process the order']);
 }
+
+
+?>
