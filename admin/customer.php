@@ -257,7 +257,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
         return password;
     }
 
-    document.getElementById('generatePasswordBtn').addEventListener('click', function() {
+    document.getElementById('generateNewPasswordBtn').addEventListener('click', function() {
         const passwordField = document.getElementById('customerPassword');
         passwordField.value = generatePassword();
         passwordField.type = 'text';

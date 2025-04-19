@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+<?php 
 
+session_start();
+
+if (!isset($_SESSION['admin_id']) || $_SESSION['role'] !== "Admin") {
+    header("Location: ../unauthorised.php");
+    exit;
+}
+
+?>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
@@ -28,7 +37,8 @@
                     <li class="nav-item custom-nav-item"><a class="nav-link" href="event.php"> <span>Event</span></a></li>
                     <li class="nav-item custom-nav-item"><a class="nav-link" href="product.php"> <span>Product</span></a></li>
                     <li class="nav-item custom-nav-item"><a class="nav-link" href="staff.php"> <span>Staff</span></a></li>
-                    <li class="nav-item custom-nav-item"><a class="nav-link" href="product.php"> <span>Installation</span></a></li>
+                    <li class="nav-item custom-nav-item"><a class="nav-link" href="customer.php"> <span>Customer</span></a></li>
+                    <li class="nav-item custom-nav-item"><a class="nav-link" href="installation.php"> <span>Installation</span></a></li>
                 </ul>
                 <div class="text-center d-none d-md-inline"><button class="btn rounded-circle border-0" id="sidebarToggle" type="button"></button></div>
             </div>
@@ -124,6 +134,16 @@
                                     <div class="dropdown-menu shadow dropdown-menu-end animated--grow-in"><a class="dropdown-item" href="#"><i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Profile</a><a class="dropdown-item" href="#"><i class="fas fa-cogs fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Settings</a><a class="dropdown-item" href="#"><i class="fas fa-list fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Activity log</a>
                                         <div class="dropdown-divider"></div><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Logout</a>
                                     </div>
+                                    
+                                </div>
+                            </li>
+                            <li class="nav-item dropdown no-arrow">
+                                <div class="nav-item dropdown no-arrow">
+                                    <a class="dropdown-toggle nav-link" href="logout.php">
+                                        <span class="d-none d-lg-inline me-2 text-white-600 small btn btn-danger">Log out</span>
+                                    </a>
+                                   
+                                    
                                 </div>
                             </li>
                         </ul>
