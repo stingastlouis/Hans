@@ -200,7 +200,12 @@ CREATE TABLE `InstallationStatus` (
 
 
 
+INSERT INTO role (Name) VALUES('Installer');
+INSERT INTO role (Name) VALUES('Admin');
+INSERT INTO role (Name) VALUES('Viewer');
 
-INSERT INTO role (Name) VALUES('Admin);
 INSERT INTO staff (Fullname, Email, Phone, PasswordHash, RoleId) VALUES ('Hans','admin@gmail.com','5912','$2y$10$cxQD.l1tX5he2WgXrg0mOu1GkraPDjnzF/Phfn7SCceV0n6RW8LdG', (SELECT Id FROM Role WHERE Name = 'Admin'))
 ADMIN LOGIN: admin@gmail.com  4U7N!i3V#tGV
+
+
+CtLh3H**7s8G

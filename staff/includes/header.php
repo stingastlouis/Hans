@@ -4,7 +4,7 @@
 
 session_start();
 
-if (!isset($_SESSION['admin_id']) || $_SESSION['role'] !== "Admin") {
+if (!isset($_SESSION['staff_id'])) {
     header("Location: ../unauthorised.php");
     exit;
 }
@@ -30,16 +30,44 @@ if (!isset($_SESSION['admin_id']) || $_SESSION['role'] !== "Admin") {
                     <div class="sidebar-brand-text mx-3"><span>Brand</span></div>
                 </a>
                 <hr class="sidebar-divider my-0">
-                <ul class="navbar-nav text-light" id="accordionSidebar">
-                    <li class="nav-item custom-nav-item"><a class="nav-link active" href="index.html"> <span>Dashboard</span></a></li>
-                    <li class="nav-item custom-nav-item"><a class="nav-link" href="category.php"> <span>Category</span></a></li>
-                    <li class="nav-item custom-nav-item"><a class="nav-link" href="role.php"> <span>Role</span></a></li>
-                    <li class="nav-item custom-nav-item"><a class="nav-link" href="event.php"> <span>Event</span></a></li>
-                    <li class="nav-item custom-nav-item"><a class="nav-link" href="product.php"> <span>Product</span></a></li>
-                    <li class="nav-item custom-nav-item"><a class="nav-link" href="staff.php"> <span>Staff</span></a></li>
-                    <li class="nav-item custom-nav-item"><a class="nav-link" href="customer.php"> <span>Customer</span></a></li>
-                    <li class="nav-item custom-nav-item"><a class="nav-link" href="installation.php"> <span>Installation</span></a></li>
-                </ul>
+                <?php
+$role = $_SESSION['role'];
+?>
+
+<ul class="navbar-nav text-light" id="accordionSidebar">
+
+    <?php if ($role === 'Admin' || $role === 'Viewer'): ?>
+    <li class="nav-item custom-nav-item">
+        <a class="nav-link active" href="index.html"><span>Dashboard</span></a>
+    </li>
+    <li class="nav-item custom-nav-item">
+        <a class="nav-link" href="category.php"><span>Category</span></a>
+    </li>
+    <li class="nav-item custom-nav-item">
+        <a class="nav-link" href="role.php"><span>Role</span></a>
+    </li>
+    <li class="nav-item custom-nav-item">
+        <a class="nav-link" href="event.php"><span>Event</span></a>
+    </li>
+    <li class="nav-item custom-nav-item">
+        <a class="nav-link" href="product.php"><span>Product</span></a>
+    </li>
+    <li class="nav-item custom-nav-item">
+        <a class="nav-link" href="staff.php"><span>Staff</span></a>
+    </li>
+    <li class="nav-item custom-nav-item">
+        <a class="nav-link" href="customer.php"><span>Customer</span></a>
+    </li>
+    <?php endif; ?>
+
+    <?php if (in_array($role, ['Admin', 'Viewer', 'Installer'])): ?>
+    <li class="nav-item custom-nav-item">
+        <a class="nav-link" href="installation.php"><span>Installation</span></a>
+    </li>
+    <?php endif; ?>
+
+</ul>
+
                 <div class="text-center d-none d-md-inline"><button class="btn rounded-circle border-0" id="sidebarToggle" type="button"></button></div>
             </div>
         </nav>

@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $targetFilePath = $targetDir . $imageName;
 
         if (!is_dir($targetDir)) {
-            mkdir($targetDir, 0777, true); //note: grant access to create directory if not exists 777 -> read,write,execute. true is to enable recursive  directory creation
+            mkdir($targetDir, 0777, true);
         }
 
         if (move_uploaded_file($_FILES['product_image']['tmp_name'], $targetFilePath)) {

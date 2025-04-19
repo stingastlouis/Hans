@@ -3,21 +3,16 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 include 'includes/header.php';
-include '../configs/db.php'; // This file should create a PDO instance like $pdo
-
-// Ensure PDO is set up in db.php like:
-// $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-// $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
+include '../configs/db.php'; 
+$userRole = $_SESSION['role'];
 try {
-    // Handle deletion if the request is POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
         $deleteId = $_POST['delete_id'];
         $stmt = $conn->prepare("DELETE FROM Installation WHERE InstallationId = ?");
         $stmt->execute([$deleteId]);
     }
 
- // Fetch installations with latest status and staff
+
 $stmt = $conn->query("
 SELECT 
     i.Id AS InstallationId,
@@ -92,40 +87,46 @@ $stmt3->closeCursor();
                     <td><?= htmlspecialchars($row['InstallationDate']) ?></td>
                     <td><?= htmlspecialchars($row['LastStatus']) ?></td>
                     <td>
-                        <a 
-                            href="installation_summary.php?orderId=<?= $row['OrderId'] ?>"
-                            type="button"
-                            class="btn btn-sm btn-warning">
-                            View Items
-                        </a>
+                    <a 
+                        href="installation_summary.php?orderId=<?= $row['OrderId'] ?>"
+                        type="button"
+                        class="btn btn-sm btn-warning">
+                        View Items
+                    </a>
 
-                        <button class="btn btn-sm btn-info"
-                            data-bs-toggle="modal"
-                            data-bs-target="#locationModal"
-                            onclick="showLocationOnMap(this)"
-                            data-view-location="<?= htmlspecialchars($row['Location']) ?>">
-                            View Location
-                        </button>
+                    <button class="btn btn-sm btn-info"
+                        data-bs-toggle="modal"
+                        data-bs-target="#locationModal"
+                        onclick="showLocationOnMap(this)"
+                        data-view-location="<?= htmlspecialchars($row['Location']) ?>">
+                        View Location
+                    </button>
+
+                    <?php if ($userRole !== 'Viewer'): ?>
                         <form method="POST" action="status/add_installationStatus.php" style="display: inline;">
-                        <input type="hidden" name="installation_id" value="<?= $row['InstallationId'] ?>">
+                            <input type="hidden" name="installation_id" value="<?= $row['InstallationId'] ?>">
                             <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
                                 <option value="" disabled selected>Change Status</option>
-                                    <?php foreach ($statuses as $status): ?>
-                                        <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
-                                    <?php endforeach; ?>
+                                <?php foreach ($statuses as $status): ?>
+                                    <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
+                                <?php endforeach; ?>
                             </select>              
                         </form>
+                    <?php endif; ?>
 
+                    <?php if ($userRole !== 'Viewer' && $userRole !== 'Installer'): ?>
                         <form method="POST" action="staff/add_staffToInstallation.php" style="display: inline;">
-                        <input type="hidden" name="installation_id" value="<?= $row['InstallationId'] ?>">
+                            <input type="hidden" name="installation_id" value="<?= $row['InstallationId'] ?>">
                             <select name="staff_id" class="form-select form-select-sm" onchange="this.form.submit()">
                                 <option value="" disabled selected>Add Staff</option>
-                                    <?php foreach ($stfs as $staff): ?>
-                                        <option value="<?= $staff['Id'] ?>"><?= htmlspecialchars($staff['Fullname']) ?></option>
-                                    <?php endforeach; ?>
+                                <?php foreach ($stfs as $staff): ?>
+                                    <option value="<?= $staff['Id'] ?>"><?= htmlspecialchars($staff['Fullname']) ?></option>
+                                <?php endforeach; ?>
                             </select>              
                         </form>
+                    <?php endif; ?>
                     </td>
+
                 </tr>
             <?php endforeach; ?>
         </tbody>
@@ -133,7 +134,7 @@ $stmt3->closeCursor();
 </div>
 
 
-<!-- Leaflet Map Modal -->
+
 <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
@@ -185,7 +186,6 @@ document.querySelectorAll('.address-cell').forEach(cell => {
 let map;
 let marker;
 
-// Trigger when modal is fully visible
 const modal = document.getElementById('locationModal');
 
 modal.addEventListener('shown.bs.modal', function () {
@@ -194,7 +194,6 @@ modal.addEventListener('shown.bs.modal', function () {
     }
 });
 function showLocationOnMap(button) {
-  // Get the location from the button's data-view-location attribute
   const latlngStr = button.getAttribute('data-view-location');
 
   if (!latlngStr || !latlngStr.includes(',')) {
@@ -228,7 +227,6 @@ function showLocationOnMap(button) {
   marker = L.marker(latlng).addTo(map);
   document.getElementById('mapAddress').innerText = 'Loading...';
 
-  // Reverse geocode
   fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
     .then((res) => res.json())
     .then((data) => {

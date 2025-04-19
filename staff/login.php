@@ -19,11 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute(['email' => $email]);
     $staff = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($staff && $staff['RoleName'] === 'Admin' && password_verify($password, $staff['PasswordHash'])) {
-        $_SESSION['admin_id'] = $staff['Id'];
-        $_SESSION['admin_name'] = $staff['Fullname'];
+    if ($staff && password_verify($password, $staff['PasswordHash'])) {
+        $_SESSION['staff_id'] = $staff['Id'];
+        $_SESSION['staff_name'] = $staff['Fullname'];
         $_SESSION['role'] = $staff['RoleName'];
-        header('Location: ../admin');
+        header('Location: ../staff');
         exit;
     } else {
         $error = "Invalid credentials or not an admin.";
