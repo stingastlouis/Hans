@@ -1,4 +1,4 @@
-<?php include "includes/header.php" ?>
+<?php include "includes/header.php" ?> 
 <div class="container py-4">
     <h1 class="text-center mb-4">Product Page</h1>
     <div class="row">
@@ -7,20 +7,20 @@
 
     try {
         $stmt = $conn->prepare("
-    SELECT p.*, 
-           ps.StatusId, 
-           s.Name AS StatusName
-    FROM Products p
-    LEFT JOIN ProductStatus ps ON p.Id = ps.ProductId
-    LEFT JOIN Status s ON ps.StatusId = s.Id
-    WHERE ps.Id = (
-        SELECT MAX(ps_inner.Id) 
-        FROM ProductStatus ps_inner 
-        WHERE ps_inner.ProductId = p.Id
-    )
-    AND LOWER(s.Name) = 'active'
-    ORDER BY p.DateCreated DESC;
-");
+            SELECT p.*, 
+                   ps.StatusId, 
+                   s.Name AS StatusName
+            FROM Products p
+            LEFT JOIN ProductStatus ps ON p.Id = ps.ProductId
+            LEFT JOIN Status s ON ps.StatusId = s.Id
+            WHERE ps.Id = (
+                SELECT MAX(ps_inner.Id) 
+                FROM ProductStatus ps_inner 
+                WHERE ps_inner.ProductId = p.Id
+            )
+            AND LOWER(s.Name) = 'active'
+            ORDER BY p.DateCreated DESC;
+        ");
 
         $stmt->execute();
         $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -48,7 +48,10 @@
                                 </p>
                                 <p class="card-text">
                                     <strong>Stock:</strong> ' . intval($product['Stock']) . '
-                                </p>
+                                </p>';
+
+                                if (!in_array($role, ALLOWED_ROLES)) {
+                    echo '
                                 <div class="d-flex align-items-center mt-auto">
                                     <input type="number" class="form-control me-2 quantity-input" min="1" max="' . intval($product['Stock']) . '" value="1" style="width: 70px;" ' . ($isOutOfStock ? 'disabled' : '') . '>
                                     <button class="btn btn-primary add-to-cart" 
@@ -60,7 +63,10 @@
                                         ' . ($isOutOfStock ? 'disabled' : '') . '>
                                         Add to Cart
                                     </button>
-                                </div>
+                                </div>';
+                }
+
+                echo '
                             </div>
                         </div>
                     </div>';
@@ -76,4 +82,4 @@
     </div>
 </div>
 
-<?php include "includes/footer.php" ?>
+<?php include "includes/footer.php" ?> 

@@ -58,16 +58,20 @@
                     echo '<p class="card-text"><em>No associated products</em></p>';
                 }
 
+                if (!in_array($role, ALLOWED_ROLES)) {
+                    echo '
+                        <div class="mt-auto">
+                            <button class="btn btn-primary add-to-event-cart" 
+                                data-id="' . htmlspecialchars($event['Id']) . '" 
+                                data-name="' . htmlspecialchars($event['Name']) . '" 
+                                data-price="' . number_format($event['Price'], 2) . '" 
+                                data-type="event">
+                                Add to Cart
+                            </button>
+                        </div>';
+                }
+
                 echo '
-                                <div class="mt-auto">
-                                    <button class="btn btn-primary add-to-event-cart" 
-                                        data-id="' . htmlspecialchars($event['Id']) . '" 
-                                        data-name="' . htmlspecialchars($event['Name']) . '" 
-                                        data-price="' . number_format($event['Price'], 2) . '" 
-                                        data-type="event">
-                                        Add to Cart
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     </div>';
@@ -84,6 +88,7 @@
 </div>
 
 <?php include "includes/footer.php"; ?> 
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

@@ -1,11 +1,14 @@
 <?php
+include "./configs/constants.php";
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
 $request = $_SERVER["REQUEST_URI"];
 $subDomain = "/hans";
 $activeClassName = 'active';
 $isLoggedIn = isset($_SESSION['customerId']);
+$role = $_SESSION['role'];
 ?>
 
 <!DOCTYPE html>
@@ -40,7 +43,7 @@ $isLoggedIn = isset($_SESSION['customerId']);
                     <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/products" ? 'active' : ''; ?>" href="/hans/product.php">Products</a></li>
                     <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/contact" ? 'active' : ''; ?>" href="/hans/contact.php">Contact us</a></li>
                 </ul>
-
+                <?php if (!in_array($role, ALLOWED_ROLES)): ?>
                 <a href="#" id="cart-icon" class="btn btn-outline-secondary position-relative me-2">
                         🛒 cart
                         <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -58,6 +61,7 @@ $isLoggedIn = isset($_SESSION['customerId']);
                         <a class="btn btn-danger shadow" role="button" href="/hans/logout.php">Logout</a>
                     </div>
                 <?php endif; ?>
+            <?php endif; ?>
             </div>
         </div>
 </nav>
