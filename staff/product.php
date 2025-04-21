@@ -1,8 +1,16 @@
-<?php include 'includes/header.php'; ?>
+<?php 
 
-<?php
+include '../sessionManagement.php';
+include '../configs/constants.php';
+
+$role = $_SESSION['role'];
+if (!in_array($role, ALLOWED_EDITOR_ROLES)){
+    header("Location: ../unauthorised.php");
+    exit;
+}
+
+include 'includes/header.php';
 include '../configs/db.php';
-
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
 
 try {
@@ -45,9 +53,11 @@ try {
     <div class="card shadow">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <p class="text-primary m-0 fw-bold">Product List</p>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
-                Add Product
-            </button>
+            <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                    Add Product
+                </button>
+            <?php endif; ?>
         </div>
         <div class="card-body">
             <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
@@ -64,7 +74,9 @@ try {
                             <th>Image</th>
                             <th>Latest Status</th>
                             <th>Date Created</th>
+                            <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
                             <th>Actions</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
@@ -82,6 +94,7 @@ try {
                                 </td>
                                 <td><?= htmlspecialchars($product['LatestStatus']) ?: 'No Status' ?></td>
                                 <td><?= htmlspecialchars($product['DateCreated']) ?></td>
+                                <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
                                 <td style="padding:10px">
                                     <button class='btn btn-warning btn-sm edit-product-btn' 
                                         data-id='<?= $product['Id'] ?>' 
@@ -102,6 +115,7 @@ try {
                                         </select>
                                     </form>
                                 </td>
+                                <?php endif; ?>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

@@ -1,9 +1,17 @@
-<?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+<?php 
+
+include '../sessionManagement.php';
+include '../configs/constants.php';
+
+$role = $_SESSION['role'];
+if (!in_array($role, ALLOWED_ROLES)){
+    header("Location: ../unauthorised.php");
+    exit;
+}
 
 include 'includes/header.php';
-include '../configs/db.php'; 
+include '../configs/db.php';
+
 $userRole = $_SESSION['role'];
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
@@ -102,7 +110,7 @@ $stmt3->closeCursor();
                         View Location
                     </button>
 
-                    <?php if ($userRole !== 'Viewer'): ?>
+                    <?php if (in_array($role, ALLOWED_INSTALLATION_ROLES)): ?>
                         <form method="POST" action="status/add_installationStatus.php" style="display: inline;">
                             <input type="hidden" name="installation_id" value="<?= $row['InstallationId'] ?>">
                             <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
@@ -114,7 +122,7 @@ $stmt3->closeCursor();
                         </form>
                     <?php endif; ?>
 
-                    <?php if ($userRole !== 'Viewer' && $userRole !== 'Installer'): ?>
+                    <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
                         <form method="POST" action="staff/add_staffToInstallation.php" style="display: inline;">
                             <input type="hidden" name="installation_id" value="<?= $row['InstallationId'] ?>">
                             <select name="staff_id" class="form-select form-select-sm" onchange="this.form.submit()">

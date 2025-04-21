@@ -1,8 +1,17 @@
-<?php include 'includes/header.php'; ?>
+<?php 
 
-<?php
+include '../sessionManagement.php';
+include '../configs/constants.php';
 
+$role = $_SESSION['role'];
+if (!in_array($role, ALLOWED_EDITOR_ROLES)){
+    header("Location: ../unauthorised.php");
+    exit;
+}
+
+include 'includes/header.php';
 include '../configs/db.php';
+
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
 $stmt = $conn->prepare("
@@ -24,12 +33,10 @@ $stmt = $conn->prepare("
 $stmt->execute();
 $staffMembers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch roles for dropdown
 $stmt2 = $conn->prepare("SELECT * FROM Role");
 $stmt2->execute();
 $roles = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch statuses
 $stmt3 = $conn->prepare("SELECT * FROM Status");
 $stmt3->execute();
 $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
@@ -41,9 +48,11 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     <div class="card shadow">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <p class="text-primary m-0 fw-bold">Staff List</p>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStaffModal">
-                Add Staff Member
-            </button>
+            <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStaffModal">
+                    Add Staff Member
+                </button>
+            <?php endif; ?>
         </div>
         <div class="card-body">
             <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
@@ -57,7 +66,9 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                             <th>Role</th>
                             <th>Latest Status</th>
                             <th>Date Created</th>
-                            <th>Actions</th>
+                            <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
+                             <th>Actions</th>
+                            <?php endif;?>
                         </tr>
                     </thead>
                     <tbody>
@@ -70,31 +81,33 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?= htmlspecialchars($staff['RoleName']) ?></td>
                                 <td><?= htmlspecialchars($staff['LatestStatus']) ?: 'No Status' ?></td>
                                 <td><?= htmlspecialchars($staff['DateCreated']) ?></td>
-                                <td>
-                                    <button class='btn btn-warning btn-sm edit-staff-btn' 
-                                        data-id='<?= $staff['Id'] ?>' 
-                                        data-fullname='<?= $staff['Fullname'] ?>' 
-                                        data-email='<?= $staff['Email'] ?>' 
-                                        data-phone='<?= $staff['Phone'] ?>' 
-                                        data-role-id='<?= $staff['RoleId'] ?>'>Edit</button>
-                                    <button class="btn btn-info btn-sm reset-password-btn" 
-                                        data-id="<?= $staff['Id'] ?>"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#resetPasswordModal">Reset Password</button>
-                                    <button class="btn btn-danger btn-sm btn-del" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#deleteStaffModal" 
-                                        data-id="<?= $staff['Id'] ?>">Delete</button>
-                                    <form method="POST" action="status/add_staffStatus.php" style="display: inline; width:80px;">
-                                        <input type="hidden" name="staff_id" value="<?= $staff['Id'] ?>">
-                                        <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
-                                            <option value="" disabled selected>Change Status</option>
-                                            <?php foreach ($statuses as $status): ?>
-                                                <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </form>
-                                </td>
+                                <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
+                                    <td>
+                                        <button class='btn btn-warning btn-sm edit-staff-btn' 
+                                            data-id='<?= $staff['Id'] ?>' 
+                                            data-fullname='<?= $staff['Fullname'] ?>' 
+                                            data-email='<?= $staff['Email'] ?>' 
+                                            data-phone='<?= $staff['Phone'] ?>' 
+                                            data-role-id='<?= $staff['RoleId'] ?>'>Edit</button>
+                                        <button class="btn btn-info btn-sm reset-password-btn" 
+                                            data-id="<?= $staff['Id'] ?>"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#resetPasswordModal">Reset Password</button>
+                                        <button class="btn btn-danger btn-sm btn-del" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteStaffModal" 
+                                            data-id="<?= $staff['Id'] ?>">Delete</button>
+                                        <form method="POST" action="status/add_staffStatus.php" style="display: inline; width:80px;">
+                                            <input type="hidden" name="staff_id" value="<?= $staff['Id'] ?>">
+                                            <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                                                <option value="" disabled selected>Change Status</option>
+                                                <?php foreach ($statuses as $status): ?>
+                                                    <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </form>
+                                    </td>
+                                <?php endif; ?>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

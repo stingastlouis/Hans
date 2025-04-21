@@ -208,4 +208,6 @@ INSERT INTO staff (Fullname, Email, Phone, PasswordHash, RoleId) VALUES ('Hans',
 ADMIN LOGIN: admin@gmail.com  4U7N!i3V#tGV
 
 
+Installer: 
+pascalstlouis34@gmail.com
 CtLh3H**7s8G

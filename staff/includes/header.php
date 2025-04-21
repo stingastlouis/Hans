@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <?php 
+include '../sessionManagement.php';
+require_once '../configs/constants.php';
 
-session_start();
+?>
 
+<?php 
 if (!isset($_SESSION['staff_id'])) {
     header("Location: ../unauthorised.php");
     exit;
 }
+
 
 ?>
 <head>
@@ -25,45 +29,49 @@ if (!isset($_SESSION['staff_id'])) {
 
 <div id="wrapper">
         <nav class="navbar navbar-dark align-items-start sidebar sidebar-dark accordion bg-gradient-primary p-0">
-            <div class="container-fluid d-flex flex-column p-0"><a class="navbar-brand d-flex justify-content-center align-items-center sidebar-brand m-0" href="#">
-                    <div class="sidebar-brand-icon rotate-n-15"><i class="fas fa-laugh-wink"></i></div>
-                    <div class="sidebar-brand-text mx-3"><span>Brand</span></div>
+            <div class="container-fluid d-flex flex-column p-0"><a class="navbar-brand d-flex justify-content-center align-items-center sidebar-brand m-0" href="../staff/">
+    
+                    <div class="sidebar-brand-text mx-3">
+                    <span class="custom-header-icon bs-icon-sm shadow d-flex justify-content-center align-items-center me-2 bs-icon">
+                        <img src="../assets/img/spotlight.png" width="50" height="50"/>
+                    </span>
+                    <span>Light Store</span>
+                    </div>
+            
                 </a>
                 <hr class="sidebar-divider my-0">
-                <?php
-$role = $_SESSION['role'];
-?>
+                <?php $role = $_SESSION['role'];?>
 
 <ul class="navbar-nav text-light" id="accordionSidebar">
 
-    <?php if ($role === 'Admin' || $role === 'Viewer'): ?>
-    <li class="nav-item custom-nav-item">
-        <a class="nav-link active" href="index.html"><span>Dashboard</span></a>
-    </li>
-    <li class="nav-item custom-nav-item">
-        <a class="nav-link" href="category.php"><span>Category</span></a>
-    </li>
-    <li class="nav-item custom-nav-item">
-        <a class="nav-link" href="role.php"><span>Role</span></a>
-    </li>
-    <li class="nav-item custom-nav-item">
-        <a class="nav-link" href="event.php"><span>Event</span></a>
-    </li>
-    <li class="nav-item custom-nav-item">
-        <a class="nav-link" href="product.php"><span>Product</span></a>
-    </li>
-    <li class="nav-item custom-nav-item">
-        <a class="nav-link" href="staff.php"><span>Staff</span></a>
-    </li>
-    <li class="nav-item custom-nav-item">
-        <a class="nav-link" href="customer.php"><span>Customer</span></a>
-    </li>
-    <?php endif; ?>
+    <?php if (in_array($role, ALLOWED_EDITOR_ROLES)): ?>
+        <li class="nav-item custom-nav-item">
+            <a class="nav-link active" href="../staff/"><span>Dashboard</span></a>
+        </li>
+        <li class="nav-item custom-nav-item">
+            <a class="nav-link" href="category.php"><span>Category</span></a>
+        </li>
+        <li class="nav-item custom-nav-item">
+            <a class="nav-link" href="role.php"><span>Role</span></a>
+        </li>
+        <li class="nav-item custom-nav-item">
+            <a class="nav-link" href="event.php"><span>Event</span></a>
+        </li>
+        <li class="nav-item custom-nav-item">
+            <a class="nav-link" href="product.php"><span>Product</span></a>
+        </li>
+        <li class="nav-item custom-nav-item">
+            <a class="nav-link" href="staff.php"><span>Staff</span></a>
+        </li>
+        <li class="nav-item custom-nav-item">
+            <a class="nav-link" href="customer.php"><span>Customer</span></a>
+        </li>
+        <?php endif; ?>
 
-    <?php if (in_array($role, ['Admin', 'Viewer', 'Installer'])): ?>
-    <li class="nav-item custom-nav-item">
-        <a class="nav-link" href="installation.php"><span>Installation</span></a>
-    </li>
+        <?php if (in_array($role, ALLOWED_ROLES)): ?>
+        <li class="nav-item custom-nav-item">
+            <a class="nav-link" href="installation.php"><span>Installation</span></a>
+        </li>
     <?php endif; ?>
 
 </ul>
@@ -157,22 +165,16 @@ $role = $_SESSION['role'];
                                 <div class="shadow dropdown-list dropdown-menu dropdown-menu-end" aria-labelledby="alertsDropdown"></div>
                             </li>
                             <div class="d-none d-sm-block topbar-divider"></div>
-                            <li class="nav-item dropdown no-arrow">
-                                <div class="nav-item dropdown no-arrow"><a class="dropdown-toggle nav-link" aria-expanded="false" data-bs-toggle="dropdown" href="#"><span class="d-none d-lg-inline me-2 text-gray-600 small">Valerie Luna</span><img class="border rounded-circle img-profile" src="assets/img/avatars/avatar1.jpeg"></a>
-                                    <div class="dropdown-menu shadow dropdown-menu-end animated--grow-in"><a class="dropdown-item" href="#"><i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Profile</a><a class="dropdown-item" href="#"><i class="fas fa-cogs fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Settings</a><a class="dropdown-item" href="#"><i class="fas fa-list fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Activity log</a>
-                                        <div class="dropdown-divider"></div><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Logout</a>
-                                    </div>
-                                    
-                                </div>
+                            <li class="nav-item dropdown d-flex align-items-center">
+                                <span class="d-none d-lg-inline me-2 text-gray-600 small">
+                                    <?php echo $_SESSION['staff_name'] ?> - <b><?php echo $_SESSION['role'] ?></b>
+                                </span>
                             </li>
+
                             <li class="nav-item dropdown no-arrow">
-                                <div class="nav-item dropdown no-arrow">
-                                    <a class="dropdown-toggle nav-link" href="logout.php">
-                                        <span class="d-none d-lg-inline me-2 text-white-600 small btn btn-danger">Log out</span>
-                                    </a>
-                                   
-                                    
-                                </div>
+                                <a class="dropdown-toggle nav-link" href="logout.php">
+                                    <span class="d-none d-lg-inline me-2 text-white-600 small btn btn-danger">Log out</span>
+                                </a>
                             </li>
                         </ul>
                     </div>

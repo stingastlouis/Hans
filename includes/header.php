@@ -27,7 +27,7 @@ $isLoggedIn = isset($_SESSION['customerId']);
             <a class="navbar-brand d-flex align-items-center" href="/hans/">
                 <span class="custom-header-icon bs-icon-sm shadow d-flex justify-content-center align-items-center me-2 bs-icon">
                     <img src="assets/img/spotlight.png" width="50" height="50"/>
-                </span><span>Brand</span>
+                </span><span>Light Store</span>
             </a>
             <button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1">
                 <span class="visually-hidden">Toggle navigation</span>

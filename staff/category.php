@@ -1,12 +1,21 @@
-<?php include 'includes/header.php'; ?>
-
 <?php
+include '../sessionManagement.php';
+include '../configs/constants.php';
+
+$role = $_SESSION['role'];
+if (!in_array($role, ALLOWED_EDITOR_ROLES)){
+    header("Location: ../unauthorised.php");
+    exit;
+}
+include 'includes/header.php';
+
 include '../configs/db.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
 $stmt = $conn->prepare("SELECT * FROM categories");
 $stmt->execute();
 $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
 <div class="container-fluid">
@@ -14,9 +23,11 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="card shadow">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <p class="text-primary m-0 fw-bold">Category List</p>
+            <?php if (in_array($role, ['Admin'])): ?>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
                 Add Category
             </button>
+            <?php endif; ?>
         </div>
         <div class="card-body">
             <div class="row">
@@ -41,7 +52,9 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <th>Id</th>
                             <th>Category Name</th>
                             <th>Date Created</th>
+                            <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
                             <th>Actions</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
@@ -50,9 +63,11 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?= htmlspecialchars($category['Id']) ?></td>
                                 <td><?= htmlspecialchars($category['Name']) ?></td>
                                 <td><?= htmlspecialchars($category['DateCreated']) ?></td>
+                                <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
                                 <td>
                                     <button class="btn btn-danger btn-del" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal" data-id="<?= $category['Id'] ?>">Delete</button>
                                 </td>
+                                <?php endif; ?>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

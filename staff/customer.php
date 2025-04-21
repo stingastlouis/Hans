@@ -1,8 +1,15 @@
-<?php include 'includes/header.php'; ?>
-
 <?php
-include '../configs/db.php';
+include '../sessionManagement.php';
+include '../configs/constants.php';
 
+$role = $_SESSION['role'];
+if (!in_array($role, ALLOWED_EDITOR_ROLES)){
+    header("Location: ../unauthorised.php");
+    exit;
+}
+
+include '../configs/db.php';
+include 'includes/header.php'; 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
 $stmt = $conn->prepare("
     SELECT c.*, 
@@ -50,7 +57,9 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                             <th>Address</th>
                             <th>Latest Status</th>
                             <th>Date Created</th>
+                            <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
                             <th>Actions</th>
+                            <?php endif;?>
                         </tr>
                     </thead>
                     <tbody>
@@ -63,6 +72,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?= htmlspecialchars($customer['Address']) ?></td>
                                 <td><?= htmlspecialchars($customer['LatestStatus']) ?: 'No Status' ?></td>
                                 <td><?= htmlspecialchars($customer['DateCreated']) ?></td>
+                                <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
                                 <td>
                                     <button class='btn btn-warning btn-sm edit-customer-btn' 
                                         data-id='<?= $customer['Id'] ?>' 
@@ -88,6 +98,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                                         </select>
                                     </form>
                                 </td>
+                                <?php endif; ?>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
