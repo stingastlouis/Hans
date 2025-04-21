@@ -8,14 +8,25 @@ if (!in_array($role, ALLOWED_EDITOR_ROLES)){
     exit;
 }
 include 'includes/header.php';
-
 include '../configs/db.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
-$stmt = $conn->prepare("SELECT * FROM categories");
+
+$itemsPerPage = 10;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$page = max($page, 1); 
+$offset = ($page - 1) * $itemsPerPage;
+
+
+$totalStmt = $conn->query("SELECT COUNT(*) FROM categories");
+$totalCategories = $totalStmt->fetchColumn();
+$totalPages = ceil($totalCategories / $itemsPerPage);
+
+$stmt = $conn->prepare("SELECT * FROM categories ORDER BY Id DESC LIMIT :limit OFFSET :offset");
+$stmt->bindValue(':limit', $itemsPerPage, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
 
 <div class="container-fluid">
@@ -31,7 +42,7 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <div class="card-body">
             <div class="row">
-            <div class="col-md-6">
+                <div class="col-md-6">
                     <div class="text-md-end dataTables_filter" id="dataTable_filter">
                         <label class="form-label">
                             <input type="search" class="form-control form-control-sm" aria-controls="dataTable" placeholder="Search" id="searchInput">
@@ -40,10 +51,8 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
                 <div class="col-md-6 text-nowrap">
                     <div id="dataTable_length" class="dataTables_length" aria-controls="dataTable">
-                        
                     </div>
                 </div>
-                
             </div>
             <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
                 <table class="table my-0" id="dataTable">
@@ -73,6 +82,29 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </tbody>
                 </table>
             </div>
+
+            <nav>
+                <ul class="pagination justify-content-center mt-3">
+                    <?php if ($page > 1): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<?= $page - 1 ?>&success=<?= $success ?>">Previous</a>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <li class="page-item <?= $i == $page ? 'active' : '' ?>">
+                            <a class="page-link" href="?page=<?= $i ?>&success=<?= $success ?>"><?= $i ?></a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <?php if ($page < $totalPages): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<?= $page + 1 ?>&success=<?= $success ?>">Next</a>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+            </nav>
+
         </div>
     </div>
 </div>

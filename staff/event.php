@@ -1,5 +1,4 @@
 <?php 
-
 include '../sessionManagement.php';
 include '../configs/constants.php';
 
@@ -13,17 +12,24 @@ include 'includes/header.php';
 include '../configs/db.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
+
+
+$limit = 10;
+$page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+if ($page < 1) $page = 1;
+$offset = ($page - 1) * $limit;
+
+$totalStmt = $conn->query("SELECT COUNT(*) FROM Event");
+$totalRows = $totalStmt->fetchColumn();
+$totalPages = ceil($totalRows / $limit);
+
 $stmt = $conn->prepare("
     SELECT e.*, 
            s.Name AS LatestStatus, 
-           GROUP_CONCAT(
-               CONCAT(p.Name, ' (', ep.Quantity, ')') 
-               SEPARATOR ', '
-           ) AS ProductDetails
+           GROUP_CONCAT(CONCAT(p.Name, ' (', ep.Quantity, ')') SEPARATOR ', ') AS ProductDetails
     FROM Event e
     LEFT JOIN (
-        SELECT es.EventId, 
-               MAX(es.Id) AS LatestStatusId
+        SELECT es.EventId, MAX(es.Id) AS LatestStatusId
         FROM EventStatus es
         GROUP BY es.EventId
     ) latest_es ON e.Id = latest_es.EventId
@@ -33,8 +39,11 @@ $stmt = $conn->prepare("
     LEFT JOIN Products p ON ep.ProductId = p.Id
     GROUP BY e.Id, s.Name
     ORDER BY e.Id DESC
+    LIMIT :limit OFFSET :offset
 ");
 
+$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -45,9 +54,6 @@ $statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 $productQuery = $conn->prepare("SELECT Id, Name FROM Products");
 $productQuery->execute();
 $prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
-
-
-
 ?>
 
 <div class="container-fluid">
@@ -56,14 +62,12 @@ $prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <p class="text-primary m-0 fw-bold">Event List</p>
             <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">
-                Add Event
-            </button>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">Add Event</button>
             <?php endif ?>
         </div>
         <div class="card-body">
-            <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
-                <table class="table my-0" id="dataTable">
+            <div class="table-responsive table mt-2" id="dataTable" role="grid">
+                <table class="table my-0">
                     <thead>
                         <tr>
                             <th>Id</th>
@@ -73,7 +77,7 @@ $prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
                             <th>Discount Price</th>
                             <th>Image</th>
                             <th>Latest Status</th>
-                            <th>Products</th> 
+                            <th>Products</th>
                             <th>Date Created</th>    
                             <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>                        
                                 <th>Actions</th>
@@ -92,14 +96,10 @@ $prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
                                     <img src="../assets/uploads/<?= htmlspecialchars($event['ImagePath']) ?>" alt="<?= htmlspecialchars($event['Name']) ?>" style="width: 100px; height: auto;">
                                 </td>
                                 <td><?= htmlspecialchars($event['LatestStatus']) ?: 'No Status' ?></td>
+                                <td><?= htmlspecialchars($event['ProductDetails']) ?: 'No products linked' ?></td>
+                                <td><?= htmlspecialchars($event['DateCreated']) ?></td>
+                                <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
                                 <td>
-                                    <?php 
-                                    echo htmlspecialchars($event['ProductDetails']) ?: 'No products linked';
-                                    ?>
-                                </td>
-                                <td><?= htmlspecialchars($event['DateCreated']) ?></td>       
-                                <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>                       
-                                <td style="padding:10px">
                                     <button class='btn btn-warning btn-sm edit-event-btn' 
                                         data-id='<?= $event['Id'] ?>' 
                                         data-name='<?= $event['Name'] ?>' 
@@ -123,9 +123,19 @@ $prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
                     </tbody>
                 </table>
             </div>
+            <nav class="mt-3">
+                <ul class="pagination justify-content-center">
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <li class="page-item<?= ($i == $page) ? ' active' : '' ?>">
+                            <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                        </li>
+                    <?php endfor; ?>
+                </ul>
+            </nav>
         </div>
     </div>
 </div>
+
 
 <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
     <div class="modal-dialog">

@@ -12,8 +12,17 @@ if (!in_array($role, ALLOWED_EDITOR_ROLES)){
 include 'includes/header.php';
 include '../configs/db.php';
 
-
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
+
+$limit = 1;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
+$stmtCount = $conn->prepare("SELECT COUNT(*) FROM Staff");
+$stmtCount->execute();
+$totalRecords = $stmtCount->fetchColumn();
+$totalPages = ceil($totalRecords / $limit);
+
 $stmt = $conn->prepare("
     SELECT s.*, 
            r.Name AS RoleName,
@@ -27,9 +36,11 @@ $stmt = $conn->prepare("
         GROUP BY ss.StaffId
     ) latest_ss ON s.Id = latest_ss.StaffId
     LEFT JOIN StaffStatus ss ON latest_ss.LatestStatusId = ss.Id
-    LEFT JOIN Status ls ON ss.StatusId = ls.Id;
+    LEFT JOIN Status ls ON ss.StatusId = ls.Id
+    LIMIT :limit OFFSET :offset;
 ");
-
+$stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+$stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $staffMembers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -113,9 +124,36 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                     </tbody>
                 </table>
             </div>
+
+            <div class="d-flex justify-content-center mt-4">
+                <div class="btn-group" role="group">
+
+                    <?php if ($page > 1): ?>
+                        <a class="btn btn-outline-primary" href="?page=<?= $page - 1 ?>">« Previous</a>
+                    <?php endif; ?>
+
+                    <?php
+                        $range = 2;
+                        $start = max(1, $page - $range);
+                        $end = min($totalPages, $page + $range);
+
+                        for ($i = $start; $i <= $end; $i++):
+                    ?>
+                        <a class="btn <?= ($page == $i) ? 'btn-primary' : 'btn-outline-primary' ?>" href="?page=<?= $i ?>">
+                            <?= $i ?>
+                        </a>
+                    <?php endfor; ?>
+
+                    <?php if ($page < $totalPages): ?>
+                        <a class="btn btn-outline-primary" href="?page=<?= $page + 1 ?>">Next »</a>
+                    <?php endif; ?>
+
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
 
 <div class="modal fade" id="addStaffModal" tabindex="-1" aria-labelledby="addStaffModalLabel" aria-hidden="true">
     <div class="modal-dialog">

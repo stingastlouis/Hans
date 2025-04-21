@@ -1,11 +1,17 @@
-<?php include "includes/header.php" ?> 
+<?php include "includes/header.php"; ?>
+
 <div class="container py-4">
     <h1 class="text-center mb-4">Product Page</h1>
     <div class="row">
+
     <?php
     include './configs/db.php';
 
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $offset = ($page - 1) * $limit; 
+
     try {
+
         $stmt = $conn->prepare("
             SELECT p.*, 
                    ps.StatusId, 
@@ -19,9 +25,12 @@
                 WHERE ps_inner.ProductId = p.Id
             )
             AND LOWER(s.Name) = 'active'
-            ORDER BY p.DateCreated DESC;
+            ORDER BY p.DateCreated DESC
+            LIMIT :limit OFFSET :offset
         ");
 
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
         $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -72,6 +81,28 @@
                     </div>';
             }
             echo '</div>';
+
+            $stmtCount = $conn->prepare("
+                SELECT COUNT(*) FROM Products p
+                LEFT JOIN ProductStatus ps ON p.Id = ps.ProductId
+                LEFT JOIN Status s ON ps.StatusId = s.Id
+                WHERE ps.Id = (
+                    SELECT MAX(ps_inner.Id) 
+                    FROM ProductStatus ps_inner 
+                    WHERE ps_inner.ProductId = p.Id
+                )
+                AND LOWER(s.Name) = 'active'
+            ");
+            $stmtCount->execute();
+            $totalProducts = $stmtCount->fetchColumn();
+            $totalPages = ceil($totalProducts / $limit);
+
+            echo '<nav aria-label="Page navigation"><ul class="pagination justify-content-center">';
+            for ($i = 1; $i <= $totalPages; $i++) {
+                echo '<li class="page-item ' . ($i == $page ? 'active' : '') . '"><a class="page-link" href="?page=' . $i . '">' . $i . '</a></li>';
+            }
+            echo '</ul></nav>';
+
         } else {
             echo '<p>No products available.</p>';
         }
@@ -82,4 +113,4 @@
     </div>
 </div>
 
-<?php include "includes/footer.php" ?> 
+<?php include "includes/footer.php"; ?>

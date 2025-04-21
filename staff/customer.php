@@ -10,7 +10,18 @@ if (!in_array($role, ALLOWED_EDITOR_ROLES)){
 
 include '../configs/db.php';
 include 'includes/header.php'; 
+
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
+
+$itemsPerPage = 10;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$page = max($page, 1);
+$offset = ($page - 1) * $itemsPerPage;
+
+$totalStmt = $conn->query("SELECT COUNT(*) FROM Customer");
+$totalCustomers = $totalStmt->fetchColumn();
+$totalPages = ceil($totalCustomers / $itemsPerPage);
+
 $stmt = $conn->prepare("
     SELECT c.*, 
            s.Name AS LatestStatus
@@ -22,10 +33,12 @@ $stmt = $conn->prepare("
         GROUP BY cs.UserId
     ) latest_cs ON c.Id = latest_cs.UserId
     LEFT JOIN CustomerStatus cs ON latest_cs.LatestStatusId = cs.Id
-    LEFT JOIN Status s ON cs.StatusId = s.Id;
+    LEFT JOIN Status s ON cs.StatusId = s.Id
+    ORDER BY c.Id DESC
+    LIMIT :limit OFFSET :offset
 ");
-
-
+$stmt->bindValue(':limit', $itemsPerPage, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $customerMembers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -36,7 +49,6 @@ $roles = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 $stmt3 = $conn->prepare("SELECT * FROM Status");
 $stmt3->execute();
 $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
 
 <div class="container-fluid">
@@ -104,9 +116,33 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                     </tbody>
                 </table>
             </div>
+
+            <nav>
+                <ul class="pagination justify-content-center mt-3">
+                    <?php if ($page > 1): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<?= $page - 1 ?>&success=<?= $success ?>">Previous</a>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <li class="page-item <?= $i == $page ? 'active' : '' ?>">
+                            <a class="page-link" href="?page=<?= $i ?>&success=<?= $success ?>"><?= $i ?></a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <?php if ($page < $totalPages): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<?= $page + 1 ?>&success=<?= $success ?>">Next</a>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+            </nav>
+
         </div>
     </div>
 </div>
+
 
 <div class="modal fade" id="editCustomerModal" tabindex="-1" aria-labelledby="editCustomerModalLabel" aria-hidden="true">
     <div class="modal-dialog">

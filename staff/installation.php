@@ -1,4 +1,4 @@
-<?php 
+<?php  
 
 include '../sessionManagement.php';
 include '../configs/constants.php';
@@ -13,6 +13,11 @@ include 'includes/header.php';
 include '../configs/db.php';
 
 $userRole = $_SESSION['role'];
+$limit = 1;
+
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
         $deleteId = $_POST['delete_id'];
@@ -20,8 +25,7 @@ try {
         $stmt->execute([$deleteId]);
     }
 
-
-$stmt = $conn->query("
+    $query = "
 SELECT 
     i.Id AS InstallationId,
     s.Fullname AS StaffName,
@@ -50,11 +54,19 @@ LEFT JOIN (
     INNER JOIN Status st ON ists.StatusId = st.Id
 ) AS status_info ON i.Id = status_info.InstallationId
 ORDER BY 
-    i.InstallationDate DESC;
+    i.InstallationDate DESC
+LIMIT $limit OFFSET $offset
+";
 
-");
+$stmt = $conn->prepare($query);
+$stmt->execute();
+$installations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $installations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+    $stmtTotal = $conn->query("SELECT COUNT(*) FROM Installation");
+    $totalRecords = $stmtTotal->fetchColumn();
+    $totalPages = ceil($totalRecords / $limit);
 
 } catch (PDOException $e) {
     die("Database error: " . $e->getMessage());
@@ -89,7 +101,7 @@ $stmt3->closeCursor();
         <tbody>
             <?php foreach ($installations as $row): ?>
                 <tr>
-                <td><?= htmlspecialchars($row['StaffName']) ?></td>
+                    <td><?= htmlspecialchars($row['StaffName']) ?></td>
                     <td><?= htmlspecialchars($row['OrderId']) ?></td>
                     <td data-latlng="<?= htmlspecialchars($row['Location']) ?>" class="address-cell">Loading...</td>
                     <td><?= htmlspecialchars($row['InstallationDate']) ?></td>
@@ -139,7 +151,36 @@ $stmt3->closeCursor();
             <?php endforeach; ?>
         </tbody>
     </table>
+
+    <nav>
+  <ul class="pagination justify-content-center">
+    <?php if ($page > 1): ?>
+      <li class="page-item">
+        <a class="page-link" href="?page=<?= $page - 1 ?>">Previous</a>
+      </li>
+    <?php endif; ?>
+
+    <?php
+      $start = max(1, $page - 2);
+      $end = min($totalPages, $page + 2);
+      for ($i = $start; $i <= $end; $i++):
+    ?>
+      <li class="page-item <?= $i == $page ? 'active' : '' ?>">
+        <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+      </li>
+    <?php endfor; ?>
+
+    <?php if ($page < $totalPages): ?>
+      <li class="page-item">
+        <a class="page-link" href="?page=<?= $page + 1 ?>">Next</a>
+      </li>
+    <?php endif; ?>
+  </ul>
+</nav>
+
+
 </div>
+
 
 
 

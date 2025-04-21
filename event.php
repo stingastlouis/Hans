@@ -1,11 +1,30 @@
-<?php include "includes/header.php"; ?> 
+<?php include "includes/header.php"; ?>  
+
 <div class="container py-4">
     <h1 class="text-center mb-4">Event Page</h1>
     <div class="row">
     <?php
     include './configs/db.php';
 
+    $limit = 10; 
+    $page = isset($_GET['page']) && is_numeric($_GET['page']) ? intval($_GET['page']) : 1;
+    $offset = ($page - 1) * $limit;
+
     try {
+        $totalStmt = $conn->prepare("SELECT COUNT(*) 
+                                     FROM Event e
+                                     LEFT JOIN EventStatus es ON e.Id = es.EventId
+                                     LEFT JOIN Status s ON es.StatusId = s.Id
+                                     WHERE es.Id = (
+                                         SELECT MAX(es_inner.Id) 
+                                         FROM EventStatus es_inner 
+                                         WHERE es_inner.EventId = e.Id
+                                     )
+                                     AND LOWER(s.Name) = 'active'");
+        $totalStmt->execute();
+        $totalEvents = $totalStmt->fetchColumn();
+        $totalPages = ceil($totalEvents / $limit);
+
         $stmt = $conn->prepare("SELECT e.*, 
                                        es.StatusId, 
                                        s.Name AS StatusName
@@ -18,7 +37,10 @@
                                     WHERE es_inner.EventId = e.Id
                                 )
                                 AND LOWER(s.Name) = 'active'
-                                ORDER BY e.DateCreated DESC;");
+                                ORDER BY e.DateCreated DESC
+                                LIMIT :limit OFFSET :offset");
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
         $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -58,7 +80,7 @@
                     echo '<p class="card-text"><em>No associated products</em></p>';
                 }
 
-                if (!in_array($role, ALLOWED_ROLES)) {
+                if (!isset($role) || !in_array($role, ['admin'])) {
                     echo '
                         <div class="mt-auto">
                             <button class="btn btn-primary add-to-event-cart" 
@@ -81,14 +103,37 @@
             echo '<p>No events available.</p>';
         }
     } catch (PDOException $e) {
-        echo 'Error: ' . $e->getMessage();
+        echo '<div class="alert alert-danger">Error: ' . $e->getMessage() . '</div>';
     }
     ?>
     </div>
+
+    <?php if ($totalPages > 1): ?>
+    <nav>
+        <ul class="pagination justify-content-center mt-4">
+            <?php if ($page > 1): ?>
+                <li class="page-item">
+                    <a class="page-link" href="?page=<?= $page - 1 ?>">Previous</a>
+                </li>
+            <?php endif; ?>
+
+            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                    <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
+                </li>
+            <?php endfor; ?>
+
+            <?php if ($page < $totalPages): ?>
+                <li class="page-item">
+                    <a class="page-link" href="?page=<?= $page + 1 ?>">Next</a>
+                </li>
+            <?php endif; ?>
+        </ul>
+    </nav>
+    <?php endif; ?>
 </div>
 
 <?php include "includes/footer.php"; ?> 
-
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
