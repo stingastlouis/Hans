@@ -12,7 +12,7 @@ if (!in_array($role, ALLOWED_EDITOR_ROLES)){
 include 'includes/header.php';
 include '../configs/db.php';
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
-
+$staffId = $_SESSION["staff_id"];
 $limit = 10; 
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
@@ -117,6 +117,7 @@ try {
                                     <button class="btn btn-danger btn-sm btn-del" data-bs-toggle="modal" data-bs-target="#deleteProductModal" data-id="<?= $product['Id'] ?>">Delete</button>
                                     <form method="POST" action="status/add_productStatus.php" style="display: inline;">
                                         <input type="hidden" name="product_id" value="<?= $product['Id'] ?>">
+                                        <input type="hidden" name="staff_id" value="<?= $staffId ?>">
                                         <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
                                             <option value="" disabled selected>Change Status</option>
                                             <?php foreach ($statuses as $status): ?>

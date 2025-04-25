@@ -5,6 +5,7 @@ include '../../configs/timezoneConfigs.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $statusId = trim($_POST['status_id']);
     $installationId = trim($_POST['installation_id']);
+    $staffId = trim($_POST['staff_id']);
     $date = date('Y-m-d H:i:s');
     if (empty($statusId) || empty($installationId)) {
         echo "<h1>Field missing</h1></center>";
@@ -13,9 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $date = date('Y-m-d H:i:s');
-        $stmt = $conn->prepare("INSERT INTO installationstatus (installationid, statusid, datecreated) VALUES (:installationid, :statusid, :datecreated)");
+        $stmt = $conn->prepare("INSERT INTO installationstatus (installationid, statusid, staffid, datecreated) VALUES (:installationid, :statusid, :staffid, :datecreated)");
         $stmt->bindParam(':installationid', $installationId);
         $stmt->bindParam(':statusid', $statusId);
+        $stmt->bindParam(':staffid', $staffId);
         $stmt->bindParam(':datecreated', $date);
 
         if ($stmt->execute()) {

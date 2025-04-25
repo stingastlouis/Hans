@@ -13,7 +13,7 @@ include 'includes/header.php';
 include '../configs/db.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
-
+$modifyBy = $_SESSION["staff_id"];
 $limit = 1;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
@@ -110,6 +110,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                                             data-id="<?= $staff['Id'] ?>">Delete</button>
                                         <form method="POST" action="status/add_staffStatus.php" style="display: inline; width:80px;">
                                             <input type="hidden" name="staff_id" value="<?= $staff['Id'] ?>">
+                                            <input type="hidden" name="modify_by" value="<?= $modifyBy ?>">
                                             <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
                                                 <option value="" disabled selected>Change Status</option>
                                                 <?php foreach ($statuses as $status): ?>

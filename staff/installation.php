@@ -4,6 +4,7 @@ include '../sessionManagement.php';
 include '../configs/constants.php';
 
 $role = $_SESSION['role'];
+$staffId = $_SESSION["staff_id"];
 if (!in_array($role, ALLOWED_ROLES)){
     header("Location: ../unauthorised.php");
     exit;
@@ -127,6 +128,7 @@ $stmt3->closeCursor();
                             <input type="hidden" name="installation_id" value="<?= $row['InstallationId'] ?>">
                             <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
                                 <option value="" disabled selected>Change Status</option>
+                                <input type="hidden" name="staff_id" value="<?= $staffId ?>">
                                 <?php foreach ($statuses as $status): ?>
                                     <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
                                 <?php endforeach; ?>

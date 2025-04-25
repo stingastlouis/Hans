@@ -17,6 +17,7 @@ $itemsPerPage = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $page = max($page, 1);
 $offset = ($page - 1) * $itemsPerPage;
+$staffId = $_SESSION["staff_id"];
 
 $totalStmt = $conn->query("SELECT COUNT(*) FROM Customer");
 $totalCustomers = $totalStmt->fetchColumn();
@@ -102,6 +103,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                                         data-id="<?= $customer['Id'] ?>">Delete</button>
                                     <form method="POST" action="status/add_customerStatus.php" style="display: inline; width:80px;">
                                         <input type="hidden" name="customer_id" value="<?= $customer['Id'] ?>">
+                                        <input type="hidden" name="staff_id" value="<?= $staffId ?>">
                                         <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
                                             <option value="" disabled selected>Change Status</option>
                                             <?php foreach ($statuses as $status): ?>

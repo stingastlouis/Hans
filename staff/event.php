@@ -12,7 +12,7 @@ include 'includes/header.php';
 include '../configs/db.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
-
+$staffId = $_SESSION["staff_id"];
 
 $limit = 10;
 $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
@@ -109,6 +109,7 @@ $prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
                                     <button style="font-size: 12px;" class="btn btn-danger btn-del" data-bs-toggle="modal" data-bs-target="#deleteEventModal" data-id="<?= $event['Id'] ?>">Delete</button>
                                     <form method="POST" action="status/add_eventStatus.php" style="display: inline;">
                                         <input type="hidden" name="event_id" value="<?= $event['Id'] ?>">
+                                        <input type="hidden" name="staff_id" value="<?= $staffId ?>">
                                         <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
                                             <option value="" disabled selected>Change Status</option>
                                             <?php foreach ($statuses as $status): ?>
