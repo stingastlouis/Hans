@@ -8,7 +8,7 @@ $request = $_SERVER["REQUEST_URI"];
 $subDomain = "/hans";
 $activeClassName = 'active';
 $isLoggedIn = isset($_SESSION['customerId']);
-$role = $_SESSION['role'];
+$role = $_SESSION['role'] ?? "";
 ?>
 
 <!DOCTYPE html>

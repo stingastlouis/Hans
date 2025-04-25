@@ -54,9 +54,11 @@ CREATE TABLE `StaffStatus` (
     Id INT AUTO_INCREMENT PRIMARY KEY,
     StaffId INT,
     StatusId INT,
+    ModifyBy INT,
     DateCreated DATETIME NOT NULL,
     FOREIGN KEY (StaffId) REFERENCES Staff(Id) ON DELETE CASCADE,
-    FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE
+    FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE,
+    FOREIGN KEY (ModifyBy) REFERENCES Staff(Id) ON DELETE CASCADE
 );
 
 -- Create table for Categories
@@ -96,9 +98,11 @@ CREATE TABLE `OrderStatus` (
     Id INT AUTO_INCREMENT PRIMARY KEY,
     OrderId INT,
     StatusId INT,
+    StaffId INT,
     DateCreated DATETIME NOT NULL,
     FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE,
-    FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE
+    FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE,
+    FOREIGN KEY (StaffId) REFERENCES Staff(Id) ON DELETE CASCADE
 );
 
 CREATE TABLE `OrderItem` (
@@ -154,9 +158,11 @@ CREATE TABLE `EventStatus` (
     Id INT AUTO_INCREMENT PRIMARY KEY,
     EventId INT,
     StatusId INT,
+    StaffId INT,
     DateCreated DATETIME NOT NULL,
     FOREIGN KEY (EventId) REFERENCES Event(Id) ON DELETE CASCADE,
-    FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE
+    FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE,
+    FOREIGN KEY (StaffId) REFERENCES Staff(Id) ON DELETE CASCADE
 );
 
 -- Create table for CustomerStatus
@@ -164,8 +170,10 @@ CREATE TABLE `CustomerStatus` (
     Id INT AUTO_INCREMENT PRIMARY KEY,
     UserId INT,
     StatusId INT,
+    StaffId INT,
     DateCreated DATETIME NOT NULL,
-    FOREIGN KEY (UserId) REFERENCES Customer(Id) ON DELETE CASCADE
+    FOREIGN KEY (UserId) REFERENCES Customer(Id) ON DELETE CASCADE,
+    FOREIGN KEY (StaffId) REFERENCES Staff(Id) ON DELETE CASCADE
 );
 
 -- Create table for ProductStatus
@@ -174,7 +182,9 @@ CREATE TABLE `ProductStatus` (
     ProductId INT,
     StatusId INT,
     DateCreated DATETIME NOT NULL,
-    FOREIGN KEY (ProductId) REFERENCES Products(Id) ON DELETE CASCADE
+    StaffId INT,
+    FOREIGN KEY (ProductId) REFERENCES Products(Id) ON DELETE CASCADE,
+    FOREIGN KEY (StaffId) REFERENCES Staff(Id) ON DELETE CASCADE
 );
 
 -- Create table for Installation
@@ -194,19 +204,31 @@ CREATE TABLE `InstallationStatus` (
     Id INT AUTO_INCREMENT PRIMARY KEY,
     InstallationId INT,
     StatusId INT,
+    StaffId INT,
     DateCreated DATETIME NOT NULL,
-    FOREIGN KEY (InstallationId) REFERENCES Installation(Id) ON DELETE CASCADE
+    FOREIGN KEY (InstallationId) REFERENCES Installation(Id) ON DELETE CASCADE,
+    FOREIGN KEY (StaffId) REFERENCES Staff(Id) ON DELETE CASCADE
 );
 
 
+///Add Statuses
+INSERT INTO `status`(`Name`, `Description`, `DateCreated`) VALUES ('ACTIVE','The task or process is currently in progress and being worked on.',NOW());
+INSERT INTO `status`(`Name`, `Description`, `DateCreated`) VALUES ('INACTIVE','The task or process is not currently being worked on or is paused.',NOW());
+INSERT INTO `status`(`Name`, `Description`, `DateCreated`) VALUES ('IN PROGRESS','The task or process has started and is being actively worked on but is not yet completed.',NOW());
 
+//Add Roles
 INSERT INTO role (Name) VALUES('Installer');
 INSERT INTO role (Name) VALUES('Admin');
 INSERT INTO role (Name) VALUES('Viewer');
 
-INSERT INTO staff (Fullname, Email, Phone, PasswordHash, RoleId) VALUES ('Hans','admin@gmail.com','5912','$2y$10$cxQD.l1tX5he2WgXrg0mOu1GkraPDjnzF/Phfn7SCceV0n6RW8LdG', (SELECT Id FROM Role WHERE Name = 'Admin'))
-ADMIN LOGIN: admin@gmail.com  4U7N!i3V#tGV
 
+//Add First Admin
+INSERT INTO staff (Fullname, Email, Phone, PasswordHash, RoleId) VALUES ('Hans','admin@gmail.com','5912','$2b$12$wxKWqCNdt6tvvgsXw/jtNe2ICYdbO4M9E7wUAywawnRGWN2J1mCQu', (SELECT Id FROM Role WHERE Name = 'Admin'))
+ADMIN LOGIN: admin@gmail.com  adminHans
+
+
+//Add Admin Status
+INSERT INTO `staffstatus` ( `StaffId`, `StatusId`, `DateCreated`) VALUES ((SELECT Id FROM Staff WHERE Phone = '5912'),(SELECT Id FROM Status WHERE Name = 'ACTIVE'), '2025-04-25 21:19:04.000000')
 
 Installer: 
 pascalstlouis34@gmail.com
