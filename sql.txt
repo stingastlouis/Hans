@@ -215,11 +215,14 @@ CREATE TABLE `InstallationStatus` (
 INSERT INTO `status`(`Name`, `Description`, `DateCreated`) VALUES ('ACTIVE','The task or process is currently in progress and being worked on.',NOW());
 INSERT INTO `status`(`Name`, `Description`, `DateCreated`) VALUES ('INACTIVE','The task or process is not currently being worked on or is paused.',NOW());
 INSERT INTO `status`(`Name`, `Description`, `DateCreated`) VALUES ('IN PROGRESS','The task or process has started and is being actively worked on but is not yet completed.',NOW());
-
+INSERT INTO `status`(`Name`, `Description`, `DateCreated`) VALUES ('COMPLETED','The task or process is completed',NOW());
 //Add Roles
 INSERT INTO role (Name) VALUES('Installer');
 INSERT INTO role (Name) VALUES('Admin');
 INSERT INTO role (Name) VALUES('Viewer');
+
+//Add Payment PaymentMethod
+INSERT INTO `paymentmethod` (`Name`, `Description`, `DateCreated`) VALUES ('Paypal', 'Online payment', '2025-04-26 00:42:49.000000')
 
 
 //Add First Admin

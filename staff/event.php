@@ -147,6 +147,7 @@ $prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
             </div>
             <div class="modal-body">
                 <form action="event/add_event.php" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="staff_id" value="<?= $staffId ?>">
                     <div class="mb-3">
                         <label for="eventName" class="form-label">Event Name</label>
                         <input type="text" class="form-control" id="eventName" name="event_name" required>

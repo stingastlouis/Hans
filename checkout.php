@@ -189,6 +189,7 @@ $grandTotal = $totalAmount + $tax;
             return actions.order.capture().then(function (details) {
                 const lat = document.getElementById('lat').value;
                 const lng = document.getElementById('lng').value;
+                const latlng = lat && lng ? `${lat},${lng}` : undefined;
 
                 const payload = {
                     paymentMethodId: <?= $paymentMethodId ?>,

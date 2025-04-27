@@ -14,7 +14,7 @@ include '../configs/db.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
 $modifyBy = $_SESSION["staff_id"];
-$limit = 1;
+$limit = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
@@ -165,6 +165,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
             </div>
             <div class="modal-body">
                 <form action="staff/add_staff.php" method="POST">
+                <input type="hidden" name="modify_by" value="<?= $modifyBy ?>">
                     <div class="mb-3">
                         <label for="staffFullname" class="form-label">Full Name</label>
                         <input type="text" class="form-control" id="staffFullname" name="staff_fullname" required>

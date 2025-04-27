@@ -100,6 +100,28 @@ if ($stmt->execute()) {
         }
     }
 
+    $statusQuery = "SELECT Id FROM Status WHERE Name = 'IN PROGRESS' LIMIT 1";
+    $stmtStatus = $conn->prepare($statusQuery);
+    $stmtStatus->execute();
+    $status = $stmtStatus->fetch(PDO::FETCH_ASSOC);
+
+    // Check if the status was found
+    if ($status) {
+        $statusId = $status['Id'];  // Get the StatusId
+
+        // Now, insert into OrderStatus using the fetched StatusId
+        $statusOrder = "INSERT INTO `OrderStatus` (OrderId, StatusId, DateCreated) 
+                        VALUES (:orderId, :statusId, NOW())";
+        $stmtStatusOrder = $conn->prepare($statusOrder);
+        $stmtStatusOrder->bindValue(':orderId', $orderId, PDO::PARAM_INT);
+        $stmtStatusOrder->bindValue(':statusId', $statusId, PDO::PARAM_INT);  // Bind the actual StatusId
+        $stmtStatusOrder->execute();
+    } else {
+        // Handle case where the 'IN PROGRESS' status is not found
+        echo "Status 'IN PROGRESS' not found.";
+    }
+        
+
     $query = "INSERT INTO `Payment` (CustomerId, OrderId, PaymentMethodId, TransactionId, Amount, DateCreated) 
               VALUES (:customerId, :orderId, :paymentMethodId, :transactionId, :amount, NOW())";
     $stmt = $conn->prepare($query);
@@ -130,6 +152,26 @@ if ($stmt->execute()) {
         $stmt->bindValue(':installationId', $installationId, PDO::PARAM_INT);
         $stmt->bindValue(':statusId', $statusIdQuery, PDO::PARAM_INT);
         $stmt->execute();
+
+        
+    }
+    
+    $statusQuery = "SELECT Id FROM Status WHERE Name = 'COMPLETED' LIMIT 1";
+    $stmtStatus = $conn->prepare($statusQuery);
+    $stmtStatus->execute();
+    $statusComplete = $stmtStatus->fetch(PDO::FETCH_ASSOC);
+
+    if ($statusComplete) {
+        $statusId = $statusComplete['Id'];
+
+        $statusOrderQuery = "INSERT INTO `OrderStatus` (OrderId, StatusId, DateCreated) 
+                     VALUES (:orderId, :statusId, NOW())";
+        $stmtInsertStatus = $conn->prepare($statusOrderQuery);
+        $stmtInsertStatus->bindValue(':orderId', $orderId, PDO::PARAM_INT);
+        $stmtInsertStatus->bindValue(':statusId', $statusId, PDO::PARAM_INT);
+        $stmtInsertStatus->execute();
+    } else {
+        echo "Status 'COMPLETED' not found.";
     }
 
     echo json_encode(['success' => true, 'orderId' => $orderId]);

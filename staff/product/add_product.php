@@ -7,6 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $categoryId = $_POST['product_category_id'];
     $description = $_POST['product_description'];
     $price = $_POST['product_price'];
+    $staffId = $_POST["staff_id"];
     $discount_price = $_POST['product_discount'];
     $stock = $_POST['product_stock'];
     
@@ -35,9 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                         if ($statusRow) {
                             $statusId = $statusRow['Id'];
-                            $statusInsertStmt = $conn->prepare("INSERT INTO productstatus (productid, statusid, datecreated) 
-                                                                VALUES (?, ?, NOW())");
-                            $statusInsertStmt->execute([$productId, $statusId]);
+                            $statusInsertStmt = $conn->prepare("INSERT INTO productstatus (productid, statusid, staffid, datecreated) 
+                                                                VALUES (?, ?, ?, NOW())");
+                            $statusInsertStmt->execute([$productId, $statusId, $staffId]);
 
                             $conn->commit();
 

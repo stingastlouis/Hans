@@ -9,7 +9,7 @@
     $limit = 10; 
     $page = isset($_GET['page']) && is_numeric($_GET['page']) ? intval($_GET['page']) : 1;
     $offset = ($page - 1) * $limit;
-
+    $isAdmin = isset($_SESSION['staff_id']);
     try {
         $totalStmt = $conn->prepare("SELECT COUNT(*) 
                                      FROM Event e
@@ -80,7 +80,7 @@
                     echo '<p class="card-text"><em>No associated products</em></p>';
                 }
 
-                if (!isset($role) || !in_array($role, ['admin'])) {
+                if (!$isAdmin) {
                     echo '
                         <div class="mt-auto">
                             <button class="btn btn-primary add-to-event-cart" 

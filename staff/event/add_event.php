@@ -5,6 +5,7 @@ include '../../configs/timezoneConfigs.php';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['event_name'];
     $description = $_POST['event_description'];
+    $staffId = $_POST["staff_id"];
     $price = $_POST['event_price'];
     $discount_price = $_POST['event_discount_price'];
 
@@ -33,9 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                         if ($statusRow) {
                             $statusId = $statusRow['Id'];
-                            $statusInsertStmt = $conn->prepare("INSERT INTO eventstatus (eventid, statusid, datecreated) 
-                                                                VALUES (?, ?, NOW())");
-                            $statusInsertStmt->execute([$eventId, $statusId]);
+                            $statusInsertStmt = $conn->prepare("INSERT INTO eventstatus (eventid, statusid, staffid, datecreated) 
+                                                                VALUES (?, ?, ?, NOW())");
+                            $statusInsertStmt->execute([$eventId, $statusId, $staffId]);
 
                             if (isset($_POST['product_ids']) && !empty($_POST['product_ids'])) {
                                 $productIds = $_POST['product_ids'];

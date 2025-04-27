@@ -1,4 +1,4 @@
-<?php include "includes/header.php"; include './configs/db.php'; ?>
+<?php include "includes/header.php"; include './configs/db.php'; $isAdmin = isset($_SESSION['staff_id']); ?>
 
 <div class="container py-4">
     <h1 class="text-center mb-4">Product Page</h1>
@@ -134,7 +134,26 @@
                                 </p>
                                 <p class="card-text">
                                     <strong>Stock:</strong> ' . intval($product['Stock']) . '
-                                </p>
+                                </p>';
+
+                // Only show the Add to Cart section if the user is not an admin
+                if (!$isAdmin) {
+                    echo ' 
+                        <div class="d-flex align-items-center mt-auto">
+                            <input type="number" class="form-control me-2 quantity-input" min="1" max="' . intval($product['Stock']) . '" value="1" style="width: 70px;" ' . ($isOutOfStock ? 'disabled' : '') . '>
+                            <button class="btn btn-primary add-to-cart" 
+                                data-id="' . htmlspecialchars($product['Id']) . '" 
+                                data-name="' . htmlspecialchars($product['Name']) . '" 
+                                data-type="product" 
+                                data-price="' . number_format($hasDiscount ? $product['DiscountPrice'] : $product['Price'], 2) . '" 
+                                data-stock="' . intval($product['Stock']) . '" 
+                                ' . ($isOutOfStock ? 'disabled' : '') . '>
+                                Add to Cart
+                            </button>
+                        </div>';
+                }
+
+                echo '
                             </div>
                         </div>
                     </div>';

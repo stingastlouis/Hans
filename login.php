@@ -37,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['customerId'] = $user['Id'];
                     $_SESSION['customer_fullname'] = $user['fullname'];
                     
-                    session_regenerate_id(true);
                     
                     header("Location: product.php");
                     exit;

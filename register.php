@@ -28,9 +28,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $success = $stmt->execute([$fullname, $email, $address, $phone, $password_hashed]);
                 
                 if ($success) {
-                    echo "<div class='alert alert-success'>Registration successful!</div>";
-                    header("Location: login.php");
-                    exit;
+                    $customerId = $conn->lastInsertId(); // Get the customer ID
+        
+                    // Retrieve the ACTIVE status ID
+                    $statusStmt = $conn->prepare("SELECT Id FROM Status WHERE Name = 'ACTIVE' LIMIT 1");
+                    $statusStmt->execute();
+                    $statusRow = $statusStmt->fetch(PDO::FETCH_ASSOC);
+            
+                    // Check if the ACTIVE status exists
+                    if ($statusRow) {
+                        $statusId = $statusRow['Id'];
+            
+                        // Insert the customer status record
+                        $statusInsertStmt = $conn->prepare("INSERT INTO customerstatus (userid, statusid, datecreated) 
+                                                            VALUES (?, ?, NOW())");
+                        $statusInsertStmt->execute([$customerId, $statusId]);
+            
+                        // Redirect on success
+                        echo "<div class='alert alert-success'>Registration successful!</div>";
+                        header("Location: login.php");
+                        exit;
+                    } else {
+                        throw new Exception("Error: 'ACTIVE' status not found.");
+                    }
                 } else {
                     echo "<div class='alert alert-danger'>Error during registration.</div>";
                 }

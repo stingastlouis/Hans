@@ -6,6 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $fullname = $_POST['staff_fullname'];
     $email = $_POST['staff_email'];
     $phone = $_POST['staff_phone'];
+    $modifyby = $_POST["modify_by"];
     $roleId = $_POST['staff_role_id'];
     $password = $_POST['staff_password'];
 
@@ -47,9 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             if ($statusRow) {
                 $statusId = $statusRow['Id'];
-                $statusInsertStmt = $conn->prepare("INSERT INTO staffstatus (staffid, statusid, datecreated) 
-                                                    VALUES (?, ?, NOW())");
-                $statusInsertStmt->execute([$staffId, $statusId]);
+                $statusInsertStmt = $conn->prepare("INSERT INTO staffstatus (staffid, statusid, modifyby, datecreated) 
+                                                    VALUES (?, ?, ?,  NOW())");
+                $statusInsertStmt->execute([$staffId, $statusId, $modifyby]);
 
                 $conn->commit();
 

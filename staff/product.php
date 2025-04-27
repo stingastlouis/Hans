@@ -168,6 +168,7 @@ try {
             </div>
             <div class="modal-body">
                 <form action="product/add_product.php" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="staff_id" value="<?= $staffId ?>">
                     <div class="mb-3">
                         <label for="productName" class="form-label">Product Name</label>
                         <input type="text" class="form-control" id="productName" name="product_name" required>
