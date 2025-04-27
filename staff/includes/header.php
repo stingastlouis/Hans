@@ -64,6 +64,9 @@ if (!isset($_SESSION['staff_id'])) {
             <a class="nav-link" href="staff.php"><span>Staff</span></a>
         </li>
         <li class="nav-item custom-nav-item">
+            <a class="nav-link" href="order.php"><span>Order</span></a>
+        </li>
+        <li class="nav-item custom-nav-item">
             <a class="nav-link" href="customer.php"><span>Customer</span></a>
         </li>
         <?php endif; ?>

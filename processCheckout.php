@@ -18,10 +18,11 @@ $installationRequired = $data['installationRequired'];
 $latLng = $data['latLng'];
 $_SESSION['orderSuccess'] = true;
 
-$taxRate = 0.15;  
+$taxRate = 0.15;
 $tax = $amount * $taxRate;
 $totalAmount = $amount + $tax;
 
+// Insert into Order
 $query = "INSERT INTO `Order` (CustomerId, PaymentMethodId, Tax, TotalAmount, DateCreated) 
           VALUES (:customerId, :paymentMethodId, :tax, :totalAmount, NOW())";
 $stmt = $conn->prepare($query);
@@ -31,8 +32,9 @@ $stmt->bindValue(':tax', $tax, PDO::PARAM_STR);
 $stmt->bindValue(':totalAmount', $totalAmount, PDO::PARAM_STR);
 
 if ($stmt->execute()) {
-    $orderId = $conn->lastInsertId(); 
-    
+    $orderId = $conn->lastInsertId();
+
+    // Insert each cart item
     foreach ($cartItems as $item) {
         $itemType = $item['type'];
         $productId = $item['id'];
@@ -51,6 +53,7 @@ if ($stmt->execute()) {
         $stmt->bindValue(':type', $itemType, PDO::PARAM_STR);
         $stmt->execute();
 
+        // Handle stock updates
         if ($itemType === 'product') {
             $checkStockQuery = "SELECT Stock FROM `Products` WHERE Id = :productId";
             $checkStockStmt = $conn->prepare($checkStockQuery);
@@ -89,7 +92,7 @@ if ($stmt->execute()) {
                 if ($productStock >= ($eventProductQuantity * $quantity)) {
                     $updateStockQuery = "UPDATE `Products` SET Stock = Stock - :quantity WHERE Id = :productId";
                     $updateStockStmt = $conn->prepare($updateStockQuery);
-                    $updateStockStmt->bindValue(':quantity', $eventProductQuantity * $quantity, PDO::PARAM_INT); // Multiply by event quantity
+                    $updateStockStmt->bindValue(':quantity', $eventProductQuantity * $quantity, PDO::PARAM_INT);
                     $updateStockStmt->bindValue(':productId', $eventProductId, PDO::PARAM_INT);
                     $updateStockStmt->execute();
                 } else {
@@ -100,28 +103,7 @@ if ($stmt->execute()) {
         }
     }
 
-    $statusQuery = "SELECT Id FROM Status WHERE Name = 'IN PROGRESS' LIMIT 1";
-    $stmtStatus = $conn->prepare($statusQuery);
-    $stmtStatus->execute();
-    $status = $stmtStatus->fetch(PDO::FETCH_ASSOC);
-
-    // Check if the status was found
-    if ($status) {
-        $statusId = $status['Id'];  // Get the StatusId
-
-        // Now, insert into OrderStatus using the fetched StatusId
-        $statusOrder = "INSERT INTO `OrderStatus` (OrderId, StatusId, DateCreated) 
-                        VALUES (:orderId, :statusId, NOW())";
-        $stmtStatusOrder = $conn->prepare($statusOrder);
-        $stmtStatusOrder->bindValue(':orderId', $orderId, PDO::PARAM_INT);
-        $stmtStatusOrder->bindValue(':statusId', $statusId, PDO::PARAM_INT);  // Bind the actual StatusId
-        $stmtStatusOrder->execute();
-    } else {
-        // Handle case where the 'IN PROGRESS' status is not found
-        echo "Status 'IN PROGRESS' not found.";
-    }
-        
-
+    // Insert into Payment
     $query = "INSERT INTO `Payment` (CustomerId, OrderId, PaymentMethodId, TransactionId, Amount, DateCreated) 
               VALUES (:customerId, :orderId, :paymentMethodId, :transactionId, :amount, NOW())";
     $stmt = $conn->prepare($query);
@@ -132,52 +114,53 @@ if ($stmt->execute()) {
     $stmt->bindValue(':amount', $amount, PDO::PARAM_STR);
     $stmt->execute();
 
+    // Handle installation if required
     if ($installationRequired) {
         $installationQuery = "INSERT INTO `Installation` (OrderId, `Location`, DateCreated) 
-                              VALUES (:orderId, :Location, NOW())";
+                              VALUES (:orderId, :location, NOW())";
         $stmt = $conn->prepare($installationQuery);
         $stmt->bindValue(':orderId', $orderId, PDO::PARAM_INT);
-        $stmt->bindValue(':Location', $latLng, PDO::PARAM_STR);
+        $stmt->bindValue(':location', $latLng, PDO::PARAM_STR);
         $stmt->execute();
         $installationId = $conn->lastInsertId();
 
-        $statusIdQuery = "SELECT Id FROM Status WHERE Name = 'IN PROGRESS' LIMIT 1";
-        $stmt = $conn->prepare($statusIdQuery);
-        $stmt->execute();
+        // Insert IN PROGRESS status for installation
+        $statusQuery = "SELECT Id FROM Status WHERE Name = 'IN PROGRESS' LIMIT 1";
+        $stmtStatus = $conn->prepare($statusQuery);
+        $stmtStatus->execute();
+        $status = $stmtStatus->fetch(PDO::FETCH_ASSOC);
 
+        if ($status) {
+            $statusId = $status['Id'];
 
-        $statusQuery = "INSERT INTO `InstallationStatus` (InstallationId, StatusId, DateCreated) 
-                        VALUES (:installationId, :statusId, NOW())";
-        $stmt = $conn->prepare($statusQuery);
-        $stmt->bindValue(':installationId', $installationId, PDO::PARAM_INT);
-        $stmt->bindValue(':statusId', $statusIdQuery, PDO::PARAM_INT);
-        $stmt->execute();
-
-        
+            $installationStatusQuery = "INSERT INTO `InstallationStatus` (InstallationId, StatusId, DateCreated) 
+                                        VALUES (:installationId, :statusId, NOW())";
+            $stmtInstallationStatus = $conn->prepare($installationStatusQuery);
+            $stmtInstallationStatus->bindValue(':installationId', $installationId, PDO::PARAM_INT);
+            $stmtInstallationStatus->bindValue(':statusId', $statusId, PDO::PARAM_INT);
+            $stmtInstallationStatus->execute();
+        }
     }
-    
-    $statusQuery = "SELECT Id FROM Status WHERE Name = 'COMPLETED' LIMIT 1";
-    $stmtStatus = $conn->prepare($statusQuery);
-    $stmtStatus->execute();
-    $statusComplete = $stmtStatus->fetch(PDO::FETCH_ASSOC);
 
-    if ($statusComplete) {
-        $statusId = $statusComplete['Id'];
+     // After installation, add COMPLETED status for the order
+     $completedStatusQuery = "SELECT Id FROM Status WHERE Name = 'COMPLETED' LIMIT 1";
+     $stmtCompletedStatus = $conn->prepare($completedStatusQuery);
+     $stmtCompletedStatus->execute();
+     $completedStatus = $stmtCompletedStatus->fetch(PDO::FETCH_ASSOC);
 
-        $statusOrderQuery = "INSERT INTO `OrderStatus` (OrderId, StatusId, DateCreated) 
-                     VALUES (:orderId, :statusId, NOW())";
-        $stmtInsertStatus = $conn->prepare($statusOrderQuery);
-        $stmtInsertStatus->bindValue(':orderId', $orderId, PDO::PARAM_INT);
-        $stmtInsertStatus->bindValue(':statusId', $statusId, PDO::PARAM_INT);
-        $stmtInsertStatus->execute();
-    } else {
-        echo "Status 'COMPLETED' not found.";
-    }
+     if ($completedStatus) {
+         $completedStatusId = $completedStatus['Id'];
+
+         $orderCompletedQuery = "INSERT INTO `OrderStatus` (OrderId, StatusId, DateCreated) 
+                                 VALUES (:orderId, :statusId, NOW())";
+         $stmtOrderCompleted = $conn->prepare($orderCompletedQuery);
+         $stmtOrderCompleted->bindValue(':orderId', $orderId, PDO::PARAM_INT);
+         $stmtOrderCompleted->bindValue(':statusId', $completedStatusId, PDO::PARAM_INT);
+         $stmtOrderCompleted->execute();
+     }
 
     echo json_encode(['success' => true, 'orderId' => $orderId]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Failed to process the order']);
 }
-
-
 ?>
