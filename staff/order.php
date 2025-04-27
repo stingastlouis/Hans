@@ -135,6 +135,11 @@ $statuses = $stmt4->fetchAll(PDO::FETCH_ASSOC);
     </nav>
 </div>
 
+<script src="./utils/message.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', handleSuccessOrErrorModal);
+</script>
+
 <?php include 'includes/footer.php';  ?>
 
 

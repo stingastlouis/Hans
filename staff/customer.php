@@ -213,7 +213,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Delete Customer Modal -->
 <div class="modal fade" id="deleteCustomerModal" tabindex="-1" aria-labelledby="deleteCustomerModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -234,6 +233,11 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 </div>
+
+<script src="./utils/message.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', handleSuccessOrErrorModal);
+</script>
 
 <?php include 'includes/footer.php'; ?>
 

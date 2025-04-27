@@ -150,21 +150,6 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<div class="modal fade" id="SuccessMessage" tabindex="-1" aria-labelledby="successMessgeModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modifyCategoryModalLabel">Message</h5>
-            </div>
-            <div class="modal-body">
-                <form action="category/modify_category.php" method="POST">
-                    Created Successfully
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
 
 <div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -186,20 +171,12 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 </div>
-
+<script src="./utils/message.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', handleSuccessOrErrorModal);
+</script>
 
 <?php include 'includes/footer.php'; ?>
-
-<script>
-    
-    <?php if ($success): ?>
-        var myModal = new bootstrap.Modal(document.getElementById('SuccessMessage'));
-        myModal.show();
-        setTimeout(function() {
-            myModal.hide();
-        }, 3000);
-    <?php endif; ?>
-</script>
 
 <script>
     var deleteButtons = document.querySelectorAll('.btn-del');
