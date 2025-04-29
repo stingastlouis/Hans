@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                         if ($statusRow) {
                             $statusId = $statusRow['Id'];
-                            $statusInsertStmt = $conn->prepare("INSERT INTO Productstatus (productid, statusid, staffid, datecreated) 
+                            $statusInsertStmt = $conn->prepare("INSERT INTO ProductStatus (productid, statusid, staffid, datecreated) 
                                                                 VALUES (?, ?, ?, NOW())");
                             $statusInsertStmt->execute([$productId, $statusId, $staffId]);
 
@@ -45,23 +45,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             header('Location: ../product.php?success=1');
                             exit;
                         } else {
-                            throw new Exception("Error: 'ACTIVE' status not found.");
+                            header('Location: ../product.php?error=1');
+                            exit;
                         }
                     } else {
-                        throw new Exception("Error: Unable to insert the product into the database.");
+                        header('Location: ../product.php?error=1');
+                        exit;
                     }
                 } catch (Exception $e) {
                     $conn->rollBack();
-                    echo "Error: " . $e->getMessage();
+                    header('Location: ../product.php?error=1');
+                    exit;
                 }
             } else {
-                echo "Error: Unable to upload the file.";
+                header('Location: ../product.php?error=1');
+                 exit;
             }
         } else {
-            echo "Error: Only JPEG, PNG, and GIF files are allowed.";
+            header('Location: ../product.php?error=1');
+            exit;
         }
     } else {
-        echo "Error: Please upload an image.";
+        header('Location: ../product.php?error=1');
+        exit;
     }
 }
 ?>

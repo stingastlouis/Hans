@@ -36,6 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header("Location: ../event.php?success=1");
     exit();
 } else {
-    header("Location: ../event.php?error=invalid_request");
+    header("Location: ../event.php?error=1");
     exit();
 }

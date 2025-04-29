@@ -13,17 +13,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $conn->beginTransaction();
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new Exception("Invalid email format");
+            header('Location: ../staff.php?error=1');
+            exit;
         }
 
         $checkEmail = $conn->prepare("SELECT COUNT(*) FROM Staff WHERE Email = ? AND Id != ?");
         $checkEmail->execute([$email, $staffId]);
         if ($checkEmail->fetchColumn() > 0) {
-            throw new Exception("Email already exists");
+            header('Location: ../staff.php?error=1');
+            exit;
         }
 
         if (!preg_match("/^[0-9+\-\s()]*$/", $phone)) {
-            throw new Exception("Invalid phone number format");
+            header('Location: ../staff.php?error=1');
+            exit;
         }
 
         $checkStaff = $conn->prepare("SELECT COUNT(*) FROM Staff WHERE Id = ?");
@@ -49,10 +52,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if ($stmt->rowCount() >= 0) {
             $conn->commit();
-            header('Location: ../staff.php?success=2');
+            header('Location: ../staff.php?success=1');
             exit;
         } else {
-            throw new Exception("Error: Unable to update the staff member in the database.");
+            header('Location: ../staff.php?error=1');
+            exit;
         }
 
     } catch (Exception $e) {

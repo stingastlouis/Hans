@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (move_uploaded_file($_FILES['product_image']['tmp_name'], $targetFilePath)) {
             $imagePath = $imageName;
         } else {
-            header("Location: ../product.php?error=upload_failed");
+            header("Location: ../product.php?error=1");
             exit();
         }
     }
@@ -49,6 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header("Location: ../product.php?success=1");
     exit();
 } else {
-    header("Location: ../product.php?error=invalid_request");
+    header("Location: ../product.php?error=1");
     exit();
 }

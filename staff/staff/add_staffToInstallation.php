@@ -24,7 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "Error adding installation.";
         }
     } catch (PDOException $e) {
-        echo "Database error: " . $e->getMessage();
+        header('Location: ../installation.php?error=1');
+        exit;
     }
 } else {
     header("Location: ../installation.php");

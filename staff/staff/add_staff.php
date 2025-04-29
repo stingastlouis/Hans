@@ -20,11 +20,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $checkEmail = $conn->prepare("SELECT COUNT(*) FROM Staff WHERE Email = ?");
         $checkEmail->execute([$email]);
         if ($checkEmail->fetchColumn() > 0) {
-            throw new Exception("Email already exists");
+            header('Location: ../staff.php?error=1');
+            exit;
         }
 
         if (!preg_match("/^[0-9+\-\s()]*$/", $phone)) {
-            throw new Exception("Invalid phone number format");
+            header('Location: ../staff.php?error=1');
+            exit;
         }
 
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
@@ -48,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             if ($statusRow) {
                 $statusId = $statusRow['Id'];
-                $statusInsertStmt = $conn->prepare("INSERT INTO Staffstatus (staffid, statusid, modifyby, datecreated) 
+                $statusInsertStmt = $conn->prepare("INSERT INTO StaffStatus (staffid, statusid, modifyby, datecreated) 
                                                     VALUES (?, ?, ?,  NOW())");
                 $statusInsertStmt->execute([$staffId, $statusId, $modifyby]);
 
@@ -57,10 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 header('Location: ../staff.php?success=1');
                 exit;
             } else {
-                throw new Exception("Error: 'ACTIVE' status not found.");
+                header('Location: ../staff.php?error=1');
+                exit;
             }
         } else {
-            throw new Exception("Error: Unable to insert the product into the database.");
+            header('Location: ../staff.php?error=1');
+            exit;
         }
 
     } catch (Exception $e) {
