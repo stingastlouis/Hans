@@ -1,8 +1,8 @@
 <?php
-$host = '127.0.0.1';
-$username = 'root';
-$password = '';
-$database = 'light_service';
+$host = 'localhost';
+$username = 'inkovscl_hans';
+$password = 'YH=MKYJ1H#.@';
+$database = 'inkovscl_light_service';
 
 try {
     $dsn = "mysql:host=$host;dbname=$database";
