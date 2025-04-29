@@ -18,13 +18,13 @@ $limit = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
-$stmt = $conn->prepare("SELECT * FROM role LIMIT :limit OFFSET :offset");
+$stmt = $conn->prepare("SELECT * FROM Role LIMIT :limit OFFSET :offset");
 $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
 $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$stmt2 = $conn->prepare("SELECT COUNT(*) FROM role");
+$stmt2 = $conn->prepare("SELECT COUNT(*) FROM Role");
 $stmt2->execute();
 $totalRecords = $stmt2->fetchColumn();
 $totalPages = ceil($totalRecords / $limit);

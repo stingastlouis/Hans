@@ -76,29 +76,22 @@
             AND LOWER(s.Name) = 'active'
         ";
 
-        // Add category filter if selected
         if ($category) {
             $query .= " AND p.CategoryId = :category";
         }
-
-        // Add search filter if search term is entered
         if ($searchTerm) {
             $query .= " AND LOWER(p.Name) LIKE :searchTerm";
         }
-
-        // Add sorting
         if ($sort) {
             $query .= $sort == 'asc' ? " ORDER BY p.Price ASC" : " ORDER BY p.Price DESC";
         } else {
             $query .= " ORDER BY p.DateCreated DESC";
         }
 
-        // Add pagination
         $query .= " LIMIT :limit OFFSET :offset";
 
         $stmt = $conn->prepare($query);
 
-        // Bind parameters
         if ($category) {
             $stmt->bindParam(':category', $category, PDO::PARAM_INT);
         }
@@ -160,7 +153,6 @@
             }
             echo '</div>';
 
-            // Pagination logic
             $stmtCount = $conn->prepare("
                 SELECT COUNT(*) FROM Products p
                 LEFT JOIN ProductStatus ps ON p.Id = ps.ProductId

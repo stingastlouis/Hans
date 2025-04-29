@@ -18,11 +18,11 @@ $page = max($page, 1);
 $offset = ($page - 1) * $itemsPerPage;
 
 
-$totalStmt = $conn->query("SELECT COUNT(*) FROM categories");
+$totalStmt = $conn->query("SELECT COUNT(*) FROM Categories");
 $totalCategories = $totalStmt->fetchColumn();
 $totalPages = ceil($totalCategories / $itemsPerPage);
 
-$stmt = $conn->prepare("SELECT * FROM categories ORDER BY Id DESC LIMIT :limit OFFSET :offset");
+$stmt = $conn->prepare("SELECT * FROM Categories ORDER BY Id DESC LIMIT :limit OFFSET :offset");
 $stmt->bindValue(':limit', $itemsPerPage, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
