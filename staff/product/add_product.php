@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                         if ($statusRow) {
                             $statusId = $statusRow['Id'];
-                            $statusInsertStmt = $conn->prepare("INSERT INTO productstatus (productid, statusid, staffid, datecreated) 
+                            $statusInsertStmt = $conn->prepare("INSERT INTO Productstatus (productid, statusid, staffid, datecreated) 
                                                                 VALUES (?, ?, ?, NOW())");
                             $statusInsertStmt->execute([$productId, $statusId, $staffId]);
 
