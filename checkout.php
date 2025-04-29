@@ -206,11 +206,14 @@ $grandTotal = $totalAmount + $tax;
                     body: JSON.stringify(payload)
                 })
                 .then(res => res.json())
-                .then(result => {
-                    if (result.success) {
+                .then(data => {
+                    if (data.success) {
+                        sessionStorage.setItem('orderId', data.orderId);
+                        sessionStorage.setItem('paypalTransaction', data.paypalTransaction);
+                        sessionStorage.setItem('total', data.total);
                         window.location.href = 'order-success.php';
                     } else {
-                        alert('Checkout failed: ' + result.message);
+                        alert('Checkout failed: ' + data.message);
                     }
                 });
             });

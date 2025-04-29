@@ -22,7 +22,6 @@ $taxRate = 0.15;
 $tax = $amount * $taxRate;
 $totalAmount = $amount + $tax;
 
-// Insert into Order
 $query = "INSERT INTO `Order` (CustomerId, PaymentMethodId, Tax, TotalAmount, DateCreated) 
           VALUES (:customerId, :paymentMethodId, :tax, :totalAmount, NOW())";
 $stmt = $conn->prepare($query);
@@ -53,7 +52,6 @@ if ($stmt->execute()) {
         $stmt->bindValue(':type', $itemType, PDO::PARAM_STR);
         $stmt->execute();
 
-        // Handle stock updates
         if ($itemType === 'product') {
             $checkStockQuery = "SELECT Stock FROM `Products` WHERE Id = :productId";
             $checkStockStmt = $conn->prepare($checkStockQuery);
@@ -103,7 +101,6 @@ if ($stmt->execute()) {
         }
     }
 
-    // Insert into Payment
     $query = "INSERT INTO `Payment` (CustomerId, OrderId, PaymentMethodId, TransactionId, Amount, DateCreated) 
               VALUES (:customerId, :orderId, :paymentMethodId, :transactionId, :amount, NOW())";
     $stmt = $conn->prepare($query);
@@ -114,7 +111,6 @@ if ($stmt->execute()) {
     $stmt->bindValue(':amount', $amount, PDO::PARAM_STR);
     $stmt->execute();
 
-    // Handle installation if required
     if ($installationRequired) {
         $installationQuery = "INSERT INTO `Installation` (OrderId, `Location`, DateCreated) 
                               VALUES (:orderId, :location, NOW())";
@@ -124,7 +120,6 @@ if ($stmt->execute()) {
         $stmt->execute();
         $installationId = $conn->lastInsertId();
 
-        // Insert IN PROGRESS status for installation
         $statusQuery = "SELECT Id FROM Status WHERE Name = 'IN PROGRESS' LIMIT 1";
         $stmtStatus = $conn->prepare($statusQuery);
         $stmtStatus->execute();
@@ -142,7 +137,6 @@ if ($stmt->execute()) {
         }
     }
 
-     // After installation, add COMPLETED status for the order
      $completedStatusQuery = "SELECT Id FROM Status WHERE Name = 'COMPLETED' LIMIT 1";
      $stmtCompletedStatus = $conn->prepare($completedStatusQuery);
      $stmtCompletedStatus->execute();
@@ -159,7 +153,7 @@ if ($stmt->execute()) {
          $stmtOrderCompleted->execute();
      }
 
-    echo json_encode(['success' => true, 'orderId' => $orderId]);
+    echo json_encode(['success' => true, 'orderId' => $orderId, 'paypalTransaction' => $transactionId, 'total'=> $totalAmount]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Failed to process the order']);
 }
