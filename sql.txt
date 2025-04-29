@@ -211,27 +211,27 @@ CREATE TABLE `InstallationStatus` (
 );
 
 
-///Add Statuses
-INSERT INTO `status`(`Name`, `Description`, `DateCreated`) VALUES ('ACTIVE','The task or process is currently in progress and being worked on.',NOW());
-INSERT INTO `status`(`Name`, `Description`, `DateCreated`) VALUES ('INACTIVE','The task or process is not currently being worked on or is paused.',NOW());
-INSERT INTO `status`(`Name`, `Description`, `DateCreated`) VALUES ('IN PROGRESS','The task or process has started and is being actively worked on but is not yet completed.',NOW());
-INSERT INTO `status`(`Name`, `Description`, `DateCreated`) VALUES ('COMPLETED','The task or process is completed',NOW());
-//Add Roles
-INSERT INTO role (Name) VALUES('Installer');
-INSERT INTO role (Name) VALUES('Admin');
-INSERT INTO role (Name) VALUES('Viewer');
+-- Add Statuses
+INSERT INTO `Status`(`Name`, `Description`, `DateCreated`) VALUES ('ACTIVE','The task or process is currently in progress and being worked on.',NOW());
+INSERT INTO `Status`(`Name`, `Description`, `DateCreated`) VALUES ('INACTIVE','The task or process is not currently being worked on or is paused.',NOW());
+INSERT INTO `Status`(`Name`, `Description`, `DateCreated`) VALUES ('IN PROGRESS','The task or process has started and is being actively worked on but is not yet completed.',NOW());
+INSERT INTO `Status`(`Name`, `Description`, `DateCreated`) VALUES ('COMPLETED','The task or process is completed',NOW());
+-- Add Roles
+INSERT INTO Role (Name) VALUES('Installer');
+INSERT INTO Role (Name) VALUES('Admin');
+INSERT INTO Role (Name) VALUES('Viewer');
 
-//Add Payment PaymentMethod
-INSERT INTO `paymentmethod` (`Name`, `Description`, `DateCreated`) VALUES ('Paypal', 'Online payment', '2025-04-26 00:42:49.000000')
-
-
-//Add First Admin
-INSERT INTO staff (Fullname, Email, Phone, PasswordHash, RoleId) VALUES ('Hans','admin@gmail.com','5912','$2b$12$wxKWqCNdt6tvvgsXw/jtNe2ICYdbO4M9E7wUAywawnRGWN2J1mCQu', (SELECT Id FROM Role WHERE Name = 'Admin'))
-ADMIN LOGIN: admin@gmail.com  adminHans
+-- Add Payment PaymentMethod
+INSERT INTO `PaymentMethod` (`Name`, `Description`, `DateCreated`) VALUES ('Paypal', 'Online payment', '2025-04-26 00:42:49.000000');
 
 
-//Add Admin Status
-INSERT INTO `staffstatus` ( `StaffId`, `StatusId`, `DateCreated`) VALUES ((SELECT Id FROM Staff WHERE Phone = '5912'),(SELECT Id FROM Status WHERE Name = 'ACTIVE'), '2025-04-25 21:19:04.000000')
+-- Add First Admin
+INSERT INTO Staff (Fullname, Email, Phone, PasswordHash, RoleId) VALUES ('Hans','admin@gmail.com','5912','$2b$12$wxKWqCNdt6tvvgsXw/jtNe2ICYdbO4M9E7wUAywawnRGWN2J1mCQu', (SELECT Id FROM Role WHERE Name = 'Admin'));
+-- ADMIN LOGIN: admin@gmail.com  adminHans
+
+
+-- Add Admin Status
+INSERT INTO `StaffStatus` ( `StaffId`, `StatusId`, `DateCreated`) VALUES ((SELECT Id FROM Staff WHERE Phone = '5912'),(SELECT Id FROM Status WHERE Name = 'ACTIVE'), '2025-04-25 21:19:04.000000');
 
 Installer: 
 pascalstlouis34@gmail.com
