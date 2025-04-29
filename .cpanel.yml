@@ -1,6 +1,6 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/USERNAME/public_html
+    - export DEPLOYPATH=/home/inkovscl/public_html
     - /bin/cp -R * $DEPLOYPATH
     - echo "Deployment completed!"
