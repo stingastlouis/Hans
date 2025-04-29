@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if ($stmt->rowCount() >= 0) {
             $conn->commit();
-            header('Location: ../customer.php?success=2');
+            header('Location: ../customer.php?success=1');
             exit;
         } else {
             throw new Exception("Error: Unable to update the customer member in the database.");

@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $date = date('Y-m-d H:i:s');
-        $stmt = $conn->prepare("UPDATE installation SET staffid= :staffid WHERE id= :installationid");
+        $stmt = $conn->prepare("UPDATE Installation SET staffid= :staffid WHERE id= :installationid");
         $stmt->bindParam(':installationid', $installationId);
         $stmt->bindParam(':staffid', $staffId);
 

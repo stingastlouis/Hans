@@ -11,18 +11,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        $stmt = $conn->prepare("SELECT COUNT(*) FROM role WHERE name = :name");
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM Role WHERE name = :name");
         $stmt->bindParam(':name', $role_name);
         $stmt->execute();
         
         $role_exists = $stmt->fetchColumn();
         if ($role_exists > 0) {
-            echo "<div style='background-color: grey; color:red; top: 25vw; position: relative;'><center><h1>Role name already exists. Please choose a different name.</h1></center></div>";
+            eheader("Location: ../role.php?error=1");
             exit;
         }
 
         $date = date('Y-m-d H:i:s');
-        $stmt = $conn->prepare("INSERT INTO role (name, datecreated) VALUES (:name, :datecreated)");
+        $stmt = $conn->prepare("INSERT INTO Role (name, datecreated) VALUES (:name, :datecreated)");
         $stmt->bindParam(':name', $role_name);
         $stmt->bindParam(':datecreated', $date);
 

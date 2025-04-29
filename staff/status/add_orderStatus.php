@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $date = date('Y-m-d H:i:s');
-        $stmt = $conn->prepare("INSERT INTO orderstatus (orderid, statusid, staffid, datecreated) VALUES (:orderid, :statusid, :staffid, :datecreated)");
+        $stmt = $conn->prepare("INSERT INTO Orderstatus (orderid, statusid, staffid, datecreated) VALUES (:orderid, :statusid, :staffid, :datecreated)");
         $stmt->bindParam(':orderid', $orderId);
         $stmt->bindParam(':statusid', $statusId);
         $stmt->bindParam(':staffid', $staffId);
