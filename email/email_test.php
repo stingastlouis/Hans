@@ -15,18 +15,18 @@ try {
     $mail->isSMTP();                                // Send using SMTP
     $mail->Host       = 'mail.inkosi.africa';       // Your mail server (check cPanel email section)
     $mail->SMTPAuth   = true;                        // Enable SMTP authentication
-    $mail->Username   = 'inkovscl@inkosi.africa';   // SMTP username
-    $mail->Password   = 'your_email_password';      // SMTP password
+    $mail->Username   = '_mainaccount@inkosi.africa';   // SMTP username
+    $mail->Password   = 'loveByG1$';      // SMTP password
     $mail->SMTPSecure = 'ssl';                      // Encryption ('tls' or 'ssl')
     $mail->Port       = 465;                         // Port for SSL (587 for TLS)
 
     // Recipients
-    $mail->setFrom('inkovscl@inkosi.africa', 'Inkosi App');
+    $mail->setFrom('_mainaccount@inkosi.africa', 'Inkosi App');
     $mail->addAddress('stingastlouis@gmail.com', 'Sting');     // Recipient
 
     // Content
     $mail->isHTML(true);                             // Set email format to HTML
-    $mail->Subject = 'Test Email via SMTP';
+    $mail->Subject = 'Test Email via SMTP key';
     $mail->Body    = 'This is a <b>test email</b> sent via SMTP from cPanel.';
     $mail->AltBody = 'This is a plain-text version of the email content';
 
