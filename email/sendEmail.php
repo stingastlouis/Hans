@@ -1,6 +1,6 @@
 <?php
-$to = "customer@example.com";
-$subject = "Thank You for Your Purchase";
+$to = 'stingastlouis@gmail.com';
+$subject = 'Test Email from cPanel';
 
 
 include 'email_template.php';
@@ -20,9 +20,9 @@ $messageBody = "
 
 $finalEmail = renderEmailTemplate($messageBody);
 
-$headers  = "MIME-Version: 1.0" . "\r\n";
-$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-$headers .= "From: Light Store <no-reply@yourdomain.com>" . "\r\n";
+$headers = 'From: inkovscl@inkosi.africa' . "\r\n" .
+           'Reply-To: inkovscl@inkosi.africa' . "\r\n" .
+           'X-Mailer: PHP/' . phpversion();
 
 if (mail($to, $subject, $finalEmail, $headers)) {
     echo "Email sent!";
