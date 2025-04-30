@@ -20,9 +20,9 @@ $messageBody = "
 
 $finalEmail = renderEmailTemplate($messageBody);
 
-$headers = 'From: inkovscl@inkosi.africa' . "\r\n" .
-           'Reply-To: inkovscl@inkosi.africa' . "\r\n" .
-           'X-Mailer: PHP/' . phpversion();
+$headers  = "MIME-Version: 1.0" . "\r\n";
+$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+$headers .= "From: Light Store <no-reply@inkovscl@inkosi.africa>" . "\r\n";
 
 if (mail($to, $subject, $finalEmail, $headers)) {
     echo "Email sent!";
