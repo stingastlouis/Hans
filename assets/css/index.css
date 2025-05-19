@@ -1,0 +1,101 @@
+/* === Bohemian Theme for Main Page Sections (Excludes Header/Footer) === */
+
+section {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  background-color: #f5f3ef;
+  color: #5c3d2e;
+}
+
+/* Headings and Paragraphs */
+h2.fw-bold {
+  font-family: "Georgia", serif;
+  font-size: 2.2rem;
+  color: #8c4c39;
+}
+
+p.text-muted,
+p.lead {
+  font-family: "Segoe UI", sans-serif;
+  color: #7b5e57;
+}
+
+/* Cards */
+.card {
+  border: none;
+  border-radius: 1rem;
+  background: #fffaf6;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+.card-img-top {
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  object-fit: cover;
+  height: 200px;
+}
+
+/* Card Titles and Texts */
+.card-title {
+  font-family: "Palatino Linotype", serif;
+  color: #6d3f38;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.card-text {
+  font-size: 0.95rem;
+  color: #5f4c46;
+  flex-grow: 1;
+}
+
+/* Price Styling */
+.text-primary {
+  color: #a0522d !important;
+}
+
+.text-secondary {
+  color: #bcb4aa;
+}
+
+/* Event Bundle Details */
+ul {
+  padding-left: 1rem;
+  list-style-type: disc;
+}
+
+ul li {
+  font-size: 0.9rem;
+  color: #5c3d2e;
+}
+
+/* Category Cards */
+.card h5 {
+  font-family: "Georgia", serif;
+  color: #5c3d2e;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.card.p-3 {
+  background-color: #fff9f5;
+  border: 1px solid #e6dcd3;
+  border-radius: 0.75rem;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.card.p-3:hover {
+  background-color: #fbeee0;
+  transform: scale(1.03);
+}
+
+/* Text links */
+a.text-dark:hover {
+  color: #a0522d !important;
+}

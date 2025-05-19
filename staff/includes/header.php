@@ -55,7 +55,7 @@ if (!isset($_SESSION['staff_id'])) {
             <a class="nav-link" href="role.php"><span>Role</span></a>
         </li>
         <li class="nav-item custom-nav-item">
-            <a class="nav-link" href="event.php"><span>Event</span></a>
+            <a class="nav-link" href="bundle.php"><span>Bundle</span></a>
         </li>
         <li class="nav-item custom-nav-item">
             <a class="nav-link" href="product.php"><span>Product</span></a>

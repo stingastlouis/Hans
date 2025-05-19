@@ -33,7 +33,6 @@ $stmt->bindValue(':totalAmount', $totalAmount, PDO::PARAM_STR);
 if ($stmt->execute()) {
     $orderId = $conn->lastInsertId();
 
-    // Insert each cart item
     foreach ($cartItems as $item) {
         $itemType = $item['type'];
         $productId = $item['id'];
@@ -137,21 +136,36 @@ if ($stmt->execute()) {
         }
     }
 
-     $completedStatusQuery = "SELECT Id FROM Status WHERE Name = 'COMPLETED' LIMIT 1";
-     $stmtCompletedStatus = $conn->prepare($completedStatusQuery);
-     $stmtCompletedStatus->execute();
-     $completedStatus = $stmtCompletedStatus->fetch(PDO::FETCH_ASSOC);
+    $completedStatusQuery = "SELECT Id FROM Status WHERE Name = 'COMPLETED' LIMIT 1";
+    $stmtCompletedStatus = $conn->prepare($completedStatusQuery);
+    $stmtCompletedStatus->execute();
+    $completedStatus = $stmtCompletedStatus->fetch(PDO::FETCH_ASSOC);
 
-     if ($completedStatus) {
-         $completedStatusId = $completedStatus['Id'];
+    if ($completedStatus) {
+        $completedStatusId = $completedStatus['Id'];
 
-         $orderCompletedQuery = "INSERT INTO `OrderStatus` (OrderId, StatusId, DateCreated) 
-                                 VALUES (:orderId, :statusId, NOW())";
-         $stmtOrderCompleted = $conn->prepare($orderCompletedQuery);
-         $stmtOrderCompleted->bindValue(':orderId', $orderId, PDO::PARAM_INT);
-         $stmtOrderCompleted->bindValue(':statusId', $completedStatusId, PDO::PARAM_INT);
-         $stmtOrderCompleted->execute();
-     }
+        $orderCompletedQuery = "INSERT INTO `OrderStatus` (OrderId, StatusId, DateCreated) 
+                                VALUES (:orderId, :statusId, NOW())";
+        $stmtOrderCompleted = $conn->prepare($orderCompletedQuery);
+        $stmtOrderCompleted->bindValue(':orderId', $orderId, PDO::PARAM_INT);
+        $stmtOrderCompleted->bindValue(':statusId', $completedStatusId, PDO::PARAM_INT);
+        $stmtOrderCompleted->execute();
+    }
+
+    $customerEmailQuery = "SELECT Email FROM Customer WHERE Id = :customerId";
+    $stmtEmail = $conn->prepare($customerEmailQuery);
+    $stmtEmail->bindValue(':customerId', $customerId, PDO::PARAM_INT);
+    $stmtEmail->execute();
+    $customerEmail = $stmtEmail->fetchColumn();
+
+    if ($customerEmail) {
+        $to = $customerEmail;
+        $subject = "Order Confirmation - Order #$orderId";
+        $message = "Dear Customer,\n\nThank you for your order. Your order ID is $orderId.\nTotal amount: Rs " . number_format($totalAmount, 2) . "\n\nLight Service Ltd";
+        $headers = "From: no-reply@yourdomain.com";
+
+        mail($to, $subject, $message, $headers);
+    }
 
     echo json_encode(['success' => true, 'orderId' => $orderId, 'paypalTransaction' => $transactionId, 'total'=> $totalAmount]);
 } else {

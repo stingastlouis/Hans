@@ -112,13 +112,13 @@ CREATE TABLE `OrderItem` (
     Quantity INT NOT NULL,
     UnitPrice DOUBLE NOT NULL,
     Subtotal DOUBLE NOT NULL,
-    OrderType ENUM('product', 'event') NOT NULL,
+    OrderType ENUM('product', 'bundle') NOT NULL,
     DateCreated DATETIME NOT NULL,
     FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE
 );
 
--- Create table for Event
-CREATE TABLE `Event` (
+-- Create table for Bundle
+CREATE TABLE `Bundle` (
     Id INT AUTO_INCREMENT PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
     ImagePath TEXT,
@@ -141,26 +141,43 @@ CREATE TABLE Payment (
     FOREIGN KEY (PaymentMethodId) REFERENCES PaymentMethod(Id) ON DELETE CASCADE
 );
 
-CREATE TABLE `EventProducts` (
-    Id INT AUTO_INCREMENT PRIMARY KEY,
-    EventId INT NOT NULL,
-    ProductId INT NOT NULL,
-    Quantity INT DEFAULT 1,
+CREATE TABLE ManualPayment (
+    Id INT PRIMARY KEY AUTO_INCREMENT,
+    PaymentId INT NOT NULL UNIQUE,
+    ScreenShotImage TEXT,
     DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (EventId) REFERENCES Event(Id) ON DELETE CASCADE,
-    FOREIGN KEY (ProductId) REFERENCES Products(Id) ON DELETE CASCADE,
-    UNIQUE (EventId, ProductId)
+    FOREIGN KEY (PaymentId) REFERENCES Payment(Id) ON DELETE CASCADE
 );
 
 
--- Create table for EventStatus
-CREATE TABLE `EventStatus` (
+CREATE TABLE PaypalPayment (
+    Id INT PRIMARY KEY AUTO_INCREMENT,
+    PaymentId INT NOT NULL UNIQUE,
+    TransactionId TEXT NOT NULL,
+    DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (PaymentId) REFERENCES Payment(Id) ON DELETE CASCADE
+);
+
+CREATE TABLE `BundleProducts` (
     Id INT AUTO_INCREMENT PRIMARY KEY,
-    EventId INT,
+    BundleId INT NOT NULL,
+    ProductId INT NOT NULL,
+    Quantity INT NOT NULL,
+    DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (BundleId) REFERENCES Bundle(Id) ON DELETE CASCADE,
+    FOREIGN KEY (ProductId) REFERENCES Products(Id) ON DELETE CASCADE,
+    UNIQUE (BundleId, ProductId)
+);
+
+
+-- Create table for BundleStatus
+CREATE TABLE `BundleStatus` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    BundleId INT,
     StatusId INT,
     StaffId INT,
     DateCreated DATETIME NOT NULL,
-    FOREIGN KEY (EventId) REFERENCES Event(Id) ON DELETE CASCADE,
+    FOREIGN KEY (BundleId) REFERENCES Bundle(Id) ON DELETE CASCADE,
     FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE,
     FOREIGN KEY (StaffId) REFERENCES Staff(Id) ON DELETE CASCADE
 );

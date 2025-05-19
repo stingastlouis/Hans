@@ -1,5 +1,5 @@
 <?php include "includes/header.php" ?>
-
+<link rel="stylesheet" href="assets/css/index.css">
 <header class="bg-primary-gradient">
     <div class="container pt-4 pt-xl-5">
         <div class="row pt-5">
@@ -168,5 +168,39 @@ try {
         </div>
     </div>
 </section>
+
+<style>
+    .card.shadow-sm {
+    max-width: 85%; /* Reduce width within column */
+    margin: 0 auto;  /* Center card horizontally */
+    border-radius: 12px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #fffaf6;
+}
+
+/* Optional: subtle bohemian touch with a hover effect */
+.card.shadow-sm:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Bohemian font styling */
+.card-title {
+    font-family: 'Georgia', serif;
+    font-weight: 700;
+    color: #7b3f00;
+}
+
+.card-text {
+    font-family: 'Georgia', serif;
+    font-size: 0.95rem;
+    color: #5e4630;
+}
+
+.text-primary {
+    color: #b95c50 !important;
+}
+
+</style>
 
 <?php include "includes/footer.php" ?>

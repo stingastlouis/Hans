@@ -39,7 +39,7 @@ $role = $_SESSION['role'] ?? "";
             <div class="collapse navbar-collapse" id="navcol-1">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/" ? 'active' : ''; ?>" href="/hans/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/events" ? 'active' : ''; ?>" href="/hans/event.php">Events</a></li>
+                    <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/bundles" ? 'active' : ''; ?>" href="/hans/bundle.php">Bundles</a></li>
                     <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/products" ? 'active' : ''; ?>" href="/hans/product.php">Products</a></li>
                     <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/contact" ? 'active' : ''; ?>" href="/hans/contact.php">Contact us</a></li>
                 </ul>
@@ -67,3 +67,85 @@ $role = $_SESSION['role'] ?? "";
 </nav>
 <?php include "cartview.php"; ?>
 
+<style>
+    /* General Navbar Styling */
+.customNavbar {
+    background: linear-gradient(to right, #fefcea, #f1da36);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 0 0 15px 15px;
+}
+
+/* Navbar Brand Title */
+.navbar-brand span:last-child {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #2b2b2b;
+}
+
+/* Active Link Styling */
+.nav-link.active {
+    font-weight: 600;
+    color: #d63384 !important;
+    border-bottom: 2px solid #d63384;
+}
+
+/* Regular Links */
+.nav-link {
+    color: #444;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #d63384;
+}
+
+/* Cart Icon */
+#cart-icon {
+    font-weight: 500;
+    border-color: #d63384;
+    color: #d63384;
+    transition: all 0.3s ease;
+}
+
+#cart-icon:hover {
+    background-color: #d63384;
+    color: white;
+}
+
+/* Cart Count Badge */
+#cart-count {
+    font-size: 0.75rem;
+    padding: 0.25em 0.4em;
+}
+
+/* Buttons */
+.btn-primary.shadow {
+    background-color: #d63384;
+    border-color: #d63384;
+}
+
+.btn-primary.shadow:hover {
+    background-color: #bd2c75;
+    border-color: #bd2c75;
+}
+
+.btn-danger.shadow {
+    background-color: #ff4d4d;
+    border-color: #ff4d4d;
+}
+
+.btn-danger.shadow:hover {
+    background-color: #cc0000;
+    border-color: #cc0000;
+}
+
+/* Profile/Logout button group on the right */
+@media (max-width: 768px) {
+    .navbar-collapse > div[style*="width:25%"] {
+        width: 100% !important;
+        margin-top: 10px;
+        justify-content: space-around !important;
+    }
+}
+
+</style>
