@@ -79,23 +79,23 @@ try {
 
 <?php
 try {
-    $eventStmt = $conn->prepare("
-        SELECT * FROM Event
+    $bundleStmt = $conn->prepare("
+        SELECT * FROM Bundle
         ORDER BY DateCreated DESC
         LIMIT 2
     ");
-    $eventStmt->execute();
-    $events = $eventStmt->fetchAll(PDO::FETCH_ASSOC);
+    $bundleStmt->execute();
+    $bundles = $bundleStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    foreach ($events as &$event) {
+    foreach ($bundles as &$bundle) {
         $productStmt = $conn->prepare("
             SELECT p.Name, ep.Quantity
-            FROM EventProducts ep
+            FROM BundleProducts ep
             INNER JOIN Products p ON ep.ProductId = p.Id
-            WHERE ep.EventId = ?
+            WHERE ep.BundleId = ?
         ");
-        $productStmt->execute([$event['Id']]);
-        $event['Products'] = $productStmt->fetchAll(PDO::FETCH_ASSOC);
+        $productStmt->execute([$bundle['Id']]);
+        $bundle['Products'] = $productStmt->fetchAll(PDO::FETCH_ASSOC);
     }
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
@@ -105,22 +105,22 @@ try {
 <section class="py-5 bg-light">
     <div class="container text-center py-5">
         <h2 class="fw-bold">Bundle Lighting Offers</h2>
-        <p class="mb-4" style="font-size: 1.6rem;">Get the best value with our lighting bundles. Perfect for events, offices, and home renovations.</p>
+        <p class="mb-4" style="font-size: 1.6rem;">Get the best value with our lighting bundles. Perfect for bundles, offices, and home renovations.</p>
         <div class="row row-cols-1 row-cols-md-2 g-4">
-            <?php foreach ($events as $event): ?>
+            <?php foreach ($bundles as $bundle): ?>
                 <div class="col">
-                    <a href="event.php" class="text-decoration-none text-dark">
+                    <a href="bundle.php" class="text-decoration-none text-dark">
                         <div class="card shadow-sm h-100">
-                            <img src="./assets/uploads/<?= htmlspecialchars($event['ImagePath']) ?>" class="card-img-top" alt="<?= htmlspecialchars($event['Name']) ?>">
+                            <img src="./assets/uploads/<?= htmlspecialchars($bundle['ImagePath']) ?>" class="card-img-top" alt="<?= htmlspecialchars($bundle['Name']) ?>">
                             <div class="card-body d-flex flex-column">
-                                <h5 class="card-title"><?= htmlspecialchars($event['Name']) ?></h5>
-                                <p class="card-text"><?= htmlspecialchars($event['Description']) ?></p>
+                                <h5 class="card-title"><?= htmlspecialchars($bundle['Name']) ?></h5>
+                                <p class="card-text"><?= htmlspecialchars($bundle['Description']) ?></p>
 
-                                <?php if (!empty($event['Products'])): ?>
+                                <?php if (!empty($bundle['Products'])): ?>
                                     <div class="text-start mb-3">
                                         <strong>Included Products:</strong>
                                         <ul class="mb-0">
-                                            <?php foreach ($event['Products'] as $prod): ?>
+                                            <?php foreach ($bundle['Products'] as $prod): ?>
                                                 <li><?= htmlspecialchars($prod['Name']) ?> (x<?= $prod['Quantity'] ?>)</li>
                                             <?php endforeach; ?>
                                         </ul>
@@ -128,9 +128,9 @@ try {
                                 <?php endif; ?>
 
                                 <p class="fw-bold text-primary mt-auto">
-                                    <?= $event['DiscountPrice'] 
-                                        ? '<span class="text-decoration-line-through text-secondary me-2">Rs' . number_format($event['Price'], 2) . '</span><span>Rs' . number_format($event['DiscountPrice'], 2) . '</span>' 
-                                        : 'Rs' . number_format($event['Price'], 2) ?>
+                                    <?= $bundle['DiscountPrice'] 
+                                        ? '<span class="text-decoration-line-through text-secondary me-2">Rs' . number_format($bundle['Price'], 2) . '</span><span>Rs' . number_format($bundle['DiscountPrice'], 2) . '</span>' 
+                                        : 'Rs' . number_format($bundle['Price'], 2) ?>
                                 </p>
                             </div>
                         </div>

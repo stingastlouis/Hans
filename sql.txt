@@ -250,9 +250,3 @@ INSERT INTO Staff (Fullname, Email, Phone, PasswordHash, RoleId) VALUES ('Hans',
 -- Add Admin Status
 INSERT INTO `StaffStatus` ( `StaffId`, `StatusId`, `DateCreated`) VALUES ((SELECT Id FROM Staff WHERE Phone = '5912'),(SELECT Id FROM Status WHERE Name = 'ACTIVE'), '2025-04-25 21:19:04.000000');
 
-Installer: 
-pascalstlouis34@gmail.com
-CtLh3H**7s8G
-
-sb-kykw36542808@personal.example.com
-mt7^z6WJ

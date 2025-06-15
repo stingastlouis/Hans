@@ -9,7 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $price = $_POST['bundle_price'];
     $discount_price = $_POST['bundle_discount_price'];
 
-    // Handle file upload
+    $dateNow = date('Y-m-d H:i:s');
+
     if (!empty($_FILES['bundle_image']['name'])) {
         $upload_dir = '../../assets/uploads/bundles/';
         $file_name = basename($_FILES['bundle_image']['name']);
@@ -23,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 try {
                     $conn->beginTransaction();
                     $stmt = $conn->prepare("INSERT INTO Bundle (Name, Description, Price, DiscountPrice, ImagePath, DateCreated) 
-                                            VALUES (?, ?, ?, ?, ?, NOW())");
-                    $stmt->execute([$name, $description, $price, $discount_price, $file_name]);
+                                            VALUES (?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$name, $description, $price, $discount_price, $file_name, $dateNow]);
 
                     if ($stmt->rowCount() > 0) {
                         $bundleId = $conn->lastInsertId();
@@ -35,23 +36,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         if ($statusRow) {
                             $statusId = $statusRow['Id'];
                             $statusInsertStmt = $conn->prepare("INSERT INTO BundleStatus (bundleid, statusid, staffid, datecreated) 
-                                                                VALUES (?, ?, ?, NOW())");
-                            $statusInsertStmt->execute([$bundleId, $statusId, $staffId]);
+                                                                VALUES (?, ?, ?, ?)");
+                            $statusInsertStmt->execute([$bundleId, $statusId, $staffId, $dateNow]);
 
-                            if (isset($_POST['product_ids']) && !empty($_POST['product_ids'])) {
+                            if (isset($_POST['product_ids'], $_POST['quantities']) && !empty($_POST['product_ids']) && !empty($_POST['quantities'])) {
                                 $productIds = $_POST['product_ids'];
+                                $quantities = $_POST['quantities'];
+
+                                if (count($productIds) !== count($quantities)) {
+                                    throw new Exception("Mismatch between product IDs and quantities.");
+                                }
+
                                 $bundleProductStmt = $conn->prepare("INSERT INTO BundleProducts (BundleId, ProductId, Quantity) 
                                                                     VALUES (?, ?, ?)");
 
-                                foreach ($productIds as $productId) {
-                                    $quantityKey = "quantity_" . $productId;
-                                    $quantity = isset($_POST[$quantityKey]) ? (int)$_POST[$quantityKey] : 1; 
-
+                                foreach ($productIds as $index => $productId) {
+                                    $quantity = isset($quantities[$index]) ? (int)$quantities[$index] : 1;
                                     $bundleProductStmt->execute([$bundleId, $productId, $quantity]);
                                 }
                             }
-                            $conn->commit();
 
+                            $conn->commit();
                             header('Location: ../bundle.php?success=1');
                             exit;
                         } else {
@@ -80,4 +85,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 }
-?>

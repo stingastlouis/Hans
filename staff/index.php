@@ -1,32 +1,25 @@
 <?php
-// Database connection
-include '../configs/db.php'; // Update if your db connection file is elsewhere
+include '../configs/db.php'; 
 
-// 1. Total number of customers
 $stmt = $conn->query("SELECT COUNT(*) AS total_customers FROM Customer");
 $totalCustomers = $stmt->fetch(PDO::FETCH_ASSOC)['total_customers'];
 
-// 2. Total number of staff
 $stmt = $conn->query("SELECT COUNT(*) AS total_staff FROM Staff");
 $totalStaff = $stmt->fetch(PDO::FETCH_ASSOC)['total_staff'];
 
-// 3. Earnings this month (from Order table)
 $currentMonth = date('m');
 $currentYear = date('Y');
 $stmt = $conn->prepare("SELECT SUM(TotalAmount) AS monthly_earnings FROM `Order` WHERE MONTH(DateCreated) = ? AND YEAR(DateCreated) = ?");
 $stmt->execute([$currentMonth, $currentYear]);
 $monthlyEarnings = $stmt->fetch(PDO::FETCH_ASSOC)['monthly_earnings'] ?? 0;
 
-// 4. Earnings this year (from Order table)
 $stmt = $conn->prepare("SELECT SUM(TotalAmount) AS annual_earnings FROM `Order` WHERE YEAR(DateCreated) = ?");
 $stmt->execute([$currentYear]);
 $annualEarnings = $stmt->fetch(PDO::FETCH_ASSOC)['annual_earnings'] ?? 0;
 
-// 5. Total number of orders
+
 $stmt = $conn->query("SELECT COUNT(*) AS total_orders FROM `Order`");
 $totalOrders = $stmt->fetch(PDO::FETCH_ASSOC)['total_orders'];
-
-// 6. Total number of order items
 $stmt = $conn->query("SELECT COUNT(*) AS total_order_items FROM OrderItem");
 $totalOrderItems = $stmt->fetch(PDO::FETCH_ASSOC)['total_order_items'];
 
@@ -38,7 +31,6 @@ for ($month = 1; $month <= 12; $month++) {
     $monthlyRevenue[] = $result['earnings'] ?? 0;
 }
 
-// 7. Revenue sources by OrderType (product vs event)
 $stmt = $conn->query("SELECT OrderType, SUM(Subtotal) AS total_revenue FROM OrderItem GROUP BY OrderType");
 
 $revenueLabels = [];
@@ -46,11 +38,10 @@ $revenueData = [];
 $revenueColors = [];
 
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $revenueLabels[] = ucfirst($row['OrderType']); // Capitalize for display
+    $revenueLabels[] = ucfirst($row['OrderType']);
     $revenueData[] = (float)$row['total_revenue'];
 
-    // Set colors (match Bootstrap/Chart.js convention)
-    $revenueColors[] = $row['OrderType'] === 'event' ? '#4e73df' : '#1cc88a'; // Blue for event, Green for product
+    $revenueColors[] = $row['OrderType'] === 'event' ? '#4e73df' : '#1cc88a';
 }
 
 ?>
