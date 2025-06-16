@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $passwordHash = password_hash($newPassword, PASSWORD_DEFAULT);
 
-        $stmt = $conn->prepare("UPDATE Customer SET PasswordHash = ? WHERE Id = ?");
+        $stmt = $conn->prepare("UPDATE Customer SET Password = ? WHERE Id = ?");
         $stmt->execute([$passwordHash, $customerId]);
 
         if ($stmt->rowCount() > 0) {
@@ -35,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             throw new Exception("Error: Unable to reset the password. No changes were made.");
         }
-
     } catch (Exception $e) {
         $conn->rollBack();
 
@@ -53,4 +52,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     header('Location: ../customer.php');
     exit;
 }
-?>

@@ -1,10 +1,10 @@
-<?php 
+<?php
 
 include '../sessionManagement.php';
 include '../configs/constants.php';
 
 $role = $_SESSION['role'];
-if (!in_array($role, ALLOWED_EDITOR_ROLES)){
+if (!in_array($role, ALLOWED_EDITOR_ROLES)) {
     header("Location: ../unauthorised.php");
     exit;
 }
@@ -48,7 +48,7 @@ $stmt2 = $conn->prepare("SELECT * FROM Role");
 $stmt2->execute();
 $roles = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-$stmt3 = $conn->prepare("SELECT * FROM Status");
+$stmt3 = $conn->prepare("SELECT * FROM Status WHERE Name  IN ('ACTIVE', 'INACTIVE')");
 $stmt3->execute();
 $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 
@@ -78,8 +78,8 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                             <th>Latest Status</th>
                             <th>Date Created</th>
                             <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
-                             <th>Actions</th>
-                            <?php endif;?>
+                                <th>Actions</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
@@ -94,19 +94,19 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?= htmlspecialchars($staff['DateCreated']) ?></td>
                                 <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
                                     <td>
-                                        <button class='btn btn-warning btn-sm edit-staff-btn' 
-                                            data-id='<?= $staff['Id'] ?>' 
-                                            data-fullname='<?= $staff['Fullname'] ?>' 
-                                            data-email='<?= $staff['Email'] ?>' 
-                                            data-phone='<?= $staff['Phone'] ?>' 
+                                        <button class='btn btn-warning btn-sm edit-staff-btn'
+                                            data-id='<?= $staff['Id'] ?>'
+                                            data-fullname='<?= $staff['Fullname'] ?>'
+                                            data-email='<?= $staff['Email'] ?>'
+                                            data-phone='<?= $staff['Phone'] ?>'
                                             data-role-id='<?= $staff['RoleId'] ?>'>Edit</button>
-                                        <button class="btn btn-info btn-sm reset-password-btn" 
+                                        <button class="btn btn-info btn-sm reset-password-btn"
                                             data-id="<?= $staff['Id'] ?>"
-                                            data-bs-toggle="modal" 
+                                            data-bs-toggle="modal"
                                             data-bs-target="#resetPasswordModal">Reset Password</button>
-                                        <button class="btn btn-danger btn-sm btn-del" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#deleteStaffModal" 
+                                        <button class="btn btn-danger btn-sm btn-del"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteStaffModal"
                                             data-id="<?= $staff['Id'] ?>">Delete</button>
                                         <form method="POST" action="status/add_staffStatus.php" style="display: inline; width:80px;">
                                             <input type="hidden" name="staff_id" value="<?= $staff['Id'] ?>">
@@ -134,11 +134,11 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                     <?php endif; ?>
 
                     <?php
-                        $range = 2;
-                        $start = max(1, $page - $range);
-                        $end = min($totalPages, $page + $range);
+                    $range = 2;
+                    $start = max(1, $page - $range);
+                    $end = min($totalPages, $page + $range);
 
-                        for ($i = $start; $i <= $end; $i++):
+                    for ($i = $start; $i <= $end; $i++):
                     ?>
                         <a class="btn <?= ($page == $i) ? 'btn-primary' : 'btn-outline-primary' ?>" href="?page=<?= $i ?>">
                             <?= $i ?>
@@ -165,7 +165,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
             </div>
             <div class="modal-body">
                 <form action="staff/add_staff.php" method="POST">
-                <input type="hidden" name="modify_by" value="<?= $modifyBy ?>">
+                    <input type="hidden" name="modify_by" value="<?= $modifyBy ?>">
                     <div class="mb-3">
                         <label for="staffFullname" class="form-label">Full Name</label>
                         <input type="text" class="form-control" id="staffFullname" name="staff_fullname" required>
@@ -213,7 +213,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="staff_id" id="editStaffId">
-                    
+
                     <div class="mb-3">
                         <label for="editStaffFullname" class="form-label">Full Name</label>
                         <input type="text" class="form-control" id="editStaffFullname" name="staff_fullname" required>
@@ -331,7 +331,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     document.querySelector('#resetPasswordModal form').addEventListener('submit', function(e) {
         const password = document.getElementById('newPassword').value;
         const confirm = document.getElementById('confirmPassword').value;
-        
+
         if (password !== confirm) {
             e.preventDefault();
             alert('Passwords do not match!');
@@ -341,9 +341,9 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 
 <script>
     function generatePassword() {
-        const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; 
-        const lowercase = 'abcdefghijkmnpqrstuvwxyz'; 
-        const numbers = '23456789'; 
+        const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        const lowercase = 'abcdefghijkmnpqrstuvwxyz';
+        const numbers = '23456789';
         const symbols = '!@#$%^&*';
         let password = '';
 
@@ -351,14 +351,14 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
         password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
         password += numbers.charAt(Math.floor(Math.random() * numbers.length));
         password += symbols.charAt(Math.floor(Math.random() * symbols.length));
-        
+
         const allChars = uppercase + lowercase + numbers + symbols;
         for (let i = password.length; i < 12; i++) {
             password += allChars.charAt(Math.floor(Math.random() * allChars.length));
         }
 
         password = password.split('').sort(() => Math.random() - 0.5).join('');
-        
+
         return password;
     }
 
@@ -366,7 +366,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
         const passwordField = document.getElementById('staffPassword');
         passwordField.value = generatePassword();
         passwordField.type = 'text';
-        
+
         setTimeout(() => {
             passwordField.type = 'password';
         }, 5000);
@@ -376,19 +376,19 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
         const passwordField = document.getElementById('staffNewPassword');
         passwordField.value = generatePassword();
         passwordField.type = 'text';
-        
+
         setTimeout(() => {
             passwordField.type = 'password';
         }, 5000);
     });
 
     document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('hidden.bs.modal', function () {
+        modal.addEventListener('hidden.bs.modal', function() {
             const forms = this.getElementsByTagName('form');
             for (let form of forms) {
                 form.reset();
             }
-            
+
             const passwordFields = this.querySelectorAll('input[type="text"][id$="Password"]');
             passwordFields.forEach(field => {
                 field.type = 'password';

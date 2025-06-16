@@ -1,14 +1,14 @@
-<?php  
+<?php
 include './configs/db.php';
 session_start();
 
 if (!isset($_SESSION['customerId'])) {
     header("Location: login.php");
-    exit(); 
+    exit();
 }
 
 $cartItems = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
-$customerId = $_SESSION['customerId']; 
+$customerId = $_SESSION['customerId'];
 $paymentMethodId = 1;
 
 $totalAmount = 0;
@@ -67,23 +67,23 @@ $grandTotal = $totalAmount + $tax;
     </div>
 
     <?php if (!empty($cartItems)): ?>
-    <form id="checkout-form">
-        <input type="hidden" name="paymentMethodId" value="<?= $paymentMethodId ?>">
-        <input type="hidden" name="lat" id="lat">
-        <input type="hidden" name="lng" id="lng">
+        <form id="checkout-form">
+            <input type="hidden" name="paymentMethodId" value="<?= $paymentMethodId ?>">
+            <input type="hidden" name="lat" id="lat">
+            <input type="hidden" name="lng" id="lng">
 
-        <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="installCheckbox">
-            <label class="form-check-label" for="installCheckbox">
-                Installation required (+Rs 20.00)
-            </label>
-        </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="installCheckbox">
+                <label class="form-check-label" for="installCheckbox">
+                    Installation required (+Rs 20.00)
+                </label>
+            </div>
 
-        <div id="map" style="height: 300px; display: none;" class="mb-3"></div>
-        <p id="addressDisplay" class="mt-2 text-muted"></p>
+            <div id="map" style="height: 300px; display: none;" class="mb-3"></div>
+            <p id="addressDisplay" class="mt-2 text-muted"></p>
 
-        <div id="paypal-button-container"></div>
-    </form>
+            <div id="paypal-button-container"></div>
+        </form>
     <?php endif; ?>
 </div>
 
@@ -104,7 +104,7 @@ $grandTotal = $totalAmount + $tax;
     const baseTax = <?= $tax ?>;
     const baseGrandTotal = <?= $grandTotal ?>;
 
-    installCheckbox.addEventListener('change', function () {
+    installCheckbox.addEventListener('change', function() {
         if (this.checked && !installAdded) {
             installAdded = true;
             const row = document.createElement('tr');
@@ -145,8 +145,11 @@ $grandTotal = $totalAmount + $tax;
                         attribution: '© OpenStreetMap contributors'
                     }).addTo(map);
 
-                    map.on('click', function (e) {
-                        const { lat, lng } = e.latlng;
+                    map.on('click', function(e) {
+                        const {
+                            lat,
+                            lng
+                        } = e.latlng;
                         if (marker) {
                             marker.setLatLng(e.latlng);
                         } else {
@@ -172,7 +175,7 @@ $grandTotal = $totalAmount + $tax;
     }
 
     paypal.Buttons({
-        createOrder: function (data, actions) {
+        createOrder: function(data, actions) {
             let amount = baseGrandTotal;
             if (installAdded) {
                 const updatedTotal = baseTotal + 20;
@@ -181,12 +184,14 @@ $grandTotal = $totalAmount + $tax;
             }
             return actions.order.create({
                 purchase_units: [{
-                    amount: { value: amount.toFixed(2) }
+                    amount: {
+                        value: amount.toFixed(2)
+                    }
                 }]
             });
         },
-        onApprove: function (data, actions) {
-            return actions.order.capture().then(function (details) {
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
                 const lat = document.getElementById('lat').value;
                 const lng = document.getElementById('lng').value;
                 const latlng = lat && lng ? `${lat},${lng}` : undefined;
@@ -201,21 +206,23 @@ $grandTotal = $totalAmount + $tax;
                 };
 
                 fetch('./processCheckout.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        sessionStorage.setItem('orderId', data.orderId);
-                        sessionStorage.setItem('paypalTransaction', data.paypalTransaction);
-                        sessionStorage.setItem('total', data.total);
-                        window.location.href = 'order-success.php';
-                    } else {
-                        alert('Checkout failed: ' + data.message);
-                    }
-                });
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            sessionStorage.setItem('orderId', data.orderId);
+                            sessionStorage.setItem('paypalTransaction', data.paypalTransaction);
+                            sessionStorage.setItem('total', data.total);
+                            window.location.href = 'order-success.php';
+                        } else {
+                            alert('Checkout failed: ' + data.message);
+                        }
+                    });
             });
         }
     }).render('#paypal-button-container');

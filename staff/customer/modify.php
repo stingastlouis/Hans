@@ -7,7 +7,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $fullname = $_POST['customer_fullname'];
     $email = $_POST['customer_email'];
     $phone = $_POST['customer_phone'];
-    $roleId = $_POST['customer_role_id'];
 
     try {
         $conn->beginTransaction();
@@ -35,15 +34,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt = $conn->prepare("UPDATE Customer 
                                SET Fullname = ?, 
                                    Email = ?, 
-                                   Phone = ?, 
-                                   RoleId = ? 
+                                   Phone = ?
                                WHERE Id = ?");
-        
+
         $stmt->execute([
             $fullname,
             $email,
             $phone,
-            $roleId,
             $customerId
         ]);
 
@@ -54,10 +51,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             throw new Exception("Error: Unable to update the customer member in the database.");
         }
-
     } catch (Exception $e) {
         $conn->rollBack();
-        
+
         $errorMessage = $e->getMessage();
         if (strpos($errorMessage, "Invalid email") !== false) {
             header('Location: ../customer.php?error=invalid_email');
@@ -76,4 +72,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     header('Location: ../customer.php');
     exit;
 }
-?>

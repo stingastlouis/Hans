@@ -3,13 +3,13 @@ include '../sessionManagement.php';
 include '../configs/constants.php';
 
 $role = $_SESSION['role'];
-if (!in_array($role, ALLOWED_EDITOR_ROLES)){
+if (!in_array($role, ALLOWED_EDITOR_ROLES)) {
     header("Location: ../unauthorised.php");
     exit;
 }
 
 include '../configs/db.php';
-include 'includes/header.php'; 
+include 'includes/header.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
 
@@ -47,7 +47,7 @@ $stmt2 = $conn->prepare("SELECT * FROM Role");
 $stmt2->execute();
 $roles = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-$stmt3 = $conn->prepare("SELECT * FROM Status");
+$stmt3 = $conn->prepare("SELECT * FROM Status WHERE Name IN('ACTIVE', 'INACTIVE')");
 $stmt3->execute();
 $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -71,8 +71,8 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                             <th>Latest Status</th>
                             <th>Date Created</th>
                             <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
-                            <th>Actions</th>
-                            <?php endif;?>
+                                <th>Actions</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
@@ -86,32 +86,32 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?= htmlspecialchars($customer['LatestStatus']) ?: 'No Status' ?></td>
                                 <td><?= htmlspecialchars($customer['DateCreated']) ?></td>
                                 <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
-                                <td>
-                                    <button class='btn btn-warning btn-sm edit-customer-btn' 
-                                        data-id='<?= $customer['Id'] ?>' 
-                                        data-fullname='<?= $customer['Fullname'] ?>' 
-                                        data-email='<?= $customer['Email'] ?>' 
-                                        data-phone='<?= $customer['Phone'] ?>' 
-                                        data-role-id='<?= $customer['RoleId'] ?>'>Edit</button>
-                                    <button class="btn btn-info btn-sm reset-password-btn" 
-                                        data-id="<?= $customer['Id'] ?>"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#resetPasswordModal">Reset Password</button>
-                                    <button class="btn btn-danger btn-sm btn-del" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#deleteCustomerModal" 
-                                        data-id="<?= $customer['Id'] ?>">Delete</button>
-                                    <form method="POST" action="status/add_customerStatus.php" style="display: inline; width:80px;">
-                                        <input type="hidden" name="customer_id" value="<?= $customer['Id'] ?>">
-                                        <input type="hidden" name="staff_id" value="<?= $staffId ?>">
-                                        <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
-                                            <option value="" disabled selected>Change Status</option>
-                                            <?php foreach ($statuses as $status): ?>
-                                                <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </form>
-                                </td>
+                                    <td>
+                                        <button class='btn btn-warning btn-sm edit-customer-btn'
+                                            data-id='<?= $customer['Id'] ?>'
+                                            data-fullname='<?= $customer['Fullname'] ?>'
+                                            data-email='<?= $customer['Email'] ?>'
+                                            data-phone='<?= $customer['Phone'] ?>'
+                                            data-role-id='<?= $customer['RoleId'] ?>'>Edit</button>
+                                        <button class="btn btn-info btn-sm reset-password-btn"
+                                            data-id="<?= $customer['Id'] ?>"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#resetPasswordModal">Reset Password</button>
+                                        <button class="btn btn-danger btn-sm btn-del"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteCustomerModal"
+                                            data-id="<?= $customer['Id'] ?>">Delete</button>
+                                        <form method="POST" action="status/add_customerStatus.php" style="display: inline; width:80px;">
+                                            <input type="hidden" name="customer_id" value="<?= $customer['Id'] ?>">
+                                            <input type="hidden" name="staff_id" value="<?= $staffId ?>">
+                                            <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                                                <option value="" disabled selected>Change Status</option>
+                                                <?php foreach ($statuses as $status): ?>
+                                                    <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </form>
+                                    </td>
                                 <?php endif; ?>
                             </tr>
                         <?php endforeach; ?>
@@ -156,7 +156,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="customer_id" id="editCustomerId">
-                    
+
                     <div class="mb-3">
                         <label for="editCustomerFullname" class="form-label">Full Name</label>
                         <input type="text" class="form-control" id="editCustomerFullname" name="customer_fullname" required>
@@ -168,14 +168,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                     <div class="mb-3">
                         <label for="editCustomerPhone" class="form-label">Phone</label>
                         <input type="tel" class="form-control" id="editCustomerPhone" name="customer_phone" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editCustomerRole" class="form-label">Role</label>
-                        <select class="form-select" id="editCustomerRole" name="customer_role_id" required>
-                            <?php foreach ($roles as $role): ?>
-                                <option value="<?= $role['Id'] ?>"><?= htmlspecialchars($role['Name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -255,13 +247,11 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
             const fullname = this.getAttribute('data-fullname');
             const email = this.getAttribute('data-email');
             const phone = this.getAttribute('data-phone');
-            const roleId = this.getAttribute('data-role-id');
 
             document.getElementById('editCustomerId').value = id;
             document.getElementById('editCustomerFullname').value = fullname;
             document.getElementById('editCustomerEmail').value = email;
             document.getElementById('editCustomerPhone').value = phone;
-            document.getElementById('editCustomerRole').value = roleId;
 
             const modal = new bootstrap.Modal(document.getElementById('editCustomerModal'));
             modal.show();
@@ -279,7 +269,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     document.querySelector('#resetPasswordModal form').addEventListener('submit', function(e) {
         const password = document.getElementById('newPassword').value;
         const confirm = document.getElementById('confirmPassword').value;
-        
+
         if (password !== confirm) {
             e.preventDefault();
             alert('Passwords do not match!');
@@ -289,9 +279,9 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 
 <script>
     function generatePassword() {
-        const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; 
-        const lowercase = 'abcdefghijkmnpqrstuvwxyz'; 
-        const numbers = '23456789'; 
+        const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        const lowercase = 'abcdefghijkmnpqrstuvwxyz';
+        const numbers = '23456789';
         const symbols = '!@#$%^&*';
         let password = '';
 
@@ -299,14 +289,14 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
         password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
         password += numbers.charAt(Math.floor(Math.random() * numbers.length));
         password += symbols.charAt(Math.floor(Math.random() * symbols.length));
-        
+
         const allChars = uppercase + lowercase + numbers + symbols;
         for (let i = password.length; i < 12; i++) {
             password += allChars.charAt(Math.floor(Math.random() * allChars.length));
         }
 
         password = password.split('').sort(() => Math.random() - 0.5).join('');
-        
+
         return password;
     }
 
@@ -314,7 +304,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
         const passwordField = document.getElementById('customerPassword');
         passwordField.value = generatePassword();
         passwordField.type = 'text';
-        
+
         setTimeout(() => {
             passwordField.type = 'password';
         }, 5000);
@@ -324,19 +314,19 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
         const passwordField = document.getElementById('customerNewPassword');
         passwordField.value = generatePassword();
         passwordField.type = 'text';
-        
+
         setTimeout(() => {
             passwordField.type = 'password';
         }, 5000);
     });
 
     document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('hidden.bs.modal', function () {
+        modal.addEventListener('hidden.bs.modal', function() {
             const forms = this.getElementsByTagName('form');
             for (let form of forms) {
                 form.reset();
             }
-            
+
             const passwordFields = this.querySelectorAll('input[type="text"][id$="Password"]');
             passwordFields.forEach(field => {
                 field.type = 'password';

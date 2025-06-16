@@ -1,10 +1,10 @@
-<?php 
+<?php
 
 include '../sessionManagement.php';
 include '../configs/constants.php';
 
 $role = $_SESSION['role'];
-if (!in_array($role, ALLOWED_EDITOR_ROLES)){
+if (!in_array($role, ALLOWED_EDITOR_ROLES)) {
     header("Location: ../unauthorised.php");
     exit;
 }
@@ -13,7 +13,7 @@ include 'includes/header.php';
 include '../configs/db.php';
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
 $staffId = $_SESSION["staff_id"];
-$limit = 10; 
+$limit = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
@@ -37,24 +37,23 @@ try {
     $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $stmt->closeCursor();  
+    $stmt->closeCursor();
 
-    $stmt2 = $conn->prepare("SELECT * FROM Status");
+    $stmt2 = $conn->prepare("SELECT * FROM Status WHERE Name IN ('ACTIVE', 'INACTIVE')");
     $stmt2->execute();
     $statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
-    $stmt2->closeCursor(); 
+    $stmt2->closeCursor();
 
     $stmt3 = $conn->prepare("SELECT * FROM Categories");
     $stmt3->execute();
     $categories = $stmt3->fetchAll(PDO::FETCH_ASSOC);
-    $stmt3->closeCursor(); 
+    $stmt3->closeCursor();
 
     $totalCountStmt = $conn->query("SELECT COUNT(*) FROM Products");
     $totalCount = $totalCountStmt->fetchColumn();
     $totalPages = ceil($totalCount / $limit);
-
 } catch (PDOException $e) {
-    die("SQL Error: " . $e->getMessage()); 
+    die("SQL Error: " . $e->getMessage());
 }
 ?>
 
@@ -85,7 +84,7 @@ try {
                             <th>Latest Status</th>
                             <th>Date Created</th>
                             <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
-                            <th>Actions</th>
+                                <th>Actions</th>
                             <?php endif; ?>
                         </tr>
                     </thead>
@@ -105,27 +104,27 @@ try {
                                 <td><?= htmlspecialchars($product['LatestStatus']) ?: 'No Status' ?></td>
                                 <td><?= htmlspecialchars($product['DateCreated']) ?></td>
                                 <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
-                                <td style="padding:10px">
-                                    <button class='btn btn-warning btn-sm edit-product-btn' 
-                                        data-id='<?= $product['Id'] ?>' 
-                                        data-name='<?= $product['Name'] ?>' 
-                                        data-category-id='<?= $product['CategoryId'] ?>' 
-                                        data-description='<?= $product['Description'] ?>' 
-                                        data-price='<?= $product['Price'] ?>'
-                                        data-discount='<?= $product['DiscountPrice'] ?>' 
-                                        data-stock='<?= $product['Stock'] ?>'>Edit</button>
-                                    <button class="btn btn-danger btn-sm btn-del" data-bs-toggle="modal" data-bs-target="#deleteProductModal" data-id="<?= $product['Id'] ?>">Delete</button>
-                                    <form method="POST" action="status/add_productStatus.php" style="display: inline;">
-                                        <input type="hidden" name="product_id" value="<?= $product['Id'] ?>">
-                                        <input type="hidden" name="staff_id" value="<?= $staffId ?>">
-                                        <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
-                                            <option value="" disabled selected>Change Status</option>
-                                            <?php foreach ($statuses as $status): ?>
-                                                <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </form>
-                                </td>
+                                    <td style="padding:10px">
+                                        <button class='btn btn-warning btn-sm edit-product-btn'
+                                            data-id='<?= $product['Id'] ?>'
+                                            data-name='<?= $product['Name'] ?>'
+                                            data-category-id='<?= $product['CategoryId'] ?>'
+                                            data-description='<?= $product['Description'] ?>'
+                                            data-price='<?= $product['Price'] ?>'
+                                            data-discount='<?= $product['DiscountPrice'] ?>'
+                                            data-stock='<?= $product['Stock'] ?>'>Edit</button>
+                                        <button class="btn btn-danger btn-sm btn-del" data-bs-toggle="modal" data-bs-target="#deleteProductModal" data-id="<?= $product['Id'] ?>">Delete</button>
+                                        <form method="POST" action="status/add_productStatus.php" style="display: inline;">
+                                            <input type="hidden" name="product_id" value="<?= $product['Id'] ?>">
+                                            <input type="hidden" name="staff_id" value="<?= $staffId ?>">
+                                            <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                                                <option value="" disabled selected>Change Status</option>
+                                                <?php foreach ($statuses as $status): ?>
+                                                    <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </form>
+                                    </td>
                                 <?php endif; ?>
                             </tr>
                         <?php endforeach; ?>
@@ -168,7 +167,7 @@ try {
             </div>
             <div class="modal-body">
                 <form action="product/add_product.php" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="staff_id" value="<?= $staffId ?>">
+                    <input type="hidden" name="staff_id" value="<?= $staffId ?>">
                     <div class="mb-3">
                         <label for="productName" class="form-label">Product Name</label>
                         <input type="text" class="form-control" id="productName" name="product_name" required>
@@ -242,7 +241,7 @@ try {
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="product_id" id="editProductId">
-                    
+
                     <div class="mb-3">
                         <label for="editProductName" class="form-label">Name</label>
                         <input type="text" class="form-control" id="editProductName" name="product_name">

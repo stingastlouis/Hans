@@ -274,7 +274,7 @@ $prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
 <script>
     var deleteButtons = document.querySelectorAll('.btn-del');
     deleteButtons.forEach(function(button) {
-        button.addBundleListener('click', function() {
+        button.addEventListener('click', function() {
             var bundleId = this.getAttribute('data-id');
             document.getElementById('bundleIdToDelete').value = bundleId;
         });
@@ -406,8 +406,6 @@ $prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
 
             document.getElementById('editAddedProductsList').innerHTML = '';
             editProducts.clear();
-
-            // Optionally use AJAX to fetch existing products for the bundle
             fetch(`bundle/fetch_bundle_products.php?bundle_id=${id}`)
                 .then(res => res.json())
                 .then(data => {
