@@ -9,6 +9,43 @@ function saveCart(cart) {
   localStorage.setItem(cartKey, JSON.stringify(cart));
 }
 
+// New addEventToCart function to handle selectedDates array
+function addEventToCart(id, name, basePrice, selectedDates, type) {
+  const cart = loadCart();
+
+  // Sort dates to ensure consistent identification
+  const sortedDates = [...selectedDates].sort();
+  const datesKey = sortedDates.join(',');
+
+  const existingItem = cart.find(
+    (item) => item.id === id && item.type === type && item.datesKey === datesKey
+  );
+
+  const unitPrice = basePrice;
+  const daysCount = sortedDates.length;
+  const totalPrice = unitPrice * daysCount;
+
+  if (existingItem) {
+    existingItem.quantity += 1;
+    existingItem.price = unitPrice * daysCount; // update price if needed
+  } else {
+    cart.push({
+      id,
+      name,
+      price: totalPrice,
+      quantity: 1,
+      type,
+      selectedDates: sortedDates,
+      datesKey,
+      unitPrice,
+    });
+  }
+
+  saveCart(cart);
+  updateCartUI(cart);
+}
+
+// Original addToCart function left as is (for other product types)
 function addToCart(id, name, price, quantity, type) {
   const cart = loadCart();
   const existingItem = cart.find(
@@ -52,6 +89,14 @@ function updateCartUI(cart) {
       const itemTotal = item.price * item.quantity;
       total += itemTotal;
 
+      let dateInfo = "";
+      if (item.selectedDates && item.selectedDates.length > 0) {
+        const sortedDates = item.selectedDates.slice().sort();
+        const firstDate = sortedDates[0];
+        const lastDate = sortedDates[sortedDates.length - 1];
+        dateInfo = `<br><small class="text-muted">From: ${firstDate} To: ${lastDate}</small>`;
+      }
+
       const listItem = document.createElement("li");
       listItem.classList.add(
         "list-group-item",
@@ -63,6 +108,7 @@ function updateCartUI(cart) {
         <div>
           <strong>${item.name} (${item.type})</strong><br>
           Rs ${item.price.toFixed(2)} x ${item.quantity}
+          ${dateInfo}
         </div>
         <div>
           <span>Rs ${itemTotal.toFixed(2)}</span>
@@ -142,17 +188,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const closeBtn = document.getElementById("close-cart");
-  if (closeBtn && floatingCart) {
-    closeBtn.addEventListener("click", () => {
-      floatingCart.style.display = "none";
-    });
-  }
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  const closeBtn = document.getElementById("close-cart");
-  const floatingCart = document.getElementById("cart-container");
-
   if (closeBtn && floatingCart) {
     closeBtn.addEventListener("click", () => {
       floatingCart.style.display = "none";

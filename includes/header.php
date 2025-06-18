@@ -41,11 +41,12 @@ $role = $_SESSION['role'] ?? "";
                     <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/" ? 'active' : ''; ?>" href="/hans/">Home</a></li>
                     <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/bundles" ? 'active' : ''; ?>" href="/hans/bundle.php">Bundles</a></li>
                     <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/products" ? 'active' : ''; ?>" href="/hans/product.php">Products</a></li>
+                    <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/events" ? 'active' : ''; ?>" href="/hans/event.php">Events</a></li>
                     <li class="nav-item"><a class="nav-link <?= $request == "$subDomain/contact" ? 'active' : ''; ?>" href="/hans/contact.php">Contact us</a></li>
                 </ul>
                 <?php if (!in_array($role, ALLOWED_ROLES)): ?>
                 <a href="#" id="cart-icon" class="btn btn-outline-secondary position-relative me-2">
-                        🛒 cart
+                        cart
                         <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                             0
                         </span>

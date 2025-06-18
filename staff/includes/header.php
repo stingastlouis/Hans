@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php 
+<?php
 include '../sessionManagement.php';
 require_once '../configs/constants.php';
 
 ?>
 
-<?php 
+<?php
 if (!isset($_SESSION['staff_id'])) {
     header("Location: ../unauthorised.php");
     exit;
@@ -14,6 +14,7 @@ if (!isset($_SESSION['staff_id'])) {
 
 
 ?>
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
@@ -27,57 +28,60 @@ if (!isset($_SESSION['staff_id'])) {
 
 <body id="page-top">
 
-<div id="wrapper">
+    <div id="wrapper">
         <nav class="navbar navbar-dark align-items-start sidebar sidebar-dark accordion bg-gradient-primary p-0">
             <div class="container-fluid d-flex flex-column p-0"><a class="navbar-brand d-flex justify-content-center align-items-center sidebar-brand m-0" href="../staff/">
-    
+
                     <div class="sidebar-brand-text mx-3">
-                    <span class="custom-header-icon bs-icon-sm shadow d-flex justify-content-center align-items-center me-2 bs-icon">
-                        <img src="../assets/img/spotlight.png" width="50" height="50"/>
-                    </span>
-                    <span>Light Store</span>
+                        <span class="custom-header-icon bs-icon-sm shadow d-flex justify-content-center align-items-center me-2 bs-icon">
+                            <img src="../assets/img/spotlight.png" width="50" height="50" />
+                        </span>
+                        <span>Light Store</span>
                     </div>
-            
+
                 </a>
                 <hr class="sidebar-divider my-0">
-                <?php $role = $_SESSION['role'];?>
+                <?php $role = $_SESSION['role']; ?>
 
-<ul class="navbar-nav text-light" id="accordionSidebar">
+                <ul class="navbar-nav text-light" id="accordionSidebar">
 
-    <?php if (in_array($role, ALLOWED_EDITOR_ROLES)): ?>
-        <li class="nav-item custom-nav-item">
-            <a class="nav-link active" href="../staff/"><span>Dashboard</span></a>
-        </li>
-        <li class="nav-item custom-nav-item">
-            <a class="nav-link" href="category.php"><span>Category</span></a>
-        </li>
-        <li class="nav-item custom-nav-item">
-            <a class="nav-link" href="role.php"><span>Role</span></a>
-        </li>
-        <li class="nav-item custom-nav-item">
-            <a class="nav-link" href="bundle.php"><span>Bundle</span></a>
-        </li>
-        <li class="nav-item custom-nav-item">
-            <a class="nav-link" href="product.php"><span>Product</span></a>
-        </li>
-        <li class="nav-item custom-nav-item">
-            <a class="nav-link" href="staff.php"><span>Staff</span></a>
-        </li>
-        <li class="nav-item custom-nav-item">
-            <a class="nav-link" href="order.php"><span>Order</span></a>
-        </li>
-        <li class="nav-item custom-nav-item">
-            <a class="nav-link" href="customer.php"><span>Customer</span></a>
-        </li>
-        <?php endif; ?>
+                    <?php if (in_array($role, ALLOWED_EDITOR_ROLES)): ?>
+                        <li class="nav-item custom-nav-item">
+                            <a class="nav-link active" href="../staff/"><span>Dashboard</span></a>
+                        </li>
+                        <li class="nav-item custom-nav-item">
+                            <a class="nav-link" href="category.php"><span>Category</span></a>
+                        </li>
+                        <li class="nav-item custom-nav-item">
+                            <a class="nav-link" href="role.php"><span>Role</span></a>
+                        </li>
+                        <li class="nav-item custom-nav-item">
+                            <a class="nav-link" href="bundle.php"><span>Bundle</span></a>
+                        </li>
+                        <li class="nav-item custom-nav-item">
+                            <a class="nav-link" href="product.php"><span>Product</span></a>
+                        </li>
+                        <li class="nav-item custom-nav-item">
+                            <a class="nav-link" href="staff.php"><span>Staff</span></a>
+                        </li>
+                        <li class="nav-item custom-nav-item">
+                            <a class="nav-link" href="order.php"><span>Order</span></a>
+                        </li>
+                        <li class="nav-item custom-nav-item">
+                            <a class="nav-link" href="event.php"><span>Event</span></a>
+                        </li>
+                        <li class="nav-item custom-nav-item">
+                            <a class="nav-link" href="customer.php"><span>Customer</span></a>
+                        </li>
+                    <?php endif; ?>
 
-        <?php if (in_array($role, ALLOWED_ROLES)): ?>
-        <li class="nav-item custom-nav-item">
-            <a class="nav-link" href="installation.php"><span>Installation</span></a>
-        </li>
-    <?php endif; ?>
+                    <?php if (in_array($role, ALLOWED_ROLES)): ?>
+                        <li class="nav-item custom-nav-item">
+                            <a class="nav-link" href="installation.php"><span>Installation</span></a>
+                        </li>
+                    <?php endif; ?>
 
-</ul>
+                </ul>
 
                 <div class="text-center d-none d-md-inline"><button class="btn rounded-circle border-0" id="sidebarToggle" type="button"></button></div>
             </div>
@@ -111,5 +115,3 @@ if (!isset($_SESSION['staff_id'])) {
                         </ul>
                     </div>
                 </nav>
-                
-           

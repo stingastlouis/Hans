@@ -170,6 +170,42 @@ CREATE TABLE `BundleProducts` (
 );
 
 
+-- Create table for Event
+CREATE TABLE `Event` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    ImagePath TEXT,
+    Description TEXT,
+    Price DOUBLE NOT NULL,
+    DiscountPrice DOUBLE,
+    DateCreated DATETIME NOT NULL
+);
+
+
+CREATE TABLE `EventProducts` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    EventId INT NOT NULL,
+    ProductId INT NOT NULL,
+    Quantity INT NOT NULL,
+    DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (EventId) REFERENCES Event(Id) ON DELETE CASCADE,
+    FOREIGN KEY (ProductId) REFERENCES Products(Id) ON DELETE CASCADE,
+    UNIQUE (EventId, ProductId)
+);
+
+-- Create table for EventStatus
+CREATE TABLE `EventStatus` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    EventId INT,
+    StatusId INT,
+    StaffId INT,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (EventId) REFERENCES Event(Id) ON DELETE CASCADE,
+    FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE,
+    FOREIGN KEY (StaffId) REFERENCES Staff(Id) ON DELETE CASCADE
+);
+
+
 -- Create table for BundleStatus
 CREATE TABLE `BundleStatus` (
     Id INT AUTO_INCREMENT PRIMARY KEY,
