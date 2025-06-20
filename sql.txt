@@ -1,7 +1,6 @@
 CREATE DATABASE light_service;
 
 
-
 -- Create table for Role
 CREATE TABLE `Role`  (
     Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -85,12 +84,9 @@ CREATE TABLE `Products` (
 CREATE TABLE `Order` (
     Id INT AUTO_INCREMENT PRIMARY KEY,
     CustomerId INT NOT NULL,
-    PaymentMethodId INT,
-    Tax DOUBLE NOT NULL DEFAULT 0,
     TotalAmount DOUBLE NOT NULL,
     DateCreated DATETIME NOT NULL,
-    FOREIGN KEY (CustomerId) REFERENCES Customer(Id) ON DELETE CASCADE,
-    FOREIGN KEY (PaymentMethodId) REFERENCES PaymentMethod(Id) ON DELETE SET NULL
+    FOREIGN KEY (CustomerId) REFERENCES Customer(Id) ON DELETE CASCADE
 );
 
 -- Create table for OrderStatus
@@ -103,18 +99,6 @@ CREATE TABLE `OrderStatus` (
     FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE,
     FOREIGN KEY (StatusId) REFERENCES Status(Id) ON DELETE CASCADE,
     FOREIGN KEY (StaffId) REFERENCES Staff(Id) ON DELETE CASCADE
-);
-
-CREATE TABLE `OrderItem` (
-    Id INT AUTO_INCREMENT PRIMARY KEY,
-    OrderId INT NOT NULL,
-    ProductId INT NOT NULL,
-    Quantity INT NOT NULL,
-    UnitPrice DOUBLE NOT NULL,
-    Subtotal DOUBLE NOT NULL,
-    OrderType ENUM('product', 'bundle') NOT NULL,
-    DateCreated DATETIME NOT NULL,
-    FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE
 );
 
 -- Create table for Bundle
@@ -133,8 +117,6 @@ CREATE TABLE Payment (
     CustomerId INT NOT NULL,
     OrderId INT NOT NULL,
     PaymentMethodId INT NOT NULL,
-    TransactionId INT NOT NULL,
-    Amount DOUBLE NOT NULL,
     DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (CustomerId) REFERENCES Customer(Id) ON DELETE CASCADE,
     FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE,
@@ -218,6 +200,33 @@ CREATE TABLE `BundleStatus` (
     FOREIGN KEY (StaffId) REFERENCES Staff(Id) ON DELETE CASCADE
 );
 
+CREATE TABLE `OrderItem` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    OrderId INT NOT NULL,
+    ProductId INT NULL,
+    EventId INT NULL,
+    BundleId INT NULL,
+    Quantity INT NOT NULL,
+    UnitPrice DOUBLE NOT NULL,
+    Subtotal DOUBLE NOT NULL,
+    OrderType ENUM('product', 'bundle','event') NOT NULL,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE,
+    FOREIGN KEY (ProductId) REFERENCES Products(Id) ON DELETE CASCADE,
+    FOREIGN KEY (EventId) REFERENCES Event(Id) ON DELETE CASCADE,
+    FOREIGN KEY (BundleId) REFERENCES Bundle(Id) ON DELETE CASCADE
+);
+
+-- Create table for ProductStatus
+CREATE TABLE `EventRental` (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    OrderItemId INT,
+    RentalStartDate DATETIME,
+    RentalEndDate DATETIME,
+    DateCreated DATETIME NOT NULL,
+    FOREIGN KEY (OrderItemId) REFERENCES OrderItem(Id) ON DELETE CASCADE
+);
+
 -- Create table for CustomerStatus
 CREATE TABLE `CustomerStatus` (
     Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -246,6 +255,7 @@ CREATE TABLE `Installation` (
     StaffId INT,
     OrderId INT,
     Location Text,
+    InstallationCost DOUBLE,
     InstallationDate DATETIME NOT NULL,
     DateCreated DATETIME NOT NULL,
     FOREIGN KEY (StaffId) REFERENCES Staff(Id) ON DELETE CASCADE,
@@ -275,7 +285,8 @@ INSERT INTO Role (Name) VALUES('Admin');
 INSERT INTO Role (Name) VALUES('Viewer');
 
 -- Add Payment PaymentMethod
-INSERT INTO `PaymentMethod` (`Name`, `Description`, `DateCreated`) VALUES ('Paypal', 'Online payment', '2025-04-26 00:42:49.000000');
+INSERT INTO `PaymentMethod` (`Name`, `Description`, `DateCreated`) VALUES ('Paypal', 'Direct Payment', '2025-04-26 00:42:49.000000');
+INSERT INTO `PaymentMethod` (`Name`, `Description`, `DateCreated`) VALUES ('Online Payment', 'Manual Payment', '2025-04-26 00:42:49.000000');
 
 
 -- Add First Admin
@@ -286,3 +297,6 @@ INSERT INTO Staff (Fullname, Email, Phone, PasswordHash, RoleId) VALUES ('Hans',
 -- Add Admin Status
 INSERT INTO `StaffStatus` ( `StaffId`, `StatusId`, `DateCreated`) VALUES ((SELECT Id FROM Staff WHERE Phone = '5912'),(SELECT Id FROM Status WHERE Name = 'ACTIVE'), '2025-04-25 21:19:04.000000');
 
+-- sb-kykw36542808@personal.example.com
+
+-- mt7^z6WJ

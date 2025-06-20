@@ -1,4 +1,6 @@
-<?php include "includes/header.php"; include './configs/db.php'; $isAdmin = isset($_SESSION['staff_id']); ?>
+<?php include "includes/header.php";
+include './configs/db.php';
+$isAdmin = isset($_SESSION['staff_id']); ?>
 
 <div class="container py-4">
     <h1 class="text-center mb-4">Product Page</h1>
@@ -50,18 +52,17 @@
 
     <div class="row">
 
-    <?php
-    $searchTerm = isset($_GET['search']) ? strtolower($_GET['search']) : ''; 
-    $category = isset($_GET['category']) ? (int)$_GET['category'] : null;
-    $sort = isset($_GET['sort']) ? $_GET['sort'] : null;
+        <?php
+        $searchTerm = isset($_GET['search']) ? strtolower($_GET['search']) : '';
+        $category = isset($_GET['category']) ? (int)$_GET['category'] : null;
+        $sort = isset($_GET['sort']) ? $_GET['sort'] : null;
 
-    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    $limit = 9;
-    $offset = ($page - 1) * $limit;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $limit = 9;
+        $offset = ($page - 1) * $limit;
 
-    try {
-        // Build the SQL query dynamically based on search and category filters
-        $query = "
+        try {
+            $query = "
             SELECT p.*, 
                    ps.StatusId, 
                    s.Name AS StatusName
@@ -76,41 +77,41 @@
             AND LOWER(s.Name) = 'active'
         ";
 
-        if ($category) {
-            $query .= " AND p.CategoryId = :category";
-        }
-        if ($searchTerm) {
-            $query .= " AND LOWER(p.Name) LIKE :searchTerm";
-        }
-        if ($sort) {
-            $query .= $sort == 'asc' ? " ORDER BY p.Price ASC" : " ORDER BY p.Price DESC";
-        } else {
-            $query .= " ORDER BY p.DateCreated DESC";
-        }
+            if ($category) {
+                $query .= " AND p.CategoryId = :category";
+            }
+            if ($searchTerm) {
+                $query .= " AND LOWER(p.Name) LIKE :searchTerm";
+            }
+            if ($sort) {
+                $query .= $sort == 'asc' ? " ORDER BY p.Price ASC" : " ORDER BY p.Price DESC";
+            } else {
+                $query .= " ORDER BY p.DateCreated DESC";
+            }
 
-        $query .= " LIMIT :limit OFFSET :offset";
+            $query .= " LIMIT :limit OFFSET :offset";
 
-        $stmt = $conn->prepare($query);
+            $stmt = $conn->prepare($query);
 
-        if ($category) {
-            $stmt->bindParam(':category', $category, PDO::PARAM_INT);
-        }
-        if ($searchTerm) {
-            $stmt->bindValue(':searchTerm', '%' . $searchTerm . '%', PDO::PARAM_STR);
-        }
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+            if ($category) {
+                $stmt->bindParam(':category', $category, PDO::PARAM_INT);
+            }
+            if ($searchTerm) {
+                $stmt->bindValue(':searchTerm', '%' . $searchTerm . '%', PDO::PARAM_STR);
+            }
+            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
 
-        $stmt->execute();
-        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stmt->execute();
+            $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if (!empty($products)) {
-            echo '<div class="row">';
-            foreach ($products as $product) {
-                $hasDiscount = !empty($product['DiscountPrice']) && $product['DiscountPrice'] > 0;
-                $isOutOfStock = empty($product['Stock']) || $product['Stock'] <= 0;
+            if (!empty($products)) {
+                echo '<div class="row">';
+                foreach ($products as $product) {
+                    $hasDiscount = !empty($product['DiscountPrice']) && $product['DiscountPrice'] > 0;
+                    $isOutOfStock = empty($product['Stock']) || $product['Stock'] <= 0;
 
-                echo ' 
+                    echo ' 
                     <div class="col-md-4 mb-4">
                         <div class="card" style="height: 450px; display: flex; flex-direction: column; justify-content: space-between;">
                             <img src="./assets/uploads/' . htmlspecialchars($product['ImagePath']) . '" class="card-img-top" alt="' . htmlspecialchars($product['Name']) . '" style="object-fit: cover; height: 200px;">
@@ -129,8 +130,6 @@
                                     <strong>Stock:</strong> ' . intval($product['Stock']) . '
                                 </p>';
 
-                // Only show the Add to Cart section if the user is not an admin
-                if (!$isAdmin) {
                     echo ' 
                         <div class="d-flex align-items-center mt-auto">
                             <input type="number" class="form-control me-2 quantity-input" min="1" max="' . intval($product['Stock']) . '" value="1" style="width: 70px;" ' . ($isOutOfStock ? 'disabled' : '') . '>
@@ -144,16 +143,15 @@
                                 Add to Cart
                             </button>
                         </div>';
-                }
 
-                echo '
+                    echo '
                             </div>
                         </div>
                     </div>';
-            }
-            echo '</div>';
+                }
+                echo '</div>';
 
-            $stmtCount = $conn->prepare("
+                $stmtCount = $conn->prepare("
                 SELECT COUNT(*) FROM Products p
                 LEFT JOIN ProductStatus ps ON p.Id = ps.ProductId
                 LEFT JOIN Status s ON ps.StatusId = s.Id
@@ -164,22 +162,22 @@
                 )
                 AND LOWER(s.Name) = 'active'
             ");
-            $stmtCount->execute();
-            $totalProducts = $stmtCount->fetchColumn();
-            $totalPages = ceil($totalProducts / $limit);
+                $stmtCount->execute();
+                $totalProducts = $stmtCount->fetchColumn();
+                $totalPages = ceil($totalProducts / $limit);
 
-            echo '<nav aria-label="Page navigation"><ul class="pagination justify-content-center">';
-            for ($i = 1; $i <= $totalPages; $i++) {
-                echo '<li class="page-item ' . ($i == $page ? 'active' : '') . '"><a class="page-link" href="?page=' . $i . '&search=' . htmlspecialchars($_GET['search'] ?? '') . '&category=' . htmlspecialchars($_GET['category'] ?? '') . '&sort=' . htmlspecialchars($_GET['sort'] ?? '') . '">' . $i . '</a></li>';
+                echo '<nav aria-label="Page navigation"><ul class="pagination justify-content-center">';
+                for ($i = 1; $i <= $totalPages; $i++) {
+                    echo '<li class="page-item ' . ($i == $page ? 'active' : '') . '"><a class="page-link" href="?page=' . $i . '&search=' . htmlspecialchars($_GET['search'] ?? '') . '&category=' . htmlspecialchars($_GET['category'] ?? '') . '&sort=' . htmlspecialchars($_GET['sort'] ?? '') . '">' . $i . '</a></li>';
+                }
+                echo '</ul></nav>';
+            } else {
+                echo '<p>No products available.</p>';
             }
-            echo '</ul></nav>';
-        } else {
-            echo '<p>No products available.</p>';
+        } catch (PDOException $e) {
+            echo 'Error: ' . $e->getMessage();
         }
-    } catch (PDOException $e) {
-        echo 'Error: ' . $e->getMessage();
-    }
-    ?>
+        ?>
     </div>
 </div>
 

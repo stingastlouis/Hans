@@ -80,8 +80,7 @@
                         echo '<p class="card-text"><em>No associated products</em></p>';
                     }
 
-                    if (!$isAdmin) {
-                        echo '
+                    echo '
                         <div class="mt-auto">
                             <button class="btn btn-primary add-to-bundle-cart" 
                                 data-id="' . htmlspecialchars($bundle['Id']) . '" 
@@ -91,7 +90,6 @@
                                 Add to Cart
                             </button>
                         </div>';
-                    }
 
                     echo '
                             </div>

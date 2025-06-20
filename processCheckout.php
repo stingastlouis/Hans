@@ -2,32 +2,44 @@
 include './configs/db.php';
 session_start();
 
+
+$conn->beginTransaction();
+
 $data = json_decode(file_get_contents("php://input"), true);
 
-if (!$data) {
-    echo json_encode(["success" => false, "message" => "Invalid JSON data"]);
-    exit();
+if ($data) {
+    $paymentMethodId = $data['paymentMethodId'] ?? null;
+    $cartItems = $data['cartItems'] ?? [];
+    $transactionId = $data['transactionId'] ?? null;
+    $totalAmount = $data['amount'] ?? 0;
+    $installationRequired = $data['installationRequired'] ?? false;
+    $installationDate = $data['installationDate'] ?? null;
+    $latLng = $data['latLng'] ?? null;
+} else {
+    $paymentMethodId = $_POST['paymentMethodId'] ?? null;
+    $cartItems = $_SESSION['cart'] ?? [];
+    $totalAmount = $_POST['totalAmount']; // You should calculate or receive this from form or session
+    $installationRequired = isset($_POST['installationRequired']);
+    $installationDate = $_POST['installationDate'] ?? null;
+    $lat = $_POST['lat'] ?? null;
+    $lng = $_POST['lng'] ?? null;
+    $latLng = ($lat && $lng) ? "$lat,$lng" : null;
 }
 
 $customerId = $_SESSION['customerId'];
-$paymentMethodId = $data['paymentMethodId'];
-$cartItems = $data['cartItems'];
-$transactionId = $data['transactionId'];
-$amount = $data['amount'];
-$installationRequired = $data['installationRequired'];
-$latLng = $data['latLng'];
-$_SESSION['orderSuccess'] = true;
+// $paymentMethodId = $data['paymentMethodId'];
+// $cartItems = $data['cartItems'];
+// $transactionId = $data['transactionId'];
+// $totalAmount = $data['amount'];
+// $installationRequired = $data['installationRequired'];
+// $installationDate = $data['installationDate'];
+// $latLng = $data['latLng'];
 
-$taxRate = 0.15;
-$tax = $amount * $taxRate;
-$totalAmount = $amount + $tax;
 
-$query = "INSERT INTO `Order` (CustomerId, PaymentMethodId, Tax, TotalAmount, DateCreated) 
-          VALUES (:customerId, :paymentMethodId, :tax, :totalAmount, NOW())";
+$query = "INSERT INTO `Order` (CustomerId, TotalAmount, DateCreated) 
+          VALUES (:customerId, :totalAmount, NOW())";
 $stmt = $conn->prepare($query);
 $stmt->bindValue(':customerId', $customerId, PDO::PARAM_INT);
-$stmt->bindValue(':paymentMethodId', $paymentMethodId, PDO::PARAM_INT);
-$stmt->bindValue(':tax', $tax, PDO::PARAM_STR);
 $stmt->bindValue(':totalAmount', $totalAmount, PDO::PARAM_STR);
 
 if ($stmt->execute()) {
@@ -50,6 +62,8 @@ if ($stmt->execute()) {
         $stmt->bindValue(':subtotal', $subtotal, PDO::PARAM_STR);
         $stmt->bindValue(':type', $itemType, PDO::PARAM_STR);
         $stmt->execute();
+        $orderItemId = $conn->lastInsertId();
+
 
         if ($itemType === 'product') {
             $checkStockQuery = "SELECT Stock FROM `Products` WHERE Id = :productId";
@@ -68,8 +82,47 @@ if ($stmt->execute()) {
                 echo json_encode(['success' => false, 'message' => 'Not enough stock for product']);
                 exit();
             }
+        } elseif ($itemType === 'bundle') {
+            $bundleId = $item['id'];
+
+            $bundleProductsQuery = "SELECT ProductId, Quantity FROM `BundleProducts` WHERE BundleId = :bundleId";
+            $bundleProductsStmt = $conn->prepare($bundleProductsQuery);
+            $bundleProductsStmt->bindValue(':bundleId', $bundleId, PDO::PARAM_INT);
+            $bundleProductsStmt->execute();
+
+            while ($bundleProduct = $bundleProductsStmt->fetch(PDO::FETCH_ASSOC)) {
+                $bundleProductId = $bundleProduct['ProductId'];
+                $bundleProductQuantity = $bundleProduct['Quantity'];
+
+                $checkStockQuery = "SELECT Stock FROM `Products` WHERE Id = :productId";
+                $checkStockStmt = $conn->prepare($checkStockQuery);
+                $checkStockStmt->bindValue(':productId', $bundleProductId, PDO::PARAM_INT);
+                $checkStockStmt->execute();
+                $productStock = $checkStockStmt->fetch(PDO::FETCH_ASSOC)['Stock'];
+
+                if ($productStock >= ($bundleProductQuantity * $quantity)) {
+                    $updateStockQuery = "UPDATE `Products` SET Stock = Stock - :quantity WHERE Id = :productId";
+                    $updateStockStmt = $conn->prepare($updateStockQuery);
+                    $updateStockStmt->bindValue(':quantity', $bundleProductQuantity * $quantity, PDO::PARAM_INT);
+                    $updateStockStmt->bindValue(':productId', $bundleProductId, PDO::PARAM_INT);
+                    $updateStockStmt->execute();
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Not enough stock for product in bundle']);
+                    exit();
+                }
+            }
         } elseif ($itemType === 'event') {
             $eventId = $item['id'];
+            $rentalStartDate = $item['selectedDates'][0];
+            $rentalEndDate = end($item['selectedDates']);
+
+            $eventRentalQuery = "INSERT INTO EventRental (OrderItemId, RentalStartDate, RentalEndDate, DateCreated) 
+                                VALUES (:orderItemId, :startDate, :endDate, NOW())";
+            $stmtRental = $conn->prepare($eventRentalQuery);
+            $stmtRental->bindValue(':orderItemId', $orderItemId, PDO::PARAM_INT);
+            $stmtRental->bindValue(':startDate', $rentalStartDate, PDO::PARAM_STR);
+            $stmtRental->bindValue(':endDate', $rentalEndDate, PDO::PARAM_STR);
+            $stmtRental->execute();
 
             $eventProductsQuery = "SELECT ProductId, Quantity FROM `EventProducts` WHERE EventId = :eventId";
             $eventProductsStmt = $conn->prepare($eventProductsQuery);
@@ -100,22 +153,62 @@ if ($stmt->execute()) {
         }
     }
 
-    $query = "INSERT INTO `Payment` (CustomerId, OrderId, PaymentMethodId, TransactionId, Amount, DateCreated) 
-              VALUES (:customerId, :orderId, :paymentMethodId, :transactionId, :amount, NOW())";
+    $query = "INSERT INTO `Payment` (CustomerId, OrderId, PaymentMethodId, DateCreated) 
+              VALUES (:customerId, :orderId, :paymentMethodId, NOW())";
     $stmt = $conn->prepare($query);
     $stmt->bindValue(':customerId', $customerId, PDO::PARAM_INT);
     $stmt->bindValue(':orderId', $orderId, PDO::PARAM_INT);
     $stmt->bindValue(':paymentMethodId', $paymentMethodId, PDO::PARAM_INT);
-    $stmt->bindValue(':transactionId', $transactionId, PDO::PARAM_STR);
-    $stmt->bindValue(':amount', $amount, PDO::PARAM_STR);
     $stmt->execute();
+    $paymentId = $conn->lastInsertId();
+
+    $paymentMethodNameQuery = "SELECT Name FROM PaymentMethod WHERE Id = :paymentMethodId";
+    $stmtMethod = $conn->prepare($paymentMethodNameQuery);
+    $stmtMethod->bindValue(':paymentMethodId', $paymentMethodId, PDO::PARAM_INT);
+    $stmtMethod->execute();
+    $paymentMethodName = $stmtMethod->fetchColumn();
+
+    if (strtolower($paymentMethodName) === 'paypal') {
+        $paypalInsertQuery = "INSERT INTO PaypalPayment (PaymentId, TransactionId, DateCreated)
+                              VALUES (:paymentId, :transactionId, NOW())";
+        $stmtPaypal = $conn->prepare($paypalInsertQuery);
+        $stmtPaypal->bindValue(':paymentId', $paymentId, PDO::PARAM_INT);
+        $stmtPaypal->bindValue(':transactionId', $transactionId, PDO::PARAM_STR);
+        $stmtPaypal->execute();
+    } elseif (strtolower($paymentMethodName) === 'online payment') {
+        $screenshotName = null;
+
+        if (isset($_FILES['paymentScreenshot'])) {
+            $uploadDir = './assets/uploads/payments/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            $filename = uniqid('screenshot_', true) . '_' . basename($_FILES['paymentScreenshot']['name']);
+            $targetFile = $uploadDir . $filename;
+
+            if (move_uploaded_file($_FILES['paymentScreenshot']['tmp_name'], $targetFile)) {
+                $screenshotName = $filename;
+            }
+        }
+
+        $manualInsertQuery = "INSERT INTO ManualPayment (PaymentId, ScreenshotImage, DateCreated)
+                              VALUES (:paymentId, :screenshotImage, NOW())";
+        $stmtManual = $conn->prepare($manualInsertQuery);
+        $stmtManual->bindValue(':paymentId', $paymentId, PDO::PARAM_INT);
+        $stmtManual->bindValue(':screenshotImage', $screenshotName, PDO::PARAM_STR);
+        $stmtManual->execute();
+    }
+
 
     if ($installationRequired) {
-        $installationQuery = "INSERT INTO `Installation` (OrderId, `Location`, DateCreated) 
-                              VALUES (:orderId, :location, NOW())";
+        $installationQuery = "INSERT INTO `Installation` (OrderId, `Location`, InstallationCost, InstallationDate, DateCreated) 
+                              VALUES (:orderId, :location, :installationCost, :installationDate, NOW())";
         $stmt = $conn->prepare($installationQuery);
         $stmt->bindValue(':orderId', $orderId, PDO::PARAM_INT);
         $stmt->bindValue(':location', $latLng, PDO::PARAM_STR);
+        $stmt->bindValue(':installationCost', 20, PDO::PARAM_STR);
+        $stmt->bindValue(':installationDate', $installationDate, PDO::PARAM_STR);
         $stmt->execute();
         $installationId = $conn->lastInsertId();
 
@@ -152,23 +245,28 @@ if ($stmt->execute()) {
         $stmtOrderCompleted->execute();
     }
 
-    $customerEmailQuery = "SELECT Email FROM Customer WHERE Id = :customerId";
-    $stmtEmail = $conn->prepare($customerEmailQuery);
-    $stmtEmail->bindValue(':customerId', $customerId, PDO::PARAM_INT);
-    $stmtEmail->execute();
-    $customerEmail = $stmtEmail->fetchColumn();
+    // $customerEmailQuery = "SELECT Email FROM Customer WHERE Id = :customerId";
+    // $stmtEmail = $conn->prepare($customerEmailQuery);
+    // $stmtEmail->bindValue(':customerId', $customerId, PDO::PARAM_INT);
+    // $stmtEmail->execute();
+    // $customerEmail = $stmtEmail->fetchColumn();
 
-    if ($customerEmail) {
-        $to = $customerEmail;
-        $subject = "Order Confirmation - Order #$orderId";
-        $message = "Dear Customer,\n\nThank you for your order. Your order ID is $orderId.\nTotal amount: Rs " . number_format($totalAmount, 2) . "\n\nLight Service Ltd";
-        $headers = "From: no-reply@yourdomain.com";
+    // if ($customerEmail) {
+    //     $to = $customerEmail;
+    //     $subject = "Order Confirmation - Order #$orderId";
+    //     $message = "Dear Customer,\n\nThank you for your order. Your order ID is $orderId.\nTotal amount: Rs " . number_format($totalAmount, 2) . "\n\nLight Service Ltd";
+    //     $headers = "From: no-reply@yourdomain.com";
 
-        mail($to, $subject, $message, $headers);
+    //     mail($to, $subject, $message, $headers);
+    // }
+
+    $_SESSION['orderSuccess'] = true;
+    if ($data) {
+        echo json_encode(['success' => true, 'orderId' => $orderId, 'paypalTransaction' => $transactionId, 'total' => $totalAmount]);
+    } else {
+        header("Location: ./profile.php#order-history");
+        exit();
     }
-
-    echo json_encode(['success' => true, 'orderId' => $orderId, 'paypalTransaction' => $transactionId, 'total'=> $totalAmount]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Failed to process the order']);
 }
-?>

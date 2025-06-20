@@ -9,11 +9,8 @@ function saveCart(cart) {
   localStorage.setItem(cartKey, JSON.stringify(cart));
 }
 
-// New addEventToCart function to handle selectedDates array
 function addEventToCart(id, name, basePrice, selectedDates, type) {
   const cart = loadCart();
-
-  // Sort dates to ensure consistent identification
   const sortedDates = [...selectedDates].sort();
   const datesKey = sortedDates.join(',');
 
@@ -27,7 +24,7 @@ function addEventToCart(id, name, basePrice, selectedDates, type) {
 
   if (existingItem) {
     existingItem.quantity += 1;
-    existingItem.price = unitPrice * daysCount; // update price if needed
+    existingItem.price = unitPrice * daysCount; 
   } else {
     cart.push({
       id,
@@ -45,7 +42,6 @@ function addEventToCart(id, name, basePrice, selectedDates, type) {
   updateCartUI(cart);
 }
 
-// Original addToCart function left as is (for other product types)
 function addToCart(id, name, price, quantity, type) {
   const cart = loadCart();
   const existingItem = cart.find(
