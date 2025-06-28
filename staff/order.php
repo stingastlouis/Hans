@@ -1,15 +1,15 @@
 <?php
 include '../sessionManagement.php';
 include '../configs/constants.php';
-
+include './statusManagement.php';
 $role = $_SESSION['role'];
 if (!in_array($role, ALLOWED_EDITOR_ROLES)) {
-    header("Location: ../unauthorised.php");
-    exit;
+  header("Location: ../unauthorised.php");
+  exit;
 }
 
 include '../configs/db.php';
-include 'includes/header.php'; 
+include 'includes/header.php';
 
 $success = isset($_GET["success"]) ? $_GET["success"] : null;
 
@@ -19,185 +19,303 @@ $page = max($page, 1);
 $offset = ($page - 1) * $itemsPerPage;
 $staffId = $_SESSION["staff_id"];
 
-$totalStmt = $conn->query("SELECT COUNT(*) FROM `Order`");
+// Prepare filters
+$whereClauses = [];
+$params = [];
+
+if (!empty($_GET['receipt'])) {
+  $whereClauses[] = "r.ExternalId LIKE :receipt";
+  $params[':receipt'] = "%" . $_GET['receipt'] . "%";
+}
+if (!empty($_GET['transaction'])) {
+  $whereClauses[] = "pp.TransactionId LIKE :transaction";
+  $params[':transaction'] = "%" . $_GET['transaction'] . "%";
+}
+if (!empty($_GET['customer'])) {
+  $whereClauses[] = "c.Fullname LIKE :customer";
+  $params[':customer'] = "%" . $_GET['customer'] . "%";
+}
+if (!empty($_GET['order_id'])) {
+  $whereClauses[] = "o.Id = :order_id";
+  $params[':order_id'] = $_GET['order_id'];
+}
+if (!empty($_GET['status'])) {
+  $whereClauses[] = "s.Name = :status";
+  $params[':status'] = $_GET['status'];
+}
+
+$whereSQL = count($whereClauses) ? 'WHERE ' . implode(' AND ', $whereClauses) : '';
+
+$totalStmt = $conn->prepare("SELECT COUNT(DISTINCT o.Id) FROM `Order` o 
+LEFT JOIN OrderItem oi ON o.Id = oi.OrderId
+LEFT JOIN Customer c ON o.CustomerId = c.Id
+LEFT JOIN (
+    SELECT os1.* FROM OrderStatus os1
+    INNER JOIN (SELECT OrderId, MAX(DateCreated) AS MaxDate FROM OrderStatus GROUP BY OrderId) os2 
+    ON os1.OrderId = os2.OrderId AND os1.DateCreated = os2.MaxDate
+) os ON o.Id = os.OrderId
+LEFT JOIN Status s ON os.StatusId = s.Id
+LEFT JOIN Payment p ON o.Id = p.OrderId
+LEFT JOIN PaypalPayment pp ON pp.PaymentId = p.Id
+LEFT JOIN Receipt r ON r.OrderId = o.Id
+$whereSQL");
+foreach ($params as $key => $value) {
+  $totalStmt->bindValue($key, $value);
+}
+$totalStmt->execute();
 $totalOrders = $totalStmt->fetchColumn();
 $totalPages = ceil($totalOrders / $itemsPerPage);
 
 $stmt = $conn->prepare("
-    SELECT 
-        o.Id AS order_id,
-        o.DateCreated, 
-        o.TotalAmount, 
-        c.Fullname AS CustomerName, 
-        (CASE WHEN oi.OrderType = 'product' THEN 'Product' ELSE 'Event' END) AS OrderType,
-        s.Name AS OrderStatus,
-        p.TransactionId
-    FROM 
-        `Order` o
-    JOIN 
-        Customer c ON o.CustomerId = c.Id
-    LEFT JOIN 
-        OrderItem oi ON o.Id = oi.OrderId
-    LEFT JOIN 
-        (
-            SELECT os1.*
-            FROM OrderStatus os1
-            INNER JOIN (
-                SELECT OrderId, MAX(DateCreated) AS MaxDate
-                FROM OrderStatus
-                GROUP BY OrderId
-            ) os2 ON os1.OrderId = os2.OrderId AND os1.DateCreated = os2.MaxDate
-        ) os ON o.Id = os.OrderId
-    LEFT JOIN 
-        Status s ON os.StatusId = s.Id
-    LEFT JOIN 
-        Payment p ON o.Id = p.OrderId
-    GROUP BY 
-        o.Id
-    ORDER BY 
-        o.DateCreated DESC
-    LIMIT 
-        :limit OFFSET :offset;
+  SELECT 
+    o.Id AS order_id,
+    o.DateCreated, 
+    o.TotalAmount, 
+    i.Location,
+    c.Fullname AS CustomerName, 
+    s.Name AS OrderStatus,
+    pp.TransactionId,
+    r.ReceiptPath,
+    r.ExternalId,
+    ins_staff.Fullname AS InstallationSupervisor,
+    final_installation_status.InstallationStatusName AS InstallationStatus,
+    (
+      SELECT COUNT(*) 
+      FROM OrderItem oi2 
+      WHERE oi2.OrderId = o.Id AND oi2.OrderType = 'event'
+    ) AS HasEventItem
+  FROM `Order` o
+  JOIN Customer c ON o.CustomerId = c.Id
+  LEFT JOIN OrderItem oi ON o.Id = oi.OrderId
+  LEFT JOIN (
+      SELECT os1.* 
+      FROM OrderStatus os1
+      INNER JOIN (
+          SELECT OrderId, MAX(DateCreated) AS MaxDate 
+          FROM OrderStatus 
+          GROUP BY OrderId
+      ) os2 
+      ON os1.OrderId = os2.OrderId AND os1.DateCreated = os2.MaxDate
+  ) os ON o.Id = os.OrderId
+  LEFT JOIN Status s ON os.StatusId = s.Id
+  LEFT JOIN Payment p ON o.Id = p.OrderId
+  LEFT JOIN PaypalPayment pp ON pp.PaymentId = p.Id
+  LEFT JOIN Receipt r ON r.OrderId = o.Id
+  LEFT JOIN Installation i ON o.Id = i.OrderId
+  LEFT JOIN Staff ins_staff ON i.StaffId = ins_staff.Id
+
+  -- Join to get latest Installation Status Name
+  LEFT JOIN (
+    SELECT latest_ins_status.OrderId, st.Name AS InstallationStatusName
+    FROM (
+      SELECT i.OrderId, is1.StatusId
+      FROM Installation i
+      INNER JOIN (
+        SELECT OrderId, MAX(DateCreated) AS MaxInstallDate
+        FROM Installation
+        GROUP BY OrderId
+      ) latest_install 
+        ON i.OrderId = latest_install.OrderId 
+        AND i.DateCreated = latest_install.MaxInstallDate
+      INNER JOIN (
+        SELECT InstallationId, MAX(DateCreated) AS MaxStatusDate
+        FROM InstallationStatus
+        GROUP BY InstallationId
+      ) latest_status 
+        ON i.Id = latest_status.InstallationId
+      INNER JOIN InstallationStatus is1 
+        ON is1.InstallationId = i.Id 
+        AND is1.DateCreated = latest_status.MaxStatusDate
+    ) latest_ins_status
+    INNER JOIN Status st ON latest_ins_status.StatusId = st.Id
+  ) final_installation_status ON final_installation_status.OrderId = o.Id
+
+  $whereSQL
+  GROUP BY o.Id
+  ORDER BY o.DateCreated DESC
+  LIMIT :limit OFFSET :offset
 ");
 
 
+
+foreach ($params as $key => $value) {
+  $stmt->bindValue($key, $value);
+}
 $stmt->bindValue(':limit', $itemsPerPage, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-
 $stmt4 = $conn->prepare("SELECT * FROM Status");
 $stmt4->execute();
 $statuses = $stmt4->fetchAll(PDO::FETCH_ASSOC);
+
+
+$stmt5 = $conn->prepare("SELECT s.Id, s.Fullname
+FROM Staff s
+JOIN Role r ON s.RoleId = r.Id
+JOIN (
+    SELECT ss.StaffId, ss.StatusId
+    FROM StaffStatus ss
+    INNER JOIN (
+        SELECT StaffId, MAX(DateCreated) AS LatestStatus
+        FROM StaffStatus
+        GROUP BY StaffId
+    ) latest ON ss.StaffId = latest.StaffId AND ss.DateCreated = latest.LatestStatus
+) latestStatus ON latestStatus.StaffId = s.Id
+JOIN Status st ON latestStatus.StatusId = st.Id
+WHERE r.Name = 'installer' AND st.Name = 'ACTIVE';
+");
+$stmt5->execute();
+$installers = $stmt5->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<div class="container mt-4">
-    <h2>Orders</h2>
-    <table class="table table-bordered">
-    <thead>
-    <tr>
-        <th>Order ID</th>
-        <th>Customer</th>
-        <th>Paypal Transaction ID</th>
-        <th>Total Amount</th>
-        <th>Date Created</th>
-        <th>Order Status</th>  
-        <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
-            <th>Actions</th>
-        <?php endif; ?>
-    </tr>
-</thead>
-<tbody>
-    <?php foreach ($orders as $order) { ?>
-        <tr>
-            <td><?= htmlspecialchars($order['order_id']) ?></td>
-            <td><?= htmlspecialchars($order['CustomerName']) ?></td>
-            <td><?= htmlspecialchars($order['TransactionId']) ?></td>
-            <td><?= number_format($order['TotalAmount'], 2) ?></td>
-            <td><?= date('Y-m-d H:i:s', strtotime($order['DateCreated'])) ?></td>
-            <td><?= htmlspecialchars($order['OrderStatus']) ?></td> 
-            <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
-            <td>
-            <form method="POST" action="status/add_orderStatus.php" style="display: inline;">
-                                        <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
-                                        <input type="hidden" name="staff_id" value="<?= $staffId ?>">
-                                        <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
-                                            <option value="" disabled selected>Change Status</option>
-                                            <?php foreach ($statuses as $status): ?>
-                                                <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </form>
-                
-                <button class="btn btn-info view-order-items-btn" 
-                    data-id="<?= $order['order_id'] ?>" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#viewOrderItemsModal">
-                    View Order Items
-                </button>
-            </td>
-            <?php endif; ?>
-        </tr>
-    <?php } ?>
-</tbody>
+<div class="container py-4">
+  <h2 class="mb-4 text-primary"> Manage Orders</h2>
 
-    </table>
-
-    <nav aria-label="Page navigation">
-        <ul class="pagination">
-            <?php for ($i = 1; $i <= $totalPages; $i++) { ?>
-                <li class="page-item <?= $page == $i ? 'active' : '' ?>">
-                    <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>
-                </li>
-            <?php } ?>
-        </ul>
-    </nav>
-</div>
-
-<script src="./utils/message.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', handleSuccessOrErrorModal);
-</script>
-
-<?php include 'includes/footer.php';  ?>
-
-
-<div class="modal fade" id="viewOrderItemsModal" tabindex="-1" aria-labelledby="viewOrderItemsModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="viewOrderItemsModalLabel">Order Items</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div id="order-items-content">
-          <p>Loading...</p>
-        </div>
-      </div>
+  <form method="GET" class="row g-3 align-items-end bg-light p-3 rounded shadow-sm">
+    <div class="col-md-2">
+      <label class="form-label">Receipt</label>
+      <input type="text" name="receipt" class="form-control" value="<?= htmlspecialchars($_GET['receipt'] ?? '') ?>">
     </div>
+    <div class="col-md-2">
+      <label class="form-label">PayPal Txn ID</label>
+      <input type="text" name="transaction" class="form-control" value="<?= htmlspecialchars($_GET['transaction'] ?? '') ?>">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Customer Name</label>
+      <input type="text" name="customer" class="form-control" value="<?= htmlspecialchars($_GET['customer'] ?? '') ?>">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Order ID</label>
+      <input type="text" name="order_id" class="form-control" value="<?= htmlspecialchars($_GET['order_id'] ?? '') ?>">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Status</label>
+      <select name="status" class="form-select">
+        <option value="">All Statuses</option>
+        <?php foreach ($statuses as $status): ?>
+          <option value="<?= $status['Name'] ?>" <?= ($_GET['status'] ?? '') === $status['Name'] ? 'selected' : '' ?>>
+            <?= htmlspecialchars($status['Name']) ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+    <div class="col-md-1">
+      <button type="submit" class="btn btn-success w-100">Search</button>
+    </div>
+    <div class="col-md-1">
+      <a href="<?= strtok($_SERVER["REQUEST_URI"], '?') ?>" class="btn btn-secondary w-100"> Reset</a>
+    </div>
+  </form>
+
+  <div class="table-responsive mt-4">
+    <table class="table table-hover table-bordered align-middle">
+      <thead class="table-primary">
+        <tr>
+          <th>Order ID</th>
+          <th>Customer</th>
+          <th>PayPal Txn</th>
+          <th>Receipt</th>
+          <th>Rental Dates</th>
+          <th>Installation Supervisor</th>
+          <th>Total</th>
+          <th>Created</th>
+          <th>Status</th>
+          <th>Installation Status</th>
+          <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
+            <th>Actions</th>
+          <?php endif; ?>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($orders as $order): ?>
+          <tr>
+            <td>#<?= htmlspecialchars($order['order_id']) ?></td>
+            <td><?= htmlspecialchars($order['CustomerName']) ?></td>
+            <td><?= htmlspecialchars($order['TransactionId']) ?: '<span class="text-muted">N/A</span>' ?></td>
+            <td>
+              <?php if (!empty($order['ReceiptPath'])): ?>
+                <a href="../<?= htmlspecialchars($order['ReceiptPath']) ?>" target="_blank" class="btn btn-outline-secondary btn-sm">
+                  View
+                </a>
+              <?php else: ?>
+                <span class="text-muted">No receipt</span>
+              <?php endif; ?>
+            </td>
+            <td>
+              <?php if ($order['HasEventItem'] > 0): ?>
+                <a href="view_rental_dates.php?order_id=<?= $order['order_id'] ?>" class="btn btn-outline-primary btn-sm">
+                  View Dates
+                </a>
+              <?php else: ?>
+                <span class="text-muted">N/A</span>
+              <?php endif; ?>
+            </td>
+            <td><?= htmlspecialchars($order['InstallationSupervisor'] ?? 'N/A') ?></td>
+            <td>$<?= number_format($order['TotalAmount'], 2) ?></td>
+            <td><?= date('Y-m-d H:i', strtotime($order['DateCreated'])) ?></td>
+            <td><span class="badge bg-info text-dark"><?= htmlspecialchars($order['OrderStatus']) ?></span></td>
+            <td>
+              <?php if (!empty($order['InstallationStatus'])): ?>
+                <span class="badge bg-secondary"><?= htmlspecialchars($order['InstallationStatus']) ?></span>
+              <?php else: ?>
+                <span class="text-muted">N/A</span>
+              <?php endif; ?>
+            </td>
+
+            <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
+              <td>
+                <form method="POST" action="status/add_orderStatus.php" class="d-inline">
+                  <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
+                  <input type="hidden" name="staff_id" value="<?= $staffId ?>">
+                  <select name="status_id" class="form-select form-select-sm d-inline w-auto" onchange="this.form.submit()">
+                    <option disabled selected>Change</option>
+                    <?php var_dump($statuses);
+                    var_dump($order['OrderStatus']); ?>
+                    <?php foreach (getAvailableStatuses($statuses, $order['OrderStatus']) as $status): ?>
+                      <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </form>
+
+                <?php if (
+                  strtolower($order['OrderStatus']) === 'confirmed' &&
+                  empty($order['InstallationSupervisor']) &&
+                  !empty($order['Location'])
+                ): ?>
+
+                  <form method="POST" action="assign_installer.php" style="margin: 0;">
+                    <input type="hidden" name="orderId" value="<?= $order['order_id'] ?>" />
+                    <input type="hidden" name="staffId" value="<?= $staffId ?>">
+                    <select name="installerId" class="form-select form-select-sm"
+                      style="width: 140px; background-color: #f8f9fa; color: #333; border: 1px solid #ccc;"
+                      onchange="this.form.submit()">
+                      <option value="" disabled selected>Assign Supervisor</option>
+                      <?php foreach ($installers as $installer): ?>
+                        <option value="<?= $installer['Id'] ?>"><?= htmlspecialchars($installer['Fullname']) ?></option>
+                      <?php endforeach; ?>
+                    </select>
+                  </form>
+                <?php endif; ?>
+              </td>
+            <?php endif; ?>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
   </div>
+
+  <!-- Pagination -->
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+      <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+        <li class="page-item <?= $page == $i ? 'active' : '' ?>">
+          <a class="page-link" href="?<?= http_build_query(array_merge($_GET, ['page' => $i])) ?>"><?= $i ?></a>
+        </li>
+      <?php endfor; ?>
+    </ul>
+  </nav>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const viewOrderItemsButtons = document.querySelectorAll('.view-order-items-btn');
 
-  viewOrderItemsButtons.forEach(button => {
-    button.addEventListener('click', function () {
-      const orderId = this.getAttribute('data-id');
-      const orderItemsContent = document.getElementById('order-items-content');
-      orderItemsContent.innerHTML = '<p>Loading...</p>';
-
-      fetch('orderitem.php?order_id=' + orderId)
-        .then(response => response.json())
-        .then(data => {
-          if (data.error) {
-            orderItemsContent.innerHTML = `<p class="text-danger">${data.error}</p>`;
-          } else if (data.message) {
-            orderItemsContent.innerHTML = `<p>${data.message}</p>`;
-          } else {
-            let table = '<table class="table table-bordered">';
-            table += '<thead><tr><th>Product</th><th>Quantity</th><th>Unit Price</th><th>Subtotal</th></tr></thead><tbody>';
-            
-            data.forEach(item => {
-              table += `<tr>
-                <td>${item.product_name}</td>
-                <td>${item.Quantity}</td>
-                <td>${item.UnitPrice}</td>
-                <td>${item.Subtotal}</td>
-              </tr>`;
-            });
-
-            table += '</tbody></table>';
-            orderItemsContent.innerHTML = table;
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching order items:', error);
-          orderItemsContent.innerHTML = '<p class="text-danger">An error occurred while loading order items.</p>';
-        });
-    });
-  });
-});
-</script>
+<?php include 'includes/footer.php'; ?>

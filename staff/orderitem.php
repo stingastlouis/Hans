@@ -17,15 +17,22 @@ if ($orderId <= 0) {
 }
 
 $stmt = $conn->prepare("
-    SELECT oi.Id AS order_item_id,
-           p.Name AS product_name,
-           oi.Quantity,
-           oi.UnitPrice,
-           oi.Subtotal
-    FROM OrderItem oi
-    LEFT JOIN Products p ON oi.ProductId = p.Id
-    WHERE oi.OrderId = :orderId
+  SELECT 
+    oi.Id,
+    oi.Quantity,
+    oi.UnitPrice,
+    oi.Subtotal,
+    oi.OrderType,
+    p.Name AS ProductName,
+    b.Name AS BundleName,
+    e.Name AS EventName
+  FROM OrderItem oi
+  LEFT JOIN Products p ON oi.ProductId = p.Id
+  LEFT JOIN Bundle b ON oi.BundleId = b.Id
+  LEFT JOIN Event e ON oi.EventId = e.Id
+  WHERE oi.OrderId = :orderId
 ");
+
 $stmt->bindValue(':orderId', $orderId, PDO::PARAM_INT);
 $stmt->execute();
 
@@ -36,4 +43,3 @@ if ($orderItems) {
 } else {
     echo json_encode(['message' => 'No items found for this order']);
 }
-?>

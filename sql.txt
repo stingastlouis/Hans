@@ -223,8 +223,19 @@ CREATE TABLE `EventRental` (
     OrderItemId INT,
     RentalStartDate DATETIME,
     RentalEndDate DATETIME,
+    Return BOOLEAN NOT NULL DEFAULT FALSE,
     DateCreated DATETIME NOT NULL,
     FOREIGN KEY (OrderItemId) REFERENCES OrderItem(Id) ON DELETE CASCADE
+);
+
+-- Receipt Table
+CREATE TABLE Receipt (
+  Id INT PRIMARY KEY AUTO_INCREMENT,
+  OrderId INT,
+  ExternalId Text,
+  ReceiptPath Text,
+  DateCreated DATETIME,
+  FOREIGN KEY (OrderId) REFERENCES `Order`(Id) ON DELETE CASCADE
 );
 
 -- Create table for CustomerStatus
@@ -275,10 +286,20 @@ CREATE TABLE `InstallationStatus` (
 
 
 -- Add Statuses
-INSERT INTO `Status`(`Name`, `Description`, `DateCreated`) VALUES ('ACTIVE','The task or process is currently in progress and being worked on.',NOW());
-INSERT INTO `Status`(`Name`, `Description`, `DateCreated`) VALUES ('INACTIVE','The task or process is not currently being worked on or is paused.',NOW());
-INSERT INTO `Status`(`Name`, `Description`, `DateCreated`) VALUES ('IN PROGRESS','The task or process has started and is being actively worked on but is not yet completed.',NOW());
-INSERT INTO `Status`(`Name`, `Description`, `DateCreated`) VALUES ('COMPLETED','The task or process is completed',NOW());
+INSERT INTO `Status`(`Name`, `Description`, `DateCreated`) VALUES 
+('ACTIVE', 'The order or task is currently active or ongoing.', NOW()),
+('INACTIVE', 'The order or task is inactive or disabled.', NOW()),
+('READY-FOR-PICKUP', 'The order is ready to be picked up by the customer.', NOW()),
+('IN-TRANSIT', 'The order is currently on its way to the customer.', NOW()),
+('INSTALLED', 'The installation has been completed.', NOW()),
+('COMPLETED', 'The order or task has been fully completed.', NOW()),
+('CONFIRMED', 'The order or task has been confirmed.', NOW()),
+('CANCELLED', 'The order has been cancelled and will not be processed further.', NOW()),
+('PENDING', 'The order is awaiting payment or approval.', NOW()),
+('PROCESSING', 'The order is being processed.', NOW()),
+('COLLECTED', 'The order has been collected by the customer.', NOW()),
+('RE-STOCK', 'The item has been returned to inventory or is restocked.', NOW());
+
 -- Add Roles
 INSERT INTO Role (Name) VALUES('Installer');
 INSERT INTO Role (Name) VALUES('Admin');

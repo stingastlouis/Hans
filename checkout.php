@@ -282,6 +282,7 @@ foreach ($cartItems as $item) {
                     })
                     .then(res => res.json())
                     .then(data => {
+
                         if (data.success) {
                             sessionStorage.setItem('orderId', data.orderId);
                             sessionStorage.setItem('paypalTransaction', data.paypalTransaction);

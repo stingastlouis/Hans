@@ -5,94 +5,97 @@
             <tr>
                 <th>#</th>
                 <th>Order Date</th>
-                <th>Items</th>
+                <th>Receipt</th>
                 <th>Total</th>
                 <th>Status</th>
             </tr>
         </thead>
         <tbody>
             <?php
-
             if (isset($_SESSION['customerId'])) {
                 try {
-                    $stmt2 = $conn->prepare("
-                    SELECT o.Id AS OrderId, o.TotalAmount, o.DateCreated AS OrderDate, 
-                           os.StatusId, s.Name AS StatusName, 
-                           oi.ProductId, p.Name AS ProductName, oi.Quantity, oi.UnitPrice, oi.Subtotal
+                    $ordersPerPage = 10;
+                    $currentPage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+                    $offset = ($currentPage - 1) * $ordersPerPage;
+
+                    // Get total number of orders
+                    $countStmt = $conn->prepare("SELECT COUNT(*) FROM `Order` WHERE CustomerId = :customerId");
+                    $countStmt->bindParam(':customerId', $_SESSION['customerId'], PDO::PARAM_INT);
+                    $countStmt->execute();
+                    $totalOrders = $countStmt->fetchColumn();
+                    $totalPages = ceil($totalOrders / $ordersPerPage);
+
+                    // Get orders with receipt and status
+                    $orderStmt = $conn->prepare("
+                    SELECT o.Id AS OrderId, o.TotalAmount, o.DateCreated, 
+                           s.Name AS StatusName,
+                           r.ReceiptPath
                     FROM `Order` o
-                    LEFT JOIN OrderStatus os ON o.Id = os.OrderId 
+                    LEFT JOIN OrderStatus os ON o.Id = os.OrderId
                     LEFT JOIN Status s ON os.StatusId = s.Id
-                    LEFT JOIN OrderItem oi ON o.Id = oi.OrderId
-                    LEFT JOIN Products p ON oi.ProductId = p.Id
+                    LEFT JOIN Receipt r ON o.Id = r.OrderId
                     WHERE o.CustomerId = :customerId
                     AND (
                         os.Id = (
-                            SELECT MAX(os_inner.Id) 
-                            FROM OrderStatus os_inner 
+                            SELECT MAX(os_inner.Id)
+                            FROM OrderStatus os_inner
                             WHERE os_inner.OrderId = o.Id
                         ) OR os.Id IS NULL
                     )
+                    GROUP BY o.Id
                     ORDER BY o.DateCreated DESC
-                    ");
-
-                    $stmt2->bindParam(':customerId', $_SESSION['customerId'], PDO::PARAM_INT);
-                    $stmt2->execute();
-
-                    $orders = $stmt2->fetchAll(PDO::FETCH_ASSOC);
-
+                    LIMIT :limit OFFSET :offset
+                ");
+                    $orderStmt->bindParam(':customerId', $_SESSION['customerId'], PDO::PARAM_INT);
+                    $orderStmt->bindValue(':limit', $ordersPerPage, PDO::PARAM_INT);
+                    $orderStmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+                    $orderStmt->execute();
+                    $orders = $orderStmt->fetchAll(PDO::FETCH_ASSOC);
 
                     if (!empty($orders)) {
-                        $orderCount = 1;
-                        $orderItems = [];
-                        $orderStatuses = [];
-
+                        $orderCount = 1 + $offset;
 
                         foreach ($orders as $order) {
+                            $orderDate = (new DateTime($order['DateCreated']))->format('Y-m-d');
+                            $totalAmount = $order['TotalAmount'];
+                            $status = $order['StatusName'] ?? 'Not Available';
+                            $receiptPath = $order['ReceiptPath'];
 
-                            $orderItems[$order['OrderId']][] = [
-                                'productName' => $order['ProductName'],
-                                'quantity' => $order['Quantity']
-                            ];
-
-                            $orderStatuses[$order['OrderId']] = $order['StatusName'] ?? 'Not Available';
-                        }
-
-                        foreach ($orderItems as $orderId => $items) {
-                            $itemList = '<ul>';
-                            foreach ($items as $item) {
-                                $itemList .= "<li>{$item['productName']} x {$item['quantity']}</li>";
-                            }
-                            $itemList .= '</ul>';
-                            $orderDate = (new DateTime($orders[0]['OrderDate']))->format('Y-m-d');
-
-                            $totalAmount = 0;
-                            foreach ($orders as $order) {
-                                if ($order['OrderId'] == $orderId) {
-                                    $totalAmount = $order['TotalAmount'];
-                                    break;
-                                }
-                            }
+                            $receiptButton = $receiptPath
+                                ? "<a href='{$receiptPath}' target='_blank' class='btn btn-sm btn-primary'>View Receipt</a>"
+                                : "<span class='text-muted'>Not Available</span>";
 
                             echo "
-                                <tr>
-                                    <td>{$orderCount}</td>
-                                    <td>{$orderDate}</td>
-                                    <td>{$itemList}</td>
-                                    <td>Rs " . number_format($totalAmount, 2) . "</td>
-                                    <td>{$orderStatuses[$orderId]}</td>
-                                </tr>
-                            ";
-
+                            <tr>
+                                <td>{$orderCount}</td>
+                                <td>{$orderDate}</td>
+                                <td>{$receiptButton}</td>
+                                <td>Rs " . number_format($totalAmount, 2) . "</td>
+                                <td>{$status}</td>
+                            </tr>
+                        ";
                             $orderCount++;
                         }
                     } else {
                         echo '<tr><td colspan="5" class="text-center">No orders found.</td></tr>';
                     }
                 } catch (PDOException $e) {
-                    echo "Error: " . $e->getMessage();
+                    echo "<tr><td colspan='5'>Error: " . $e->getMessage() . "</td></tr>";
                 }
             }
             ?>
         </tbody>
     </table>
+
+    <?php if (!empty($totalPages) && $totalPages > 1): ?>
+        <nav>
+            <ul class="pagination justify-content-center">
+                <?php for ($page = 1; $page <= $totalPages; $page++): ?>
+                    <li class="page-item <?= $page == $currentPage ? 'active' : '' ?>">
+                        <a class="page-link" href="?page=<?= $page ?>#order-history"><?= $page ?></a>
+                    </li>
+                <?php endfor; ?>
+            </ul>
+        </nav>
+    <?php endif; ?>
 </div>

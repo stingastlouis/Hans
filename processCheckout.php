@@ -1,5 +1,6 @@
 <?php
 include './configs/db.php';
+include 'utils/pdfUtil.php';
 session_start();
 
 
@@ -51,17 +52,39 @@ if ($stmt->execute()) {
         $quantity = $item['quantity'];
         $unitPrice = $item['price'];
         $subtotal = $unitPrice * $quantity;
+        $productId = null;
+        $bundleId = null;
+        $eventId = null;
 
-        $query = "INSERT INTO `OrderItem` (OrderId, ProductId, Quantity, UnitPrice, Subtotal, DateCreated, OrderType) 
-                  VALUES (:orderId, :productId, :quantity, :unitPrice, :subtotal, NOW(), :type)";
+        switch (strtolower($itemType)) {
+            case 'product':
+                $productId = $item['id'];
+                break;
+            case 'bundle':
+                $bundleId = $item['id'];
+                break;
+            case 'event':
+                $eventId = $item['id'];
+                break;
+        }
+
+
+        $query = "INSERT INTO `OrderItem` 
+        (OrderId, ProductId, EventId, BundleId, Quantity, UnitPrice, Subtotal, OrderType, DateCreated) 
+        VALUES 
+        (:orderId, :productId, :eventId, :bundleId, :quantity, :unitPrice, :subtotal, :orderType, NOW())";
+
         $stmt = $conn->prepare($query);
         $stmt->bindValue(':orderId', $orderId, PDO::PARAM_INT);
-        $stmt->bindValue(':productId', $productId, PDO::PARAM_INT);
+        $stmt->bindValue(':productId', $productId, $productId !== null ? PDO::PARAM_INT : PDO::PARAM_NULL);
+        $stmt->bindValue(':eventId', $eventId, $eventId !== null ? PDO::PARAM_INT : PDO::PARAM_NULL);
+        $stmt->bindValue(':bundleId', $bundleId, $bundleId !== null ? PDO::PARAM_INT : PDO::PARAM_NULL);
         $stmt->bindValue(':quantity', $quantity, PDO::PARAM_INT);
         $stmt->bindValue(':unitPrice', $unitPrice, PDO::PARAM_STR);
         $stmt->bindValue(':subtotal', $subtotal, PDO::PARAM_STR);
-        $stmt->bindValue(':type', $itemType, PDO::PARAM_STR);
+        $stmt->bindValue(':orderType', $itemType, PDO::PARAM_STR);
         $stmt->execute();
+
         $orderItemId = $conn->lastInsertId();
 
 
@@ -212,7 +235,7 @@ if ($stmt->execute()) {
         $stmt->execute();
         $installationId = $conn->lastInsertId();
 
-        $statusQuery = "SELECT Id FROM Status WHERE Name = 'IN PROGRESS' LIMIT 1";
+        $statusQuery = "SELECT Id FROM Status WHERE Name = 'PENDING' LIMIT 1";
         $stmtStatus = $conn->prepare($statusQuery);
         $stmtStatus->execute();
         $status = $stmtStatus->fetch(PDO::FETCH_ASSOC);
@@ -229,7 +252,7 @@ if ($stmt->execute()) {
         }
     }
 
-    $completedStatusQuery = "SELECT Id FROM Status WHERE Name = 'COMPLETED' LIMIT 1";
+    $completedStatusQuery = "SELECT Id FROM Status WHERE Name = 'PROCESSING' LIMIT 1";
     $stmtCompletedStatus = $conn->prepare($completedStatusQuery);
     $stmtCompletedStatus->execute();
     $completedStatus = $stmtCompletedStatus->fetch(PDO::FETCH_ASSOC);
@@ -245,21 +268,20 @@ if ($stmt->execute()) {
         $stmtOrderCompleted->execute();
     }
 
-    // $customerEmailQuery = "SELECT Email FROM Customer WHERE Id = :customerId";
-    // $stmtEmail = $conn->prepare($customerEmailQuery);
-    // $stmtEmail->bindValue(':customerId', $customerId, PDO::PARAM_INT);
-    // $stmtEmail->execute();
-    // $customerEmail = $stmtEmail->fetchColumn();
+    $externalId = generateExternalId($orderId);
+    $installationCost = $installationRequired ? 20 : 0;
+    $pdfPath = createPdfReceipt($conn, $orderId, $customerId,  $externalId, $paymentMethodName, $installationRequired, $installationCost);
 
-    // if ($customerEmail) {
-    //     $to = $customerEmail;
-    //     $subject = "Order Confirmation - Order #$orderId";
-    //     $message = "Dear Customer,\n\nThank you for your order. Your order ID is $orderId.\nTotal amount: Rs " . number_format($totalAmount, 2) . "\n\nLight Service Ltd";
-    //     $headers = "From: no-reply@yourdomain.com";
 
-    //     mail($to, $subject, $message, $headers);
-    // }
+    $receiptInsert = "INSERT INTO Receipt (OrderId, ReceiptPath, ExternalId, DateCreated) 
+                  VALUES (:orderId, :pdfPath, :externalId, NOW())";
+    $stmtReceipt = $conn->prepare($receiptInsert);
+    $stmtReceipt->bindValue(':orderId', $orderId, PDO::PARAM_INT);
+    $stmtReceipt->bindValue(':pdfPath', $pdfPath, PDO::PARAM_STR);
+    $stmtReceipt->bindValue(':externalId', $externalId, PDO::PARAM_STR);
+    $stmtReceipt->execute();
 
+    $conn->commit();
     $_SESSION['orderSuccess'] = true;
     if ($data) {
         echo json_encode(['success' => true, 'orderId' => $orderId, 'paypalTransaction' => $transactionId, 'total' => $totalAmount]);
