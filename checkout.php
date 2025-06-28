@@ -13,7 +13,7 @@ $paymentMethods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $cartItems = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 $customerId = $_SESSION['customerId'];
-$paymentMethodId = 1;
+
 
 $totalAmount = 0;
 
@@ -265,7 +265,7 @@ foreach ($cartItems as $item) {
                 const lng = document.getElementById('lng').value;
 
                 const payload = {
-                    paymentMethodId: <?= $paymentMethodId ?>,
+                    paymentMethodId: document.getElementById('paymentMethod').value,
                     cartItems: <?= json_encode($cartItems) ?>,
                     transactionId: details.id,
                     amount: details.purchase_units[0].amount.value,

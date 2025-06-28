@@ -37,6 +37,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $updateStmt = $conn->prepare("UPDATE EventRental SET `Returned` = TRUE WHERE OrderItemId IN ($inClause)");
                 $updateStmt->execute($eventOrderItemIds);
             }
+
+            $installationStmt = $conn->prepare("SELECT Id FROM Installation WHERE OrderId = :orderId");
+            $installationStmt->execute([':orderId' => $orderId]);
+            $installationId = $installationStmt->fetchColumn();
+
+            if ($installationId) {
+                $installedStatusStmt = $conn->prepare("SELECT Id FROM Status WHERE Name = 'Installed' LIMIT 1");
+                $installedStatusStmt->execute();
+                $installedStatusId = $installedStatusStmt->fetchColumn();
+
+                if ($installedStatusId) {
+                    $insertInstallationStatus = $conn->prepare("
+                        INSERT INTO InstallationStatus (installationid, statusid, staffid, datecreated)
+                        VALUES (:installationid, :statusid, :staffid, :datecreated)
+                    ");
+                    $insertInstallationStatus->execute([
+                        ':installationid' => $installationId,
+                        ':statusid' => $installedStatusId,
+                        ':staffid' => $staffId,
+                        ':datecreated' => $date
+                    ]);
+                }
+            }
         } elseif (strtolower($statusName) === 'cancelled') {
             $stmt = $conn->prepare("SELECT * FROM OrderItem WHERE OrderId = :orderId");
             $stmt->bindValue(':orderId', $orderId);

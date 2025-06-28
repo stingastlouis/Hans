@@ -298,6 +298,7 @@ INSERT INTO `Status`(`Name`, `Description`, `DateCreated`) VALUES
 ('PENDING', 'The order is awaiting payment or approval.', NOW()),
 ('PROCESSING', 'The order is being processed.', NOW()),
 ('COLLECTED', 'The order has been collected by the customer.', NOW()),
+('READY-FOR-INSTALLATION', 'The order is ready for installation.', NOW()),
 ('RE-STOCK', 'The item has been returned to inventory or is restocked.', NOW());
 
 -- Add Roles

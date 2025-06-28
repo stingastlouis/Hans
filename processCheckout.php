@@ -19,7 +19,7 @@ if ($data) {
 } else {
     $paymentMethodId = $_POST['paymentMethodId'] ?? null;
     $cartItems = $_SESSION['cart'] ?? [];
-    $totalAmount = $_POST['totalAmount']; // You should calculate or receive this from form or session
+    $totalAmount = $_POST['totalAmount'];
     $installationRequired = isset($_POST['installationRequired']);
     $installationDate = $_POST['installationDate'] ?? null;
     $lat = $_POST['lat'] ?? null;

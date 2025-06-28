@@ -72,9 +72,12 @@ $stmt = $conn->prepare("
     o.DateCreated, 
     o.TotalAmount, 
     i.Location,
+    i.Id AS InstallationId,
     c.Fullname AS CustomerName, 
     s.Name AS OrderStatus,
     pp.TransactionId,
+    op.ScreenShotImage,
+    pm.Name AS PaymentMethod,
     r.ReceiptPath,
     r.ExternalId,
     ins_staff.Fullname AS InstallationSupervisor,
@@ -99,12 +102,12 @@ $stmt = $conn->prepare("
   ) os ON o.Id = os.OrderId
   LEFT JOIN Status s ON os.StatusId = s.Id
   LEFT JOIN Payment p ON o.Id = p.OrderId
+  LEFT JOIN PaymentMethod pm ON p.PaymentMethodId = pm.Id
   LEFT JOIN PaypalPayment pp ON pp.PaymentId = p.Id
+  LEFT JOIN ManualPayment op ON op.PaymentId = p.Id
   LEFT JOIN Receipt r ON r.OrderId = o.Id
   LEFT JOIN Installation i ON o.Id = i.OrderId
   LEFT JOIN Staff ins_staff ON i.StaffId = ins_staff.Id
-
-  -- Join to get latest Installation Status Name
   LEFT JOIN (
     SELECT latest_ins_status.OrderId, st.Name AS InstallationStatusName
     FROM (
@@ -214,7 +217,7 @@ $installers = $stmt5->fetchAll(PDO::FETCH_ASSOC);
         <tr>
           <th>Order ID</th>
           <th>Customer</th>
-          <th>PayPal Txn</th>
+          <th>Payment Verification</th>
           <th>Receipt</th>
           <th>Rental Dates</th>
           <th>Installation Supervisor</th>
@@ -232,7 +235,15 @@ $installers = $stmt5->fetchAll(PDO::FETCH_ASSOC);
           <tr>
             <td>#<?= htmlspecialchars($order['order_id']) ?></td>
             <td><?= htmlspecialchars($order['CustomerName']) ?></td>
-            <td><?= htmlspecialchars($order['TransactionId']) ?: '<span class="text-muted">N/A</span>' ?></td>
+            <td>
+              <?php if (!empty($order['TransactionId'])): ?>
+                <?= htmlspecialchars($order['TransactionId']) ?>
+              <?php elseif (!empty($order['ScreenShotImage'])): ?>
+                <a href="../assets/uploads/payments/<?= htmlspecialchars($order['ScreenShotImage']) ?>" target="_blank" class="btn btn-outline-secondary btn-sm">View Screenshot</a>
+              <?php else: ?>
+                <span class="text-muted">N/A</span>
+              <?php endif; ?>
+            </td>
             <td>
               <?php if (!empty($order['ReceiptPath'])): ?>
                 <a href="../<?= htmlspecialchars($order['ReceiptPath']) ?>" target="_blank" class="btn btn-outline-secondary btn-sm">
@@ -265,37 +276,53 @@ $installers = $stmt5->fetchAll(PDO::FETCH_ASSOC);
 
             <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
               <td>
-                <form method="POST" action="status/add_orderStatus.php" class="d-inline">
-                  <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
-                  <input type="hidden" name="staff_id" value="<?= $staffId ?>">
-                  <select name="status_id" class="form-select form-select-sm d-inline w-auto" onchange="this.form.submit()">
-                    <option disabled selected>Change</option>
-                    <?php var_dump($statuses);
-                    var_dump($order['OrderStatus']); ?>
-                    <?php foreach (getAvailableStatuses($statuses, $order['OrderStatus']) as $status): ?>
-                      <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
-                    <?php endforeach; ?>
-                  </select>
-                </form>
-
                 <?php if (
-                  strtolower($order['OrderStatus']) === 'confirmed' &&
-                  empty($order['InstallationSupervisor']) &&
-                  !empty($order['Location'])
+                  strtoupper($order['OrderStatus']) !== 'COMPLETED' &&
+                  strtoupper($order['OrderStatus']) !== 'CANCELLED'
                 ): ?>
-
-                  <form method="POST" action="assign_installer.php" style="margin: 0;">
-                    <input type="hidden" name="orderId" value="<?= $order['order_id'] ?>" />
-                    <input type="hidden" name="staffId" value="<?= $staffId ?>">
-                    <select name="installerId" class="form-select form-select-sm"
-                      style="width: 140px; background-color: #f8f9fa; color: #333; border: 1px solid #ccc;"
-                      onchange="this.form.submit()">
-                      <option value="" disabled selected>Assign Supervisor</option>
-                      <?php foreach ($installers as $installer): ?>
-                        <option value="<?= $installer['Id'] ?>"><?= htmlspecialchars($installer['Fullname']) ?></option>
+                  <form method="POST" action="status/add_orderStatus.php" class="d-inline">
+                    <input type="hidden" name="order_id" value="<?= $order['order_id'] ?>">
+                    <input type="hidden" name="staff_id" value="<?= $staffId ?>">
+                    <select name="status_id" class="form-select form-select-sm d-inline w-auto" onchange="this.form.submit()">
+                      <option disabled selected>Change Order Status</option>
+                      <?php foreach (getAvailableStatuses($statuses, $order['OrderStatus'], isset($order['Location'])) as $status): ?>
+                        <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
                       <?php endforeach; ?>
                     </select>
                   </form>
+                  <?php if (
+                    !empty($order['InstallationSupervisor'])
+                  ): ?>
+                    <form method="POST" action="status/add_installationStatus.php" class="d-inline">
+                      <input type="hidden" name="installation_id" value="<?= $order['InstallationId'] ?>">
+                      <input type="hidden" name="staff_id" value="<?= $staffId ?>">
+                      <select name="status_id" class="form-select form-select-sm d-inline w-auto" onchange="this.form.submit()">
+                        <option disabled selected>Change Ins.. Status</option>
+                        <?php foreach (getAvailableStatuses($statuses, $order['InstallationStatus'], isset($order['Location']), true) as $status): ?>
+                          <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
+                        <?php endforeach; ?>
+                      </select>
+                    </form>
+                  <?php endif; ?>
+
+                  <?php
+                  if (
+                    strtoupper($order['OrderStatus']) === 'READY-FOR-INSTALLATION' &&
+                    isset($order['Location'])
+                  ): ?>
+                    <form method="POST" action="assign_installer.php" style="margin: 0;">
+                      <input type="hidden" name="orderId" value="<?= $order['order_id'] ?>" />
+                      <input type="hidden" name="staffId" value="<?= $staffId ?>">
+                      <select name="installerId" class="form-select form-select-sm"
+                        style="width: 140px; background-color: #f8f9fa; color: #333; border: 1px solid #ccc;"
+                        onchange="this.form.submit()">
+                        <option value="" disabled selected>Assign Supervisor</option>
+                        <?php foreach ($installers as $installer): ?>
+                          <option value="<?= $installer['Id'] ?>"><?= htmlspecialchars($installer['Fullname']) ?></option>
+                        <?php endforeach; ?>
+                      </select>
+                    </form>
+                  <?php endif; ?>
                 <?php endif; ?>
               </td>
             <?php endif; ?>
