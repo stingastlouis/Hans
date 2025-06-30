@@ -16,7 +16,6 @@ $isAdmin = isset($_SESSION['staff_id']); ?>
         }
         ?>
 
-        <!-- Filter Form -->
         <form method="GET" class="row row-cols-1 row-cols-md-auto gy-2 gx-3 align-items-end mb-4 bg-white p-4 rounded shadow-sm">
             <div class="col">
                 <label for="category" class="form-label">Category</label>
@@ -108,7 +107,7 @@ $isAdmin = isset($_SESSION['staff_id']); ?>
             ?>
                         <div class="col-md-4 mb-4">
                             <div class="card h-100 shadow-sm">
-                                <img src="./assets/uploads/<?= htmlspecialchars($product['ImagePath']) ?>" class="card-img-top" alt="<?= htmlspecialchars($product['Name']) ?>" style="height: 200px; object-fit: cover;">
+                                <img src="./assets/uploads/products/<?= htmlspecialchars($product['ImagePath']) ?>" class="card-img-top" alt="<?= htmlspecialchars($product['Name']) ?>" style="height: 200px; object-fit: cover;">
                                 <div class="card-body d-flex flex-column">
                                     <h5 class="card-title"><?= htmlspecialchars($product['Name']) ?></h5>
                                     <p class="card-text"><?= htmlspecialchars($product['Description']) ?></p>

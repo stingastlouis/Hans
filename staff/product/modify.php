@@ -15,15 +15,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!empty($_FILES['product_image']['name'])) {
         $targetDir = "../../assets/uploads/products/";
-        $imageName = basename($_FILES['product_image']['name']);
-        $targetFilePath = $targetDir . $imageName;
+
 
         if (!is_dir($targetDir)) {
             mkdir($targetDir, 0777, true);
         }
 
+        $originalName = pathinfo($_FILES['product_image']['name'], PATHINFO_FILENAME);
+        $extension = pathinfo($_FILES['product_image']['name'], PATHINFO_EXTENSION);
+
+        $uniqueSuffix = date('YmdHis') . '_' . bin2hex(random_bytes(5));
+        $uniqueName = $originalName . '_' . $uniqueSuffix . '.' . $extension;
+
+        $targetFilePath = $targetDir . $uniqueName;
+
         if (move_uploaded_file($_FILES['product_image']['tmp_name'], $targetFilePath)) {
-            $imagePath = $imageName;
+            $imagePath = $uniqueName;
         } else {
             redirectBackWithMessage('error', 'Failed to upload image.');
         }

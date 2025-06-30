@@ -14,13 +14,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (!empty($_FILES['product_image']['name'])) {
         $upload_dir = '../../assets/uploads/products/';
-        $file_name = basename($_FILES['product_image']['name']);
+
+        $original_name = pathinfo($_FILES['product_image']['name'], PATHINFO_FILENAME);
+        $extension = pathinfo($_FILES['product_image']['name'], PATHINFO_EXTENSION);
+        $unique_suffix = date('YmdHis') . '_' . bin2hex(random_bytes(5));
+        $file_name = $original_name . '_' . $unique_suffix . '.' . $extension;
         $target_file = $upload_dir . $file_name;
+
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
         $file_type = mime_content_type($_FILES['product_image']['tmp_name']);
 
         if (in_array($file_type, $allowed_types)) {
-
             if (move_uploaded_file($_FILES['product_image']['tmp_name'], $target_file)) {
                 try {
                     $conn->beginTransaction();
@@ -42,7 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             $statusInsertStmt->execute([$productId, $statusId, $staffId]);
 
                             $conn->commit();
-
                             redirectBackWithMessage('success', 'Product successfully added.');
                         } else {
                             redirectBackWithMessage('error', 'Failed to set product status.');

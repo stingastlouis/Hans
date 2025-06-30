@@ -64,7 +64,7 @@
                     echo '
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100 shadow-sm border-0">
-                            <img src="./assets/uploads/' . htmlspecialchars($bundle['ImagePath']) . '" 
+                            <img src="./assets/uploads/bundles/' . htmlspecialchars($bundle['ImagePath']) . '" 
                                  class="card-img-top" alt="' . htmlspecialchars($bundle['Name']) . '" 
                                  style="object-fit: cover; height: 200px;">
                             <div class="card-body d-flex flex-column">
