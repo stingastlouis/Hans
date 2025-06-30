@@ -18,14 +18,12 @@
                     $currentPage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
                     $offset = ($currentPage - 1) * $ordersPerPage;
 
-                    // Get total number of orders
                     $countStmt = $conn->prepare("SELECT COUNT(*) FROM `Order` WHERE CustomerId = :customerId");
                     $countStmt->bindParam(':customerId', $_SESSION['customerId'], PDO::PARAM_INT);
                     $countStmt->execute();
                     $totalOrders = $countStmt->fetchColumn();
                     $totalPages = ceil($totalOrders / $ordersPerPage);
 
-                    // Get orders with receipt and status
                     $orderStmt = $conn->prepare("
                     SELECT o.Id AS OrderId, o.TotalAmount, o.DateCreated, 
                            s.Name AS StatusName,
@@ -70,7 +68,7 @@
                                 <td>{$orderCount}</td>
                                 <td>{$orderDate}</td>
                                 <td>{$receiptButton}</td>
-                                <td>Rs " . number_format($totalAmount, 2) . "</td>
+                                <td>$ " . number_format($totalAmount, 2) . "</td>
                                 <td>{$status}</td>
                             </tr>
                         ";

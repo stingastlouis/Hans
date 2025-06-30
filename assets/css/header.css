@@ -1,10 +1,114 @@
-.customNavbar{
-    background-color: white !important;
-}
-
 .custom-header-icon{
     background-color: blue !important;
     border-radius: 50px;
     width: 50px;
     height: 50px;
+}
+.customNavbar {
+    background: linear-gradient(90deg, rgb(132, 173, 208) 0%, rgb(90, 214, 214) 100%);
+
+    transition: box-shadow 0.3s ease;
+}
+
+.customNavbar:hover {
+    box-shadow: 0 8px 20px rgba(214, 51, 132, 0.3);
+}
+
+.navbar-brand {
+    font-family: 'Inter', sans-serif;
+}
+
+
+.nav-link {
+    color: #6c757d;
+    padding: 0.5rem 1rem;
+    transition: color 0.3s ease, border-bottom 0.3s ease;
+    position: relative;
+}
+
+.nav-link.active,
+.nav-link:hover {
+    color: #d63384 !important;
+    border-bottom: 3px solid #d63384;
+}
+
+
+#cart-icon {
+    font-weight: 600;
+    border-width: 2px;
+    border-radius: 0.375rem;
+    padding: 0.4rem 0.9rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#cart-icon:hover {
+    background-color: #d63384;
+    color: white;
+    border-color: #d63384;
+    text-decoration: none;
+}
+
+
+#cart-count {
+    font-size: 0.75rem;
+    padding: 0.25em 0.4em;
+}
+
+
+.btn-danger {
+    background-color: #d63384;
+    border-color: #d63384;
+    font-weight: 600;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-danger:hover {
+    background-color: #b0296c;
+    border-color: #b0296c;
+    color: #fff;
+}
+
+.btn-outline-danger {
+    border-color: #d63384;
+    color: #d63384;
+    font-weight: 600;
+}
+
+.btn-outline-danger:hover {
+    background-color: #d63384;
+    color: white;
+    border-color: #d63384;
+}
+
+@media (max-width: 767.98px) {
+    .navbar-collapse>div {
+        justify-content: center !important;
+    }
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+
+.bg-primary-gradient {
+    background: linear-gradient(90deg, rgb(132, 173, 208) 0%, rgb(90, 214, 214) 100%);
+    color: white;
+}
+
+footer a {
+    color: #ffffffcc;
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.footer-icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
 }

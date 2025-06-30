@@ -1,14 +1,16 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
+
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $staffId = trim($_POST['staff_id']);
     $installationId = trim($_POST['installation_id']);
     $date = date('Y-m-d H:i:s');
     if (empty($staffId) || empty($installationId)) {
-        echo "<h1>Field missing</h1></center>";
-        exit;
+        redirectBackWithMessage('error', 'Field missing');
     }
 
     try {
@@ -18,17 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bindParam(':staffid', $staffId);
 
         if ($stmt->execute()) {
-            header("Location: ../installation.php");
-            exit;
+            redirectBackWithMessage('success', 'Installation updated successfully.');
         } else {
-            echo "Error adding installation.";
+            redirectBackWithMessage('error', 'Error adding installation.');
         }
     } catch (PDOException $e) {
-        header('Location: ../installation.php?error=1');
+        redirectBackWithMessage('error', 'Failed to update installation. ' . $e->getMessage());
         exit;
     }
 } else {
-    header("Location: ../installation.php");
-    exit;
+    redirectBackWithMessage('error', 'Invalid request method.');
 }
-?>

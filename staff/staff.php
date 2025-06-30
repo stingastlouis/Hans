@@ -12,7 +12,6 @@ if (!in_array($role, ALLOWED_EDITOR_ROLES)) {
 include 'includes/header.php';
 include '../configs/db.php';
 
-$success = isset($_GET["success"]) ? $_GET["success"] : null;
 $modifyBy = $_SESSION["staff_id"];
 $limit = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -37,6 +36,7 @@ $stmt = $conn->prepare("
     ) latest_ss ON s.Id = latest_ss.StaffId
     LEFT JOIN StaffStatus ss ON latest_ss.LatestStatusId = ss.Id
     LEFT JOIN Status ls ON ss.StatusId = ls.Id
+    ORDER BY s.Id DESC
     LIMIT :limit OFFSET :offset;
 ");
 $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
@@ -176,7 +176,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                     <div class="mb-3">
                         <label for="staffPhone" class="form-label">Phone</label>
-                        <input type="tel" class="form-control" id="staffPhone" name="staff_phone" required>
+                        <input type="tel" class="form-control" id="staffPhone" minlength="4" maxlength="8" name="staff_phone" required>
                     </div>
                     <div class="mb-3">
                         <label for="staffRole" class="form-label">Role</label>
@@ -224,7 +224,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                     <div class="mb-3">
                         <label for="editStaffPhone" class="form-label">Phone</label>
-                        <input type="tel" class="form-control" id="editStaffPhone" name="staff_phone" required>
+                        <input type="tel" class="form-control" id="editStaffPhone" minlength="4" maxlength="8" name="staff_phone" required>
                     </div>
                     <div class="mb-3">
                         <label for="editStaffRole" class="form-label">Role</label>
@@ -291,7 +291,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<script src="./utils/message.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', handleSuccessOrErrorModal);
 </script>

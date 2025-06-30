@@ -30,11 +30,8 @@
         if (hash) {
             const tabTrigger = document.querySelector(`a[href="${hash}"]`);
             if (tabTrigger) {
-                // Remove 'active' from any currently active tab
                 document.querySelectorAll('#profileTabs a').forEach(tab => tab.classList.remove('active'));
                 document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active', 'show'));
-
-                // Activate the target tab
                 const tab = new bootstrap.Tab(tabTrigger);
                 tab.show();
             }

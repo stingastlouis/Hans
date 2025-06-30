@@ -1,6 +1,7 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $customerId = $_POST['customer_id'];
@@ -46,8 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if ($stmt->rowCount() >= 0) {
             $conn->commit();
-            header('Location: ../customer.php?success=1');
-            exit;
+            redirectBackWithMessage('success', 'Customer successfully updated.');
         } else {
             throw new Exception("Error: Unable to update the customer member in the database.");
         }
@@ -56,19 +56,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         $errorMessage = $e->getMessage();
         if (strpos($errorMessage, "Invalid email") !== false) {
-            header('Location: ../customer.php?error=invalid_email');
+            redirectBackWithMessage('error', 'Invalid email format.');
         } else if (strpos($errorMessage, "Email already exists") !== false) {
-            header('Location: ../customer.php?error=email_exists');
+            redirectBackWithMessage('error', 'Email already exists.');
         } else if (strpos($errorMessage, "Invalid phone") !== false) {
-            header('Location: ../customer.php?error=invalid_phone');
+            redirectBackWithMessage('error', 'Invalid phone number format.');
         } else if (strpos($errorMessage, "Customer member not found") !== false) {
-            header('Location: ../customer.php?error=customer_not_found');
+            redirectBackWithMessage('error', 'Customer member not found.');
         } else {
-            header('Location: ../customer.php?error=general&message=' . urlencode($errorMessage));
+            redirectBackWithMessage('error', 'General error: ' . $errorMessage);
         }
-        exit;
     }
 } else {
-    header('Location: ../customer.php');
-    exit;
+    redirectBackWithMessage('error', 'Invalid request.');
 }

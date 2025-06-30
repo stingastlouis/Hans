@@ -1,4 +1,10 @@
 <?php
+
+// $host = 'sql112.infinityfree.com';
+// $username = 'if0_39354253';
+// $password = 'MEL6CIJBbWdI2H';
+// $database = 'if0_39354253_light_service';
+
 $host = 'localhost';
 $username = 'root';
 $password = '';
@@ -8,9 +14,8 @@ try {
     $dsn = "mysql:host=$host;dbname=$database";
     $conn = new PDO($dsn, $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
+
     $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "Connection failed: " . $e->getMessage();
 }
-?>

@@ -1,15 +1,16 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $statusId = trim($_POST['status_id']);
     $productId = trim($_POST['product_id']);
     $staffId = trim($_POST['staff_id']);
     $date = date('Y-m-d H:i:s');
-    if (empty($statusId) || empty( $productId)) {
-        echo "<h1>Field missing</h1></center>";
-        exit;
+    if (empty($statusId) || empty($productId)) {
+        redirectBackWithMessage('error', 'Field missing');
     }
 
     try {
@@ -21,16 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bindParam(':datecreated', $date);
 
         if ($stmt->execute()) {
-            header("Location: ../product.php?success=1");
-            exit;
+            redirectBackWithMessage('success', 'Product status added successfully.');
         } else {
-            echo "Error adding product.";
+            redirectBackWithMessage('error', 'Product status modification error');
         }
     } catch (PDOException $e) {
-        echo "Database error: " . $e->getMessage();
+        redirectBackWithMessage('error', 'Database error: ' . $e->getMessage());
     }
 } else {
-    header("Location: ../product.php");
-    exit;
+    redirectBackWithMessage('error', 'Invalid request method.');
 }
-?>

@@ -1,5 +1,6 @@
-<?php 
+<?php
 include '../../configs/db.php';
+include '../../utils/communicationUtils.php';
 
 if (isset($_POST['product_id'])) {
     $productId = $_POST['product_id'];
@@ -8,9 +9,7 @@ if (isset($_POST['product_id'])) {
     $stmt->bindParam(':id', $productId, PDO::PARAM_INT);
     $stmt->execute();
 
-    header("Location: ../product.php?success=1");
-    exit();
+    redirectBackWithMessage('success', 'Product successfully deleted.');
 } else {
-    header("Location: ../product.php?error=1");
-    exit();
+    redirectBackWithMessage('error', 'Invalid request.');
 }

@@ -19,20 +19,22 @@ $offset = ($page - 1) * $limit;
 
 try {
     $stmt = $conn->prepare("
-        SELECT e.*, 
-               COALESCE(s.Name, 'No Status') AS LatestStatus, 
-               COALESCE(c.Name, 'No Category') AS CategoryName
-        FROM Products e
-        LEFT JOIN (
-            SELECT es.ProductId, MAX(es.Id) AS LatestStatusId
-            FROM ProductStatus es
-            GROUP BY es.ProductId
-        ) latest_es ON e.Id = latest_es.ProductId
-        LEFT JOIN ProductStatus es ON latest_es.LatestStatusId = es.Id
-        LEFT JOIN Status s ON es.StatusId = s.Id
-        LEFT JOIN Categories c ON e.CategoryId = c.Id
-        LIMIT :limit OFFSET :offset;
-    ");
+    SELECT e.*, 
+           COALESCE(s.Name, 'No Status') AS LatestStatus, 
+           COALESCE(c.Name, 'No Category') AS CategoryName
+    FROM Products e
+    LEFT JOIN (
+        SELECT es.ProductId, MAX(es.Id) AS LatestStatusId
+        FROM ProductStatus es
+        GROUP BY es.ProductId
+    ) latest_es ON e.Id = latest_es.ProductId
+    LEFT JOIN ProductStatus es ON latest_es.LatestStatusId = es.Id
+    LEFT JOIN Status s ON es.StatusId = s.Id
+    LEFT JOIN Categories c ON e.CategoryId = c.Id
+    ORDER BY e.Id DESC
+    LIMIT :limit OFFSET :offset
+");
+
     $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
     $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
@@ -99,7 +101,7 @@ try {
                                 <td><?= htmlspecialchars($product['DiscountPrice']) ?></td>
                                 <td><?= htmlspecialchars($product['Stock']) ?></td>
                                 <td>
-                                    <img src="../assets/uploads/<?= htmlspecialchars($product['ImagePath']) ?>" alt="<?= htmlspecialchars($product['Name']) ?>" style="width: 100px; height: auto;">
+                                    <img src="../assets/uploads/products/<?= htmlspecialchars($product['ImagePath']) ?>" alt="<?= htmlspecialchars($product['Name']) ?>" style="width: 100px; height: auto;">
                                 </td>
                                 <td><?= htmlspecialchars($product['LatestStatus']) ?: 'No Status' ?></td>
                                 <td><?= htmlspecialchars($product['DateCreated']) ?></td>

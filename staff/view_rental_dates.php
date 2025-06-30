@@ -9,6 +9,7 @@ if (!in_array($role, ALLOWED_EDITOR_ROLES)) {
 }
 
 include '../configs/db.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_returned'])) {
     $eventRentalId = intval($_POST['mark_returned']);
 
@@ -33,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_returned'])) {
         $eventIdStmt->execute();
         $eventData = $eventIdStmt->fetch(PDO::FETCH_ASSOC);
 
-        // Step 3: Restock products
         if ($eventData) {
             $eventId = $eventData['EventId'];
             $productStmt = $conn->prepare("
@@ -66,8 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_returned'])) {
     exit;
 }
 
-// Fetch rentals
+
 $orderId = $_GET['order_id'];
+
 $stmt = $conn->prepare("
     SELECT er.Id, e.Name, er.RentalStartDate, er.RentalEndDate, er.Returned
     FROM OrderItem oi
@@ -78,6 +79,21 @@ $stmt = $conn->prepare("
 $stmt->bindValue(':orderId', $orderId, PDO::PARAM_INT);
 $stmt->execute();
 $rentals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+$statusStmt = $conn->prepare("
+    SELECT s.Name
+    FROM InstallationStatus ist
+    JOIN Installation i ON ist.InstallationId = i.Id
+    JOIN Status s ON ist.StatusId = s.Id
+    WHERE i.OrderId = :orderId
+    ORDER BY ist.DateCreated DESC
+    LIMIT 1
+");
+$statusStmt->bindValue(':orderId', $orderId, PDO::PARAM_INT);
+$statusStmt->execute();
+$latestStatusName = $statusStmt->fetchColumn();
+$isInstalled = (strtolower($latestStatusName) === 'installed');
 ?>
 
 <!DOCTYPE html>
@@ -117,10 +133,12 @@ $rentals = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <td><?= $rental['RentalStartDate'] ?></td>
                         <td><?= $rental['RentalEndDate'] ?></td>
                         <td>
-                            <?php if (!$rental['Returned']): ?>
+                            <?php if (!$rental['Returned'] && $isInstalled): ?>
                                 <button type="submit" class="btn btn-sm btn-outline-success" name="mark_returned" value="<?= $rental['Id'] ?>">Mark as Returned</button>
-                            <?php else: ?>
+                            <?php elseif ($rental['Returned']): ?>
                                 <input type="checkbox" checked disabled>
+                            <?php else: ?>
+                                <span class="text-muted">Waiting for installation</span>
                             <?php endif; ?>
                         </td>
                     </tr>

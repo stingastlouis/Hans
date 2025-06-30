@@ -25,88 +25,99 @@ foreach ($cartItems as $item) {
 <?php include './includes/header.php' ?>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
 
-<div class="container mt-5">
-    <h1 class="mb-4">Checkout</h1>
-    <div id="cart-table-container">
-        <?php if (!empty($cartItems)): ?>
-            <table id="tablecost" class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Product Name</th>
-                        <th>Type</th>
-                        <th>Quantity</th>
-                        <th>Unit Price (Usd)</th>
-                        <th>Subtotal (Usd)</th>
-                    </tr>
-                </thead>
-                <tbody id="cart-body">
-                    <?php foreach ($cartItems as $item): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($item['name']) ?></td>
-                            <td><?= ucfirst(htmlspecialchars($item['type'])) ?></td>
-                            <td><?= intval($item['quantity']) ?></td>
-                            <td><?= number_format($item['price'], 2) ?></td>
-                            <td><?= number_format($item['price'] * $item['quantity'], 2) ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-                <tfoot id="cart-footer">
-                    <tr>
-                        <th colspan="4" class="text-end">Total</th>
-                        <th id="total-cell">Usd <?= number_format($totalAmount, 2) ?></th>
-                    </tr>
-                </tfoot>
-            </table>
-        <?php else: ?>
-            <p class="alert alert-warning">Your cart is empty!</p>
-        <?php endif; ?>
+<div class="container my-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h1 class="card-title mb-4 text-center">Checkout</h1>
+
+            <div id="cart-table-container">
+                <?php if (!empty($cartItems)): ?>
+                    <div class="table-responsive">
+                        <table id="tablecost" class="table table-striped align-middle text-center">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Type</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Price (USD)</th>
+                                    <th>Subtotal (USD)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cart-body">
+                                <?php foreach ($cartItems as $item): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($item['name']) ?></td>
+                                        <td><?= ucfirst(htmlspecialchars($item['type'])) ?></td>
+                                        <td><?= intval($item['quantity']) ?></td>
+                                        <td><?= number_format($item['price'], 2) ?></td>
+                                        <td><?= number_format($item['price'] * $item['quantity'], 2) ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                            <tfoot id="cart-footer">
+                                <tr class="fw-bold">
+                                    <td colspan="4" class="text-end">Total</td>
+                                    <td id="total-cell">USD <?= number_format($totalAmount, 2) ?></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <div class="alert alert-warning text-center">Your cart is empty!</div>
+                <?php endif; ?>
+            </div>
+
+            <?php if (!empty($cartItems)): ?>
+                <hr class="my-4">
+                <form id="checkout-form" enctype="multipart/form-data" method="post" action="processCheckout.php">
+
+                    <div class="form-check form-switch mb-4">
+                        <input class="form-check-input" type="checkbox" id="installCheckbox" name="installationRequired">
+                        <label class="form-check-label" for="installCheckbox">Installation required (+ USD 20.00)</label>
+                    </div>
+
+                    <div id="installationDateContainer" class="mb-4" style="display: none;">
+                        <label for="installationDate" class="form-label">Installation Date</label>
+                        <input type="date" id="installationDate" name="installationDate" class="form-control" />
+                    </div>
+
+                    <div id="map" class="mb-3 rounded shadow-sm" style="height: 300px; display: none;"></div>
+                    <p id="addressDisplay" class="text-muted fst-italic"></p>
+
+                    <input type="hidden" name="totalAmount" id="totalAmountInput" value="<?= number_format($totalAmount, 2, '.', '') ?>">
+                    <input type="hidden" name="lat" id="lat">
+                    <input type="hidden" name="lng" id="lng">
+
+                    <div class="mb-4">
+                        <label for="paymentMethod" class="form-label">Payment Method</label>
+                        <select name="paymentMethodId" id="paymentMethod" class="form-select" required>
+                            <option value="" disabled selected>-- Choose Payment Method --</option>
+                            <?php foreach ($paymentMethods as $method): ?>
+                                <option value="<?= htmlspecialchars($method['Id']) ?>">
+                                    <?= htmlspecialchars($method['Name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div id="paypal-button-container" class="mb-4" style="display: none;"></div>
+
+                    <div id="upload-screenshot-container" class="mb-4" style="display: none;">
+                        <label for="paymentScreenshot" class="form-label">Upload Payment Screenshot</label>
+                        <input type="file" name="paymentScreenshot" id="paymentScreenshot" accept="image/*" class="form-control" required />
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                            <i class="bi bi-cart-check me-2"></i>Place Order
+                        </button>
+                    </div>
+                </form>
+            <?php endif; ?>
+        </div>
     </div>
-
-    <?php if (!empty($cartItems)): ?>
-        <form id="checkout-form" enctype="multipart/form-data" method="post" action="processCheckout.php">
-            <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" id="installCheckbox" name="installationRequired">
-                <label class="form-check-label" for="installCheckbox">Installation required (+Usd 20.00)</label>
-            </div>
-            <div id="installationDateContainer" style="display:none;" class="mb-3">
-                <label for="installationDate" class="form-label">Select Installation Date</label>
-                <input type="date" id="installationDate" name="installationDate" class="form-control" />
-            </div>
-
-
-            <div id="map" style="height: 300px; display: none;" class="mb-3"></div>
-            <p id="addressDisplay" class="mt-2 text-muted"></p>
-
-
-            <input type="hidden" name="totalAmount" id="totalAmountInput" value="<?= number_format($totalAmount, 2, '.', '') ?>">
-
-            <input type="hidden" name="lat" id="lat">
-            <input type="hidden" name="lng" id="lng">
-
-            <div class="mb-3">
-                <label for="paymentMethod" class="form-label">Select Payment Method</label>
-                <select name="paymentMethodId" id="paymentMethod" class="form-select" required>
-                    <option value="" disabled selected>-- Choose Payment Method --</option>
-                    <?php foreach ($paymentMethods as $method): ?>
-                        <option value="<?= htmlspecialchars($method['Id']) ?>">
-                            <?= htmlspecialchars($method['Name']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div id="paypal-button-container" style="display:none;"></div>
-
-            <div id="upload-screenshot-container" style="display:none;">
-                <label for="paymentScreenshot" class="form-label">Upload Payment Screenshot</label>
-                <input type="file" name="paymentScreenshot" id="paymentScreenshot" accept="image/*" class="form-control" required />
-            </div>
-
-            <button type="submit" class="btn btn-primary mt-3" id="submitBtn">Place Order</button>
-        </form>
-
-    <?php endif; ?>
 </div>
+
 
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 <script src="https://www.paypal.com/sdk/js?client-id=AYDMJVEgkRqU66bGWK-uzYtGKsJsLzVfx5OSKIn2j6y_tISbzHdvhEbyDXFU5dngERPjuoT1AUvRVygB&currency=USD"></script>
@@ -263,9 +274,11 @@ foreach ($cartItems as $item) {
             return actions.order.capture().then(function(details) {
                 const lat = document.getElementById('lat').value;
                 const lng = document.getElementById('lng').value;
-
+                const paymentMethodId = document.getElementById('paymentMethod').value;
+                const date = document.getElementById('installationDate').value;
                 const payload = {
-                    paymentMethodId: document.getElementById('paymentMethod').value,
+                    paymentMethodId: paymentMethodId,
+                    installationDate: date,
                     cartItems: <?= json_encode($cartItems) ?>,
                     transactionId: details.id,
                     amount: details.purchase_units[0].amount.value,
@@ -284,10 +297,7 @@ foreach ($cartItems as $item) {
                     .then(data => {
 
                         if (data.success) {
-                            sessionStorage.setItem('orderId', data.orderId);
-                            sessionStorage.setItem('paypalTransaction', data.paypalTransaction);
-                            sessionStorage.setItem('total', data.total);
-                            window.location.href = './profile.php#order-history';
+                            window.location.href = './profile/success-order.php';
                         } else {
                             alert('Checkout failed: ' + data.message);
                         }

@@ -42,11 +42,17 @@ function addEventToCart(id, name, basePrice, selectedDates, type) {
   updateCartUI(cart);
 }
 
-function addToCart(id, name, price, quantity, type) {
+function addToCart(id, name, price, quantity, type, stock) {
   const cart = loadCart();
   const existingItem = cart.find(
     (item) => item.id === id && item.type === type
   );
+
+  const currentQuantity = existingItem ? existingItem.quantity : 0;
+  if (currentQuantity + quantity > stock) {
+    alert(`Cannot add more than ${stock} items of "${name}" to the cart.`);
+    return;
+  }
 
   if (existingItem) {
     existingItem.quantity += quantity;
@@ -57,6 +63,7 @@ function addToCart(id, name, price, quantity, type) {
   saveCart(cart);
   updateCartUI(cart);
 }
+
 
 function removeFromCart(id, type) {
   let cart = loadCart();
@@ -103,11 +110,11 @@ function updateCartUI(cart) {
       listItem.innerHTML = `
         <div>
           <strong>${item.name} (${item.type})</strong><br>
-          Rs ${item.price.toFixed(2)} x ${item.quantity}
+          $ ${item.price.toFixed(2)} x ${item.quantity}
           ${dateInfo}
         </div>
         <div>
-          <span>Rs ${itemTotal.toFixed(2)}</span>
+          <span>$ ${itemTotal.toFixed(2)}</span>
           <button class="btn btn-danger btn-sm remove-from-cart" data-id="${
             item.id
           }" data-type="${item.type}">Remove</button>
@@ -118,7 +125,7 @@ function updateCartUI(cart) {
   }
 
   if (cartTotal) {
-    cartTotal.textContent = `Rs ${total.toFixed(2)}`;
+    cartTotal.textContent = `$ ${total.toFixed(2)}`;
   }
 
   updateCartIconCount();
@@ -153,10 +160,11 @@ function initCart() {
       const quantity = parseInt(quantityInput.value);
 
       if (quantity > 0 && quantity <= stock) {
-        addToCart(id, name, price, quantity, type);
+        addToCart(id, name, price, quantity, type, stock);
       } else {
         alert("Invalid quantity!");
       }
+      quantityInput.value = 1; 
     }
   });
 

@@ -5,7 +5,7 @@ include '../configs/constants.php';
 include './statusManagement.php';
 $role = $_SESSION['role'];
 $staffId = $_SESSION["staff_id"];
-if (!in_array($role, ALLOWED_ROLES)) {
+if (!in_array($role, INSTALLER_ONLY_ROLE)) {
   header("Location: ../unauthorised.php");
   exit;
 }
@@ -14,22 +14,15 @@ include 'includes/header.php';
 include '../configs/db.php';
 
 $userRole = $_SESSION['role'];
-$limit = 1;
+$staffId = $_SESSION['staff_id'];
+$limit = 10;
 
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
-try {
-  if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
-    $deleteId = $_POST['delete_id'];
-    $stmt = $conn->prepare("DELETE FROM Installation WHERE InstallationId = ?");
-    $stmt->execute([$deleteId]);
-  }
-
-  $query = "
+$query = "
   SELECT 
       i.Id AS InstallationId,
-      s.Fullname AS StaffName,
       i.OrderId,
       i.Location,
       i.InstallationDate,
@@ -39,8 +32,6 @@ try {
       Installation i
   JOIN 
       Staff s ON i.StaffId = s.Id
-  
-  -- Latest installation status
   LEFT JOIN (
       SELECT 
           ists.InstallationId,
@@ -58,7 +49,6 @@ try {
       INNER JOIN Status st ON ists.StatusId = st.Id
   ) AS status_info ON i.Id = status_info.InstallationId
   
-  -- Latest order status
   LEFT JOIN (
       SELECT 
           os.OrderId,
@@ -76,97 +66,98 @@ try {
       INNER JOIN Status st ON os.StatusId = st.Id
   ) AS order_status_info ON i.OrderId = order_status_info.OrderId
   
+  WHERE 
+      i.StaffId = :staffId
+      AND order_status_info.Name = 'READY-FOR-INSTALLATION'
   ORDER BY 
       i.InstallationDate DESC
-  LIMIT $limit OFFSET $offset
-  ";
+  LIMIT :limit OFFSET :offset
+";
 
+$stmt = $conn->prepare($query);
+$stmt->bindValue(':staffId', $staffId, PDO::PARAM_INT);
+$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
+$installations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-  $stmt = $conn->prepare($query);
-  $stmt->execute();
-  $installations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$stmtTotal = $conn->prepare("SELECT COUNT(*) FROM Installation WHERE StaffId = :staffId");
+$stmtTotal->execute([':staffId' => $staffId]);
+$totalRecords = $stmtTotal->fetchColumn();
+$totalPages = ceil($totalRecords / $limit);
 
-
-
-  $stmtTotal = $conn->query("SELECT COUNT(*) FROM Installation");
-  $totalRecords = $stmtTotal->fetchColumn();
-  $totalPages = ceil($totalRecords / $limit);
-} catch (PDOException $e) {
-  die("Database error: " . $e->getMessage());
-}
-
-$stmt2 = $conn->prepare("SELECT * FROM Status");
+$stmt2 = $conn->prepare("SELECT * FROM Status WHERE Name IN ('IN-TRANSIT','INSTALLED')");
 $stmt2->execute();
 $statuses = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 $stmt2->closeCursor();
-
-$stmt3 = $conn->prepare("SELECT * FROM staff");
-$stmt3->execute();
-$stfs = $stmt3->fetchAll(PDO::FETCH_ASSOC);
-$stmt3->closeCursor();
 ?>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<div class="table-responsive">
-  <h2>Installation List</h2>
-  <table class="table table-bordered">
-    <thead class="table-light">
-      <tr>
-        <th>Staff Name</th>
-        <th>Order ID</th>
-        <th>Location</th>
-        <th>Status</th>
-        <th>Installation Date</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php foreach ($installations as $row): ?>
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 text-primary fw-semibold mb-0">Installation List</h2>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+      <thead class="table-primary text-center">
         <tr>
-          <td><?= htmlspecialchars($row['StaffName']) ?></td>
-          <td><?= htmlspecialchars($row['OrderId']) ?></td>
-          <td data-latlng="<?= htmlspecialchars($row['Location']) ?>" class="address-cell">Loading...</td>
-          <td><?= htmlspecialchars($row['InstallationDate']) ?></td>
-          <td><?= htmlspecialchars($row['LastInstallationStatus']);
-              echo $row['LastOrderStatus'] ?> </td>
-          <td>
-            <a
-              href="installation_summary.php?orderId=<?= $row['OrderId'] ?>"
-              type="button"
-              class="btn btn-sm btn-warning">
-              View Items
-            </a>
-
-            <button class="btn btn-sm btn-info"
-              data-bs-toggle="modal"
-              data-bs-target="#locationModal"
-              onclick="showLocationOnMap(this)"
-              data-view-location="<?= htmlspecialchars($row['Location']) ?>">
-              View Location
-            </button>
-
-            <?php if (in_array($role, ALLOWED_INSTALLATION_ROLES)): ?>
-              <form method="POST" action="status/add_installationStatus.php" style="display: inline;">
-                <input type="hidden" name="installation_id" value="<?= $row['InstallationId'] ?>">
-                <input type="hidden" name="staff_id" value="<?= $staffId ?>">
-                <select name="status_id" class="form-select form-select-sm" onchange="this.form.submit()">
-                  <option value="" disabled selected>Change Status</option>
-                  <?php foreach (getAvailableStatuses($statuses, $row['LastInstallationStatus']) as $status): ?>
-                    <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
-                  <?php endforeach; ?>
-                </select>
-              </form>
-            <?php endif; ?>
-          </td>
-
+          <th scope="col">Order ID</th>
+          <th scope="col">Location</th>
+          <th scope="col">Installation Date</th>
+          <th scope="col">Status</th>
+          <th scope="col">Action</th>
         </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <?php foreach ($installations as $row): ?>
+          <tr>
+            <td><?= htmlspecialchars($row['OrderId']) ?></td>
+            <td data-latlng="<?= htmlspecialchars($row['Location']) ?>" class="address-cell">Loading...</td>
+            <td><?= htmlspecialchars($row['InstallationDate']) ?></td>
+            <td><?= htmlspecialchars($row['LastInstallationStatus']) ?></td>
+            <td class="text-nowrap">
+              <a
+                href="installation_summary.php?orderId=<?= $row['OrderId'] ?>"
+                class="btn btn-sm btn-outline-warning me-1 mb-1">
+                <i class="bi bi-box-seam"></i> View Items
+              </a>
 
-  <nav>
-    <ul class="pagination justify-content-center">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-info me-1 mb-1"
+                data-bs-toggle="modal"
+                data-bs-target="#locationModal"
+                onclick="showLocationOnMap(this)"
+                data-view-location="<?= htmlspecialchars($row['Location']) ?>">
+                <i class="bi bi-geo-alt-fill"></i> View Location
+              </button>
+
+              <?php if (in_array($role, ALLOWED_INSTALLATION_ROLES)): ?>
+                <form method="POST" action="status/add_installationStatus.php" class="d-inline-block">
+                  <input type="hidden" name="installation_id" value="<?= $row['InstallationId'] ?>">
+                  <input type="hidden" name="staff_id" value="<?= $staffId ?>">
+                  <select
+                    name="status_id"
+                    class="form-select form-select-sm d-inline w-auto"
+                    onchange="this.form.submit()">
+                    <option value="" disabled selected>Change Status</option>
+                    <?php foreach ($statuses as $status): ?>
+                      <option value="<?= $status['Id'] ?>"><?= htmlspecialchars($status['Name']) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </form>
+              <?php endif; ?>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      </tbody>
+    </table>
+  </div>
+
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mt-4">
       <?php if ($page > 1): ?>
         <li class="page-item">
           <a class="page-link" href="?page=<?= $page - 1 ?>">Previous</a>
@@ -190,12 +181,7 @@ $stmt3->closeCursor();
       <?php endif; ?>
     </ul>
   </nav>
-
-
 </div>
-
-
-
 
 <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -303,8 +289,6 @@ $stmt3->closeCursor();
       });
   }
 </script>
-
-<script src="./utils/message.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', handleSuccessOrErrorModal);
 </script>

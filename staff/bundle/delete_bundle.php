@@ -1,6 +1,6 @@
 <?php
 include '../../configs/db.php';
-
+include '../../utils/communicationUtils.php';
 if (isset($_POST['bundle_id']) && is_numeric($_POST['bundle_id'])) {
     $bundleId = (int)$_POST['bundle_id'];
 
@@ -10,15 +10,14 @@ if (isset($_POST['bundle_id']) && is_numeric($_POST['bundle_id'])) {
         $stmt->execute();
 
         if ($stmt->rowCount() > 0) {
-            header("Location: ../bundle.php?success=1");
+            redirectBackWithMessage('success', 'Bundle successfully deleted.');
         } else {
-            header("Location: ../bundle.php?error=norecord");
+            redirectBackWithMessage('error', 'No record found.');
         }
     } catch (PDOException $e) {
-        header("Location: ../bundle.php?error=exception");
+        redirectBackWithMessage('error', 'An error occurred while deleting the bundle.');
     }
     exit();
 } else {
-    header("Location: ../bundle.php?error=1");
-    exit();
+    redirectBackWithMessage('error', 'Invalid request.');
 }

@@ -1,5 +1,6 @@
-<?php 
+<?php
 include '../../configs/db.php';
+include '../../utils/communicationUtils.php';
 
 if (isset($_POST['staff_id'])) {
     $staffId = $_POST['staff_id'];
@@ -8,9 +9,7 @@ if (isset($_POST['staff_id'])) {
     $stmt->bindParam(':id', $staffId, PDO::PARAM_INT);
     $stmt->execute();
 
-    header("Location: ../staff.php?success=1");
-    exit();
+    redirectBackWithMessage('success', 'Staff member deleted successfully.');
 } else {
-    header("Location: ../staff.php?error=1");
-    exit();
+    redirectBackWithMessage('error', 'Failed to delete staff member.');
 }

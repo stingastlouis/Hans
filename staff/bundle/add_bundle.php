@@ -1,6 +1,7 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['bundle_name'];
@@ -8,12 +9,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $staffId = $_POST["staff_id"];
     $price = $_POST['bundle_price'];
     $discount_price = $_POST['bundle_discount_price'];
-
     $dateNow = date('Y-m-d H:i:s');
 
     if (!empty($_FILES['bundle_image']['name'])) {
         $upload_dir = '../../assets/uploads/bundles/';
-        $file_name = basename($_FILES['bundle_image']['name']);
+
+        $original_name = pathinfo($_FILES['bundle_image']['name'], PATHINFO_FILENAME);
+        $extension = pathinfo($_FILES['bundle_image']['name'], PATHINFO_EXTENSION);
+        $unique_suffix = date('YmdHis') . '_' . bin2hex(random_bytes(5));
+        $file_name = $original_name . '_' . $unique_suffix . '.' . $extension;
         $target_file = $upload_dir . $file_name;
 
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
@@ -57,31 +61,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             }
 
                             $conn->commit();
-                            header('Location: ../bundle.php?success=1');
-                            exit;
+                            redirectBackWithMessage('success', 'Bundle successfully created.');
                         } else {
-                            header('Location: ../bundle.php?error=1');
-                            exit;
+                            redirectBackWithMessage('error', 'Failed to find active status.');
                         }
                     } else {
-                        header('Location: ../bundle.php?error=1');
-                        exit;
+                        redirectBackWithMessage('error', 'Failed to insert bundle.');
                     }
                 } catch (Exception $e) {
                     $conn->rollBack();
-                    header('Location: ../bundle.php?error=1');
-                    exit;
+                    redirectBackWithMessage('error', 'An unexpected error occurred: ' . $e->getMessage());
                 }
             } else {
-                header('Location: ../bundle.php?error=1');
-                exit;
+                redirectBackWithMessage('error', 'Failed to upload image.');
             }
         } else {
-            header('Location: ../bundle.php?error=1');
-            exit;
+            redirectBackWithMessage('error', 'Invalid image type. Allowed: JPG, PNG, GIF.');
         }
     } else {
-        header('Location: ../bundle.php?error=1');
-        exit;
+        redirectBackWithMessage('error', 'No image uploaded.');
     }
 }

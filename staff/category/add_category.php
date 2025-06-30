@@ -1,24 +1,22 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
-
+include '../../utils/communicationUtils.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $category_name = trim($_POST['category_name']);
-    
+
     if (empty($category_name)) {
-        echo "<h1>Category name cannot be empty.</h1></center>";
-        exit;
+        redirectBackWithMessage('error', 'Category name cannot be empty.');
     }
 
     try {
         $stmt = $conn->prepare("SELECT COUNT(*) FROM Categories WHERE name = :name");
         $stmt->bindParam(':name', $category_name);
         $stmt->execute();
-        
+
         $category_exists = $stmt->fetchColumn();
         if ($category_exists > 0) {
-            header("Location: ../category.php?error=1");
-            exit;
+            redirectBackWithMessage('error', 'Category already exists.');
         }
 
         $date = date('Y-m-d H:i:s');
@@ -27,16 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bindParam(':datecreated', $date);
 
         if ($stmt->execute()) {
-            header("Location: ../category.php?success=1");
-            exit;
+            redirectBackWithMessage('success', 'Category successfully added.');
         } else {
-            echo "Error adding category.";
+            redirectBackWithMessage('error', 'Error adding category.');
         }
     } catch (PDOException $e) {
-        echo "Database error: " . $e->getMessage();
+        redirectBackWithMessage('error', 'Database error: ' . $e->getMessage());
     }
 } else {
-    header("Location: ../category.php");
-    exit;
+    redirectBackWithMessage('error', 'Invalid request.');
 }
-?>

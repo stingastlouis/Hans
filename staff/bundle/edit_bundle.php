@@ -1,12 +1,12 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $bundleId = $_POST['bundle_id'] ?? null;
     if (!$bundleId) {
-        header('Location: ../bundle.php?error=no_bundle_id');
-        exit;
+        redirectBackWithMessage('error', 'No bundle ID provided.');
     }
 
     $stmt = $conn->prepare("SELECT * FROM Bundle WHERE Id = ?");
@@ -14,8 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $existingBundle = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$existingBundle) {
-        header('Location: ../bundle.php?error=bundle_not_found');
-        exit;
+        redirectBackWithMessage('error', 'Bundle not found.');
     }
 
     $name = $_POST['bundle_name'] ?? $existingBundle['Name'];
@@ -36,8 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $file_type = mime_content_type($_FILES['bundle_image']['tmp_name']);
 
         if (!in_array($file_type, $allowed_types)) {
-            header('Location: ../bundle.php?error=invalid_image_type');
-            exit;
+            redirectBackWithMessage('error', 'Invalid image type.');
         }
 
         if (!is_dir($upload_dir)) {
@@ -45,8 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         if (!move_uploaded_file($_FILES['bundle_image']['tmp_name'], $target_file)) {
-            header('Location: ../bundle.php?error=upload_failed');
-            exit;
+            redirectBackWithMessage('error', 'Failed to upload image.');
         }
 
         $imagePath = $imageName;
@@ -66,7 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if ($statusRow) {
                 $statusId = $statusRow['Id'];
 
-                // Update or insert BundleStatus for this bundle
                 $checkStatusStmt = $conn->prepare("SELECT COUNT(*) FROM BundleStatus WHERE BundleId = ?");
                 $checkStatusStmt->execute([$bundleId]);
                 $exists = $checkStatusStmt->fetchColumn();
@@ -101,14 +97,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         $conn->commit();
-        header('Location: ../bundle.php?success=1');
-        exit;
+        redirectBackWithMessage('success', 'Bundle successfully edited.');
     } catch (Exception $e) {
         $conn->rollBack();
-        header('Location: ../bundle.php?error=1');
-        exit;
+        redirectBackWithMessage('error', 'An error occurred while editing the bundle.');
     }
 } else {
-    header('Location: ../bundle.php?error=invalid_request');
-    exit;
+    redirectBackWithMessage('error', 'Invalid request.');
 }

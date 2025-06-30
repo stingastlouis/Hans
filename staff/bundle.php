@@ -93,7 +93,7 @@ $prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?= htmlspecialchars($bundle['Price']) ?></td>
                                 <td><?= htmlspecialchars($bundle['DiscountPrice']) ?></td>
                                 <td>
-                                    <img src="../assets/uploads/<?= htmlspecialchars($bundle['ImagePath']) ?>" alt="<?= htmlspecialchars($bundle['Name']) ?>" style="width: 100px; height: auto;">
+                                    <img src="../assets/uploads/bundles/<?= htmlspecialchars($bundle['ImagePath']) ?>" alt="<?= htmlspecialchars($bundle['Name']) ?>" style="width: 100px; height: auto;">
                                 </td>
                                 <td><?= htmlspecialchars($bundle['LatestStatus']) ?: 'No Status' ?></td>
                                 <td><?= htmlspecialchars($bundle['ProductDetails']) ?: 'No products linked' ?></td>

@@ -1,10 +1,10 @@
-<?php 
+<?php
 
 include '../sessionManagement.php';
 include '../configs/constants.php';
 
 $role = $_SESSION['role'];
-if (!in_array($role, ALLOWED_ROLES)){
+if (!in_array($role, ALLOWED_ROLES)) {
     header("Location: ../unauthorised.php");
     exit;
 }
@@ -12,9 +12,7 @@ if (!in_array($role, ALLOWED_ROLES)){
 include 'includes/header.php';
 include '../configs/db.php';
 
-$success = isset($_GET["success"]) ? $_GET["success"] : null;
-
-$limit = 10; 
+$limit = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
@@ -41,9 +39,6 @@ $totalPages = ceil($totalRecords / $limit);
             <div class="row">
                 <div class="col-md-6">
                     <div class="text-md-end dataTables_filter" id="dataTable_filter">
-                        <label class="form-label">
-                            <input type="search" class="form-control form-control-sm" aria-controls="dataTable" placeholder="Search" id="searchInput">
-                        </label>
                     </div>
                 </div>
                 <div class="col-md-6 text-nowrap">
@@ -83,11 +78,11 @@ $totalPages = ceil($totalRecords / $limit);
                     <?php endif; ?>
 
                     <?php
-                        $range = 2;
-                        $start = max(1, $page - $range);
-                        $end = min($totalPages, $page + $range);
+                    $range = 2;
+                    $start = max(1, $page - $range);
+                    $end = min($totalPages, $page + $range);
 
-                        for ($i = $start; $i <= $end; $i++):
+                    for ($i = $start; $i <= $end; $i++):
                     ?>
                         <li class="page-item <?= ($page == $i) ? 'active' : '' ?>">
                             <a class="page-link" href="?page=<?= $i ?>"><?= $i ?></a>

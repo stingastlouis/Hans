@@ -1,12 +1,12 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $eventId = $_POST['event_id'] ?? null;
     if (!$eventId) {
-        header('Location: ../event.php?error=no_event_id');
-        exit;
+        redirectBackWithMessage('error', 'No event ID provided.');
     }
 
     $stmt = $conn->prepare("SELECT * FROM Event WHERE Id = ?");
@@ -14,8 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $existingEvent = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$existingEvent) {
-        header('Location: ../event.php?error=event_not_found');
-        exit;
+        redirectBackWithMessage('error', 'Event not found.');
     }
 
     $name = $_POST['event_name'] ?? $existingEvent['Name'];
@@ -36,8 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $file_type = mime_content_type($_FILES['event_image']['tmp_name']);
 
         if (!in_array($file_type, $allowed_types)) {
-            header('Location: ../event.php?error=invalid_image_type');
-            exit;
+            redirectBackWithMessage('error', 'Invalid image type.');
         }
 
         if (!is_dir($upload_dir)) {
@@ -45,8 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         if (!move_uploaded_file($_FILES['event_image']['tmp_name'], $target_file)) {
-            header('Location: ../event.php?error=upload_failed');
-            exit;
+            redirectBackWithMessage('error', 'Failed to upload image.');
         }
 
         $imagePath = $imageName;
@@ -65,8 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             if ($statusRow) {
                 $statusId = $statusRow['Id'];
-
-                // Update or insert EventStatus for this event
                 $checkStatusStmt = $conn->prepare("SELECT COUNT(*) FROM EventStatus WHERE EventId = ?");
                 $checkStatusStmt->execute([$eventId]);
                 $exists = $checkStatusStmt->fetchColumn();
@@ -101,14 +96,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         $conn->commit();
-        header('Location: ../event.php?success=1');
-        exit;
+        redirectBackWithMessage('success', 'Event successfully updated.');
     } catch (Exception $e) {
         $conn->rollBack();
-        header('Location: ../event.php?error=1');
-        exit;
+        redirectBackWithMessage('error', 'Failed to update event.');
     }
 } else {
-    header('Location: ../event.php?error=invalid_request');
-    exit;
+    redirectBackWithMessage('error', 'Invalid request.');
 }

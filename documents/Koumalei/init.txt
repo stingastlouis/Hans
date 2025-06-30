@@ -1,4 +1,0 @@
-
-INSERT INTO `status`(`StatusName`, `DateCreated`) VALUES ('ACTIVE',NOW());
-INSERT INTO `status`(`StatusName`,`DateCreated`) VALUES ('INACTIVE',NOW());
-INSERT INTO `status`(`StatusName`, `DateCreated`) VALUES ('IN PROGRESS',NOW());

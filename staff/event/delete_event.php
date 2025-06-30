@@ -1,5 +1,6 @@
-<?php 
+<?php
 include '../../configs/db.php';
+include '../../utils/communicationUtils.php';
 
 if (isset($_POST['event_id'])) {
     $eventId = $_POST['event_id'];
@@ -7,9 +8,7 @@ if (isset($_POST['event_id'])) {
     $stmt->bindParam(':id', $eventId, PDO::PARAM_INT);
     $stmt->execute();
 
-    header("Location: ../event.php?success=1");
-    exit();
+    redirectBackWithMessage('success', 'Event successfully deleted.');
 } else {
-    header("Location: ../event.php?error=1");
-    exit();
+    redirectBackWithMessage('error', 'Invalid request.');
 }

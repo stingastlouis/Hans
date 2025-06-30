@@ -1,35 +1,19 @@
-<div id="cart-container" class="position-fixed top-0 end-0 bg-white border shadow p-3 m-3 rounded">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <h5 class="mb-0">Cart</h5>
-        <button id="close-cart" style="background-color:transparent; border: none; width:30px">✕</button>
+<div id="cart-container" class="position-fixed bottom-0 end-0 bg-white border shadow-lg p-4 m-3 rounded-4" style="display: none; max-width: 320px; width: 100%; max-height: 420px; z-index: 1050; overflow-y: auto;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Your Cart</h5>
+        <button id="close-cart" class="btn-close" aria-label="Close"></button>
     </div>
 
-    <ul id="cart-items" class="list-group mb-2"></ul>
+    <ul id="cart-items" class="list-group list-group-flush mb-3"></ul>
 
-    <div class="d-flex justify-content-between mb-2">
-        <strong>Total:</strong>
-        <span id="cart-total">Rs 0.00</span>
+    <div class="d-flex justify-content-between border-top pt-2 mb-3">
+        <span class="fw-semibold">Total:</span>
+        <span id="cart-total" class="fw-bold text-success">$ 0.00</span>
     </div>
 
-    <button id="checkout-button" class="btn btn-success w-100">Checkout</button>
+    <button id="checkout-button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
+        <i class="bi bi-credit-card"></i> Checkout
+    </button>
 </div>
-
-<style>
-#cart-container {
-  display: none;
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  max-width: 300px;
-  width: 100%;
-  max-height: 400px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  overflow-y: auto;
-  padding: 20px;
-}
-</style>
 
 <script src="./cart/cart.js"></script>

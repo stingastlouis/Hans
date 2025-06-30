@@ -1,6 +1,8 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $statusId = trim($_POST['status_id']);
@@ -9,8 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $date = date('Y-m-d H:i:s');
 
     if (empty($statusId) || empty($orderId)) {
-        echo "<h1>Field missing</h1>";
-        exit;
+        redirectBackWithMessage('error', 'Field missing');
     }
 
     try {
@@ -109,15 +110,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $updateStmt->execute($eventOrderItemIds);
             }
         }
-
-
-
-        header("Location: ../order.php?success=1");
-        exit;
+        redirectBackWithMessage('success', 'Order status added successfully.');
     } catch (PDOException $e) {
-        echo "Database error: " . $e->getMessage();
+        redirectBackWithMessage('error', 'Database error: ' . $e->getMessage());
     }
 } else {
-    header("Location: ../order.php");
-    exit;
+    redirectBackWithMessage('error', 'Invalid request method.');
 }

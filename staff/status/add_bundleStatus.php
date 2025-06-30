@@ -1,6 +1,7 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $statusId = trim($_POST['status_id']);
@@ -8,8 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $staffId = trim($_POST['staff_id']);
     $date = date('Y-m-d H:i:s');
     if (empty($statusId) || empty($bundleId)) {
-        echo "<h1>Field missing</h1></center>";
-        exit;
+        redirectBackWithMessage('error', 'Field missing');
     }
 
     try {
@@ -21,15 +21,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bindParam(':datecreated', $date);
 
         if ($stmt->execute()) {
-            header("Location: ../bundle.php?success=1");
-            exit;
+            redirectBackWithMessage('success', 'Bundle status added successfully.');
         } else {
-            echo "Error adding bundle.";
+            redirectBackWithMessage('error', 'Error adding bundle.');
         }
     } catch (PDOException $e) {
-        echo "Database error: " . $e->getMessage();
+        redirectBackWithMessage('error', 'Database error: ' . $e->getMessage());
     }
 } else {
-    header("Location: ../bundle.php");
-    exit;
+    redirectBackWithMessage('error', 'Invalid request method.');
 }

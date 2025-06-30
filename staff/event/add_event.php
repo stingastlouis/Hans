@@ -1,6 +1,7 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['event_name'];
@@ -59,31 +60,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             }
 
                             $conn->commit();
-                            header('Location: ../event.php?success=1');
-                            exit;
+                            redirectBackWithMessage('success', 'Event successfully created.');
                         } else {
-                            header('Location: ../event.php?error=1');
-                            exit;
+                            redirectBackWithMessage('error', 'Failed to create event.');
                         }
                     } else {
-                        header('Location: ../event.php?error=1');
-                        exit;
+                        redirectBackWithMessage('error', 'Failed to create event.');
                     }
                 } catch (Exception $e) {
                     $conn->rollBack();
-                    header('Location: ../event.php?error=1');
-                    exit;
+                    redirectBackWithMessage('error', 'General error: ' . $e->getMessage());
                 }
             } else {
-                header('Location: ../event.php?error=1');
-                exit;
+                redirectBackWithMessage('error', 'Failed to create event.');
             }
         } else {
-            header('Location: ../event.php?error=1');
-            exit;
+            redirectBackWithMessage('error', 'Invalid request.');
         }
     } else {
-        header('Location: ../event.php?error=1');
-        exit;
+        redirectBackWithMessage('error', 'Invalid request.');
     }
 }

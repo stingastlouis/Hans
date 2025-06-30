@@ -3,18 +3,16 @@ include '../sessionManagement.php';
 include '../configs/constants.php';
 
 $role = $_SESSION['role'];
-if (!in_array($role, ALLOWED_EDITOR_ROLES)){
+if (!in_array($role, ALLOWED_EDITOR_ROLES)) {
     header("Location: ../unauthorised.php");
     exit;
 }
 include 'includes/header.php';
 include '../configs/db.php';
 
-$success = isset($_GET["success"]) ? $_GET["success"] : null;
-
 $itemsPerPage = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$page = max($page, 1); 
+$page = max($page, 1);
 $offset = ($page - 1) * $itemsPerPage;
 
 
@@ -35,19 +33,14 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <p class="text-primary m-0 fw-bold">Category List</p>
             <?php if (in_array($role, ['Admin'])): ?>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-                Add Category
-            </button>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                    Add Category
+                </button>
             <?php endif; ?>
         </div>
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <div class="text-md-end dataTables_filter" id="dataTable_filter">
-                        <label class="form-label">
-                            <input type="search" class="form-control form-control-sm" aria-controls="dataTable" placeholder="Search" id="searchInput">
-                        </label>
-                    </div>
                 </div>
                 <div class="col-md-6 text-nowrap">
                     <div id="dataTable_length" class="dataTables_length" aria-controls="dataTable">
@@ -62,7 +55,7 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <th>Category Name</th>
                             <th>Date Created</th>
                             <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
-                            <th>Actions</th>
+                                <th>Actions</th>
                             <?php endif; ?>
                         </tr>
                     </thead>
@@ -73,9 +66,9 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?= htmlspecialchars($category['Name']) ?></td>
                                 <td><?= htmlspecialchars($category['DateCreated']) ?></td>
                                 <?php if (in_array($role, ADMIN_ONLY_ROLE)): ?>
-                                <td>
-                                    <button class="btn btn-danger btn-del" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal" data-id="<?= $category['Id'] ?>">Delete</button>
-                                </td>
+                                    <td>
+                                        <button class="btn btn-danger btn-del" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal" data-id="<?= $category['Id'] ?>">Delete</button>
+                                    </td>
                                 <?php endif; ?>
                             </tr>
                         <?php endforeach; ?>
@@ -171,7 +164,7 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 </div>
-<script src="./utils/message.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', handleSuccessOrErrorModal);
 </script>
@@ -183,26 +176,24 @@ $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
     deleteButtons.forEach(function(button) {
         button.addEventListener('click', function() {
             var categoryId = this.getAttribute('data-id');
-            console.log(categoryId)
             let x = document.getElementById('categoryIdToDelete').value = categoryId;
-            console.log(x,"object");
         });
     });
 </script>
 
 <script>
-    document.getElementById('searchInput').addEventListener('input', function () {
-    var query = this.value.toLowerCase(); 
-    var rows = document.querySelectorAll('#dataTable tbody tr'); 
-    rows.forEach(function (row) {
-        var categoryName = row.querySelector('td:nth-child(2)').textContent.toLowerCase(); 
+    document.getElementById('searchInput').addEventListener('input', function() {
+        var query = this.value.toLowerCase();
+        var rows = document.querySelectorAll('#dataTable tbody tr');
+        rows.forEach(function(row) {
+            var categoryName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
 
-        
-        if (categoryName.includes(query)) {
-            row.style.display = ''; 
-        } else {
-            row.style.display = 'none'; 
-        }
+
+            if (categoryName.includes(query)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
     });
-});
 </script>

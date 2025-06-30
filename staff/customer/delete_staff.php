@@ -1,6 +1,6 @@
-<?php 
+<?php
 include '../../configs/db.php';
-
+include '../../utils/communicationUtils.php';
 if (isset($_POST['customer_id'])) {
     $productId = $_POST['customer_id'];
 
@@ -8,9 +8,7 @@ if (isset($_POST['customer_id'])) {
     $stmt->bindParam(':id', $productId, PDO::PARAM_INT);
     $stmt->execute();
 
-    header("Location: ../customer.php?success=1");
-    exit();
+    redirectBackWithMessage('success', 'Customer successfully deleted.');
 } else {
-    header("Location: ../customer.php?error=1");
-    exit();
+    redirectBackWithMessage('error', 'Invalid request.');
 }

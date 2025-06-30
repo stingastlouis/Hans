@@ -1,7 +1,8 @@
 <?php
-
 session_start();
-session_unset(); 
-session_destroy();
+
+unset($_SESSION['staff_id']);
+unset($_SESSION['staff_name']);
+unset($_SESSION['role']);
 header('Location: login.php');
 exit;

@@ -48,9 +48,9 @@ try {
         <div class="col-md-6">
             <h2><?= htmlspecialchars($event['Name']) ?></h2>
             <p><?= htmlspecialchars($event['Description']) ?></p>
-            <p><strong>Price:</strong> Rs <?= number_format($event['Price'], 2) ?></p>
+            <p><strong>Price:</strong> $ <?= number_format($event['Price'], 2) ?></p>
             <?php if ($event['DiscountPrice']): ?>
-                <p><strong>Discount Price:</strong> Rs <?= number_format($event['DiscountPrice'], 2) ?></p>
+                <p><strong>Discount Price:</strong> $ <?= number_format($event['DiscountPrice'], 2) ?></p>
             <?php endif; ?>
 
             <?php if (!empty($products)): ?>
@@ -89,10 +89,10 @@ try {
 
             <div class="mt-3">
                 <p class="mb-1"><strong>Days:</strong> <span id="rental-days">0</span></p>
-                <p><strong>Total Price:</strong> Rs <span id="rental-total">0.00</span></p>
+                <p><strong>Total Price:</strong> $ <span id="rental-total">0.00</span></p>
             </div>
 
-            <button class="btn btn-primary mt-2 add-to-event-cart"
+            <button class="btn btn-outline-primary mt-auto align-self-start mt-2 add-to-event-cart"
                 data-id="<?= $event['Id'] ?>"
                 data-name="<?= htmlspecialchars($event['Name']) ?>"
                 data-price="<?= $event['DiscountPrice'] ?: $event['Price'] ?>"

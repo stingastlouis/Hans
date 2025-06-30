@@ -1,18 +1,17 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    
+
     $statusId = trim($_POST['status_id']);
     $customerid = trim($_POST['customer_id']);
     $staffId = trim($_POST['staff_id']);
-    var_dump($statusId,"status");
-    var_dump($customerid,"customerid");
+
     $date = date('Y-m-d H:i:s');
     if (empty($statusId) || empty($customerid)) {
-        echo "<h1>Field missing</h1></center>";
-        exit;
+        redirectBackWithMessage('error', 'Field missing');
     }
 
     try {
@@ -24,16 +23,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bindParam(':datecreated', $date);
 
         if ($stmt->execute()) {
-            header("Location: ../customer.php?success=1");
-            exit;
+            redirectBackWithMessage('success', 'Customer status added successfully.');
         } else {
-            echo "Error adding customer.";
+            redirectBackWithMessage('error', 'Error adding customer status.');
         }
     } catch (PDOException $e) {
-        echo "Database error: " . $e->getMessage();
+        redirectBackWithMessage('error', 'Database error: ' . $e->getMessage());
     }
 } else {
-    header("Location: ../customer.php");
-    exit;
+    redirectBackWithMessage('error', 'Invalid request method.');
 }
-?>

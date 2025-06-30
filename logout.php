@@ -1,6 +1,9 @@
 <?php
 session_start();
-session_destroy();
-setcookie(session_name(), '', time() - 3600, '/');
+
+unset($_SESSION['customerId']);
+unset($_SESSION['customer_fullname']);
+unset($_SESSION['customer_email']);
+
 header("Location: index.php");
 exit;

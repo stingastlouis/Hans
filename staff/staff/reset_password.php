@@ -1,6 +1,8 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
+
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $staffId = $_POST['staff_id'];
@@ -30,26 +32,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if ($stmt->rowCount() > 0) {
             $conn->commit();
-            header('Location: ../staff.php?success=1');
-            exit;
+            redirectBackWithMessage('success', 'Password reset successfully.');
         } else {
             throw new Exception("Error: Unable to reset the password. No changes were made.");
         }
-
     } catch (Exception $e) {
         $conn->rollBack();
         $errorMessage = $e->getMessage();
         if (strpos($errorMessage, "Password must be") !== false) {
-            header('Location: ../staff.php?error=weak_password');
+            redirectBackWithMessage('error', 'Weak password.');
         } else if (strpos($errorMessage, "Staff member not found") !== false) {
-            header('Location: ../staff.php?error=staff_not_found');
+            redirectBackWithMessage('error', 'Staff member not found.');
         } else {
-            header('Location: ../staff.php?error=general&message=' . urlencode($errorMessage));
+            redirectBackWithMessage('error', 'General error occurred: ' . $errorMessage);
         }
-        exit;
     }
 } else {
-    header('Location: ../staff.php');
-    exit;
+    redirectBackWithMessage('error', 'Invalid request method.');
 }
-?>

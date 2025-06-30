@@ -1,6 +1,7 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
 
 $redirectUrl = $_SERVER['HTTP_REFERER'] ?? '../installation.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -10,8 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $date = date('Y-m-d H:i:s');
 
     if (empty($statusId) || empty($installationId)) {
-        echo "<h1>Field missing</h1>";
-        exit;
+        redirectBackWithMessage('error', 'Field missing');
     }
 
     try {
@@ -57,13 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $conn->commit();
-        header("Location: $redirectUrl?success=1");
-        exit;
+        redirectBackWithMessage('success', 'Installation status added successfully.');
     } catch (PDOException $e) {
         $conn->rollBack();
-        echo "Database error: " . $e->getMessage();
+        redirectBackWithMessage('error', 'Database error: ' . $e->getMessage());
     }
 } else {
-    header("Location: $redirectUrl");
-    exit;
+    redirectBackWithMessage('error', 'Invalid request method.');
 }

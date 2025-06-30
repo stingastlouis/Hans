@@ -285,6 +285,22 @@ CREATE TABLE `InstallationStatus` (
 );
 
 
+-- Create table for Queries
+CREATE TABLE Query (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    FullName VARCHAR(100) NOT NULL,
+    Email VARCHAR(150) NOT NULL,
+    Subject VARCHAR(150),
+    Message TEXT NOT NULL,
+    IsCustomer BOOLEAN DEFAULT FALSE,
+    CustomerId INT,
+    DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Seen BOOLEAN DEFAULT FALSE,
+    CONSTRAINT fk_customer FOREIGN KEY (CustomerId) REFERENCES Customer(Id) ON DELETE SET NULL
+);
+
+
+
 -- Add Statuses
 INSERT INTO `Status`(`Name`, `Description`, `DateCreated`) VALUES 
 ('ACTIVE', 'The order or task is currently active or ongoing.', NOW()),
@@ -322,3 +338,6 @@ INSERT INTO `StaffStatus` ( `StaffId`, `StatusId`, `DateCreated`) VALUES ((SELEC
 -- sb-kykw36542808@personal.example.com
 
 -- mt7^z6WJ
+
+
+-- HOSTING: P012&*212pasx

@@ -1,6 +1,7 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['product_name'];
@@ -10,9 +11,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $staffId = $_POST["staff_id"];
     $discount_price = $_POST['product_discount'];
     $stock = $_POST['product_stock'];
-    
+
     if (!empty($_FILES['product_image']['name'])) {
-        $upload_dir = '../../assets/uploads/';
+        $upload_dir = '../../assets/uploads/products/';
         $file_name = basename($_FILES['product_image']['name']);
         $target_file = $upload_dir . $file_name;
         $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
@@ -42,32 +43,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                             $conn->commit();
 
-                            header('Location: ../product.php?success=1');
-                            exit;
+                            redirectBackWithMessage('success', 'Product successfully added.');
                         } else {
-                            header('Location: ../product.php?error=1');
-                            exit;
+                            redirectBackWithMessage('error', 'Failed to set product status.');
                         }
                     } else {
-                        header('Location: ../product.php?error=1');
-                        exit;
+                        redirectBackWithMessage('error', 'Failed to add product.');
                     }
                 } catch (Exception $e) {
                     $conn->rollBack();
-                    header('Location: ../product.php?error=1');
-                    exit;
+                    redirectBackWithMessage('error', 'An error occurred while adding the product.');
                 }
             } else {
-                header('Location: ../product.php?error=1');
-                 exit;
+                redirectBackWithMessage('error', 'Failed to upload image.');
             }
         } else {
-            header('Location: ../product.php?error=1');
-            exit;
+            redirectBackWithMessage('error', 'Invalid file type.');
         }
     } else {
-        header('Location: ../product.php?error=1');
-        exit;
+        redirectBackWithMessage('error', 'No image uploaded.');
     }
 }
-?>

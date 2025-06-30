@@ -1,6 +1,8 @@
 <?php
 include '../../configs/db.php';
 include '../../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
+
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $staffId = $_POST['staff_id'];
@@ -13,20 +15,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $conn->beginTransaction();
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            header('Location: ../staff.php?error=1');
-            exit;
+            redirectBackWithMessage('error', 'Invalid email format.');
         }
 
         $checkEmail = $conn->prepare("SELECT COUNT(*) FROM Staff WHERE Email = ? AND Id != ?");
         $checkEmail->execute([$email, $staffId]);
         if ($checkEmail->fetchColumn() > 0) {
-            header('Location: ../staff.php?error=1');
-            exit;
+            \redirectBackWithMessage('error', 'Email already exists.');
         }
 
         if (!preg_match("/^[0-9+\-\s()]*$/", $phone)) {
-            header('Location: ../staff.php?error=1');
-            exit;
+            redirectBackWithMessage('error', 'Invalid phone number format.');
         }
 
         $checkStaff = $conn->prepare("SELECT COUNT(*) FROM Staff WHERE Id = ?");
@@ -41,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                    Phone = ?, 
                                    RoleId = ? 
                                WHERE Id = ?");
-        
+
         $stmt->execute([
             $fullname,
             $email,
@@ -52,32 +51,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if ($stmt->rowCount() >= 0) {
             $conn->commit();
-            header('Location: ../staff.php?success=1');
-            exit;
+            redirectBackWithMessage('success', 'Staff member updated successfully.');
         } else {
-            header('Location: ../staff.php?error=1');
-            exit;
+            redirectBackWithMessage('error', 'Failed to update staff member.');
         }
-
     } catch (Exception $e) {
         $conn->rollBack();
-        
+
         $errorMessage = $e->getMessage();
         if (strpos($errorMessage, "Invalid email") !== false) {
-            header('Location: ../staff.php?error=invalid_email');
+            redirectBackWithMessage('error', 'Invalid email format.');
         } else if (strpos($errorMessage, "Email already exists") !== false) {
-            header('Location: ../staff.php?error=email_exists');
+            redirectBackWithMessage('error', 'Email already exists.');
         } else if (strpos($errorMessage, "Invalid phone") !== false) {
-            header('Location: ../staff.php?error=invalid_phone');
+            redirectBackWithMessage('error', 'Invalid phone number format.');
         } else if (strpos($errorMessage, "Staff member not found") !== false) {
-            header('Location: ../staff.php?error=staff_not_found');
+            redirectBackWithMessage('error', 'Staff member not found.');
         } else {
-            header('Location: ../staff.php?error=general&message=' . urlencode($errorMessage));
+            redirectBackWithMessage('error', 'General error occurred: ' . $errorMessage);
         }
         exit;
     }
 } else {
-    header('Location: ../staff.php');
-    exit;
+    redirectBackWithMessage('error', 'Invalid request method.');
 }
-?>

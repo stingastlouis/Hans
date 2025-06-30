@@ -11,7 +11,6 @@ if (!in_array($role, ALLOWED_EDITOR_ROLES)) {
 include 'includes/header.php';
 include '../configs/db.php';
 
-$success = isset($_GET["success"]) ? $_GET["success"] : null;
 $staffId = $_SESSION["staff_id"];
 
 $limit = 10;
@@ -264,7 +263,6 @@ $prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<script src="./utils/message.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', handleSuccessOrErrorModal);
 </script>
@@ -389,7 +387,6 @@ $prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
         document.getElementById(`edit_product_row_${productId}`).remove();
     }
 
-    // Attach values to the modal when Edit is clicked
     document.querySelectorAll('.edit-event-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-id');

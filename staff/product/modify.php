@@ -1,5 +1,6 @@
 <?php
 include '../../configs/db.php';
+include '../../utils/communicationUtils.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $productId = $_POST['product_id'];
@@ -13,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $imagePath = null;
 
     if (!empty($_FILES['product_image']['name'])) {
-        $targetDir = "../../assets/uploads/";
+        $targetDir = "../../assets/uploads/products/";
         $imageName = basename($_FILES['product_image']['name']);
         $targetFilePath = $targetDir . $imageName;
 
@@ -24,8 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (move_uploaded_file($_FILES['product_image']['tmp_name'], $targetFilePath)) {
             $imagePath = $imageName;
         } else {
-            header("Location: ../product.php?error=1");
-            exit();
+            redirectBackWithMessage('error', 'Failed to upload image.');
         }
     }
 
@@ -43,12 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bindParam(':stock', $stock, PDO::PARAM_INT);
     $stmt->bindParam(':categoryId', $category_id, PDO::PARAM_INT);
     $stmt->bindParam(':id', $productId, PDO::PARAM_INT);
-    
+
     $stmt->execute();
 
-    header("Location: ../product.php?success=1");
-    exit();
+    redirectBackWithMessage('success', 'Product successfully modified.');
 } else {
-    header("Location: ../product.php?error=1");
-    exit();
+    redirectBackWithMessage('error', 'Failed to modify product.');
 }

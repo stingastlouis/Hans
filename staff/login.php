@@ -1,9 +1,9 @@
-<?php 
+<?php
 
 include '../sessionManagement.php';
 include '../configs/constants.php';
 
-if ($_SESSION && $_SESSION['staff_id']){
+if ($_SESSION && isset($_SESSION['staff_id'])) {
     header("Location: ../staff/");
     exit;
 }
@@ -38,37 +38,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Admin Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-light d-flex align-items-center" style="height: 100vh;">
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light d-flex align-items-center justify-content-center" style="height: 100vh;">
+
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-4">
-                <div class="card shadow">
-                    <div class="card-body">
-                        <h4 class="card-title text-center mb-4">Admin Login</h4>
+            <div class="col-md-5 col-lg-4">
+                <div class="card shadow-lg rounded-4 border-0">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-center mb-4 fw-semibold">Admin Login</h4>
+
                         <?php if ($error): ?>
-                            <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+                            <div class="alert alert-danger" role="alert">
+                                <?= htmlspecialchars($error) ?>
+                            </div>
                         <?php endif; ?>
-                        <form method="POST">
+
+                        <form method="POST" novalidate>
                             <div class="mb-3">
-                                <label>Email</label>
-                                <input type="email" name="email" class="form-control" required />
+                                <label for="email" class="form-label">Email address</label>
+                                <input
+                                    type="email"
+                                    class="form-control"
+                                    id="email"
+                                    name="email"
+                                    placeholder="Enter email"
+                                    required
+                                    autofocus>
                             </div>
                             <div class="mb-3">
-                                <label>Password</label>
-                                <input type="password" name="password" class="form-control" required />
+                                <label for="password" class="form-label">Password</label>
+                                <input
+                                    type="password"
+                                    class="form-control"
+                                    id="password"
+                                    name="password"
+                                    placeholder="Enter password"
+                                    required>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">Login</button>
+                            <button type="submit" class="btn btn-primary w-100">Sign In</button>
                         </form>
                     </div>
                 </div>
-                <p class="text-center mt-3 text-muted small">© <?= date('Y') ?> Admin Panel</p>
+                <p class="text-center mt-3 text-muted small">
+                    © <?= date('Y') ?> Admin Panel
+                </p>
             </div>
         </div>
     </div>
+
 </body>
+
 </html>

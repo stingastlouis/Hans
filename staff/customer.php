@@ -11,8 +11,6 @@ if (!in_array($role, ALLOWED_EDITOR_ROLES)) {
 include '../configs/db.php';
 include 'includes/header.php';
 
-$success = isset($_GET["success"]) ? $_GET["success"] : null;
-
 $itemsPerPage = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $page = max($page, 1);
@@ -167,7 +165,7 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                     <div class="mb-3">
                         <label for="editCustomerPhone" class="form-label">Phone</label>
-                        <input type="tel" class="form-control" id="editCustomerPhone" name="customer_phone" required>
+                        <input type="tel" class="form-control" id="editCustomerPhone" minlength="4" maxlength="8" name="customer_phone" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -226,7 +224,6 @@ $statuses = $stmt3->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<script src="./utils/message.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', handleSuccessOrErrorModal);
 </script>

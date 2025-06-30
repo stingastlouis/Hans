@@ -1,6 +1,8 @@
 <?php
 include './configs/db.php';
 
+include "./includes/header.php";
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $firstname = trim($_POST['firstname']);
     $lastname = trim($_POST['lastname']);
@@ -16,30 +18,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "<div class='alert alert-danger'>Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.</div>";
     } else {
         $password_hashed = password_hash($password, PASSWORD_DEFAULT);
-        
+
         try {
             $stmt = $conn->prepare("SELECT Id FROM Customer WHERE Email = ?");
             $stmt->execute([$email]);
-            
+
             if ($stmt->rowCount() > 0) {
                 echo "<div class='alert alert-danger'>Email already registered.</div>";
             } else {
                 $stmt = $conn->prepare("INSERT INTO Customer (fullname, email, address, phone, password) VALUES (?, ?, ?, ?, ?)");
                 $success = $stmt->execute([$fullname, $email, $address, $phone, $password_hashed]);
-                
+
                 if ($success) {
-                    $customerId = $conn->lastInsertId(); 
+                    $customerId = $conn->lastInsertId();
                     $statusStmt = $conn->prepare("SELECT Id FROM Status WHERE Name = 'ACTIVE' LIMIT 1");
                     $statusStmt->execute();
                     $statusRow = $statusStmt->fetch(PDO::FETCH_ASSOC);
-            
+
                     if ($statusRow) {
                         $statusId = $statusRow['Id'];
-            
-                        $statusInsertStmt = $conn->prepare("INSERT INTO CustomerStatus (userid, statusid, datecreated) 
-                                                            VALUES (?, ?, NOW())");
+
+                        $statusInsertStmt = $conn->prepare("INSERT INTO CustomerStatus (userid, statusid, datecreated)
+    VALUES (?, ?, NOW())");
                         $statusInsertStmt->execute([$customerId, $statusId]);
-            
+
                         echo "<div class='alert alert-success'>Registration successful!</div>";
                         header("Location: login.php");
                         exit;
@@ -57,37 +59,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<?php include "./includes/header.php"?>
 
-<div class="container mt-5">
-    <h2 class="mb-4">Register</h2>
-    <form method="POST" action="">
-        <div class="mb-3">
-            <label class="form-label">First Name</label>
-            <input type="text" name="firstname" class="form-control" required>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-5">
+                    <h2 class="card-title mb-4 text-center fw-bold text-primary">Create Your Account</h2>
+
+                    <form method="POST" action="">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" name="firstname" class="form-control" id="firstname" placeholder="First Name" required>
+                                    <label for="firstname">First Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" name="lastname" class="form-control" id="lastname" placeholder="Last Name" required>
+                                    <label for="lastname">Last Name</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input type="email" name="email" class="form-control" id="email" placeholder="name@example.com" required>
+                            <label for="email">Email address</label>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input type="text" name="address" class="form-control" id="address" placeholder="Address" required>
+                            <label for="address">Address</label>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input type="tel" name="phone" class="form-control" id="phone" placeholder="Phone number" minlength="4" maxlength="8" required>
+                            <label for="phone">Phone</label>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <input type="password" name="password" class="form-control" id="password" placeholder="Password" required>
+                            <label for="password">Password</label>
+                            <div class="form-text mt-1">At least 8 characters, including uppercase, lowercase, number &amp; special character.</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 fw-semibold shadow-sm">Register</button>
+                    </form>
+
+                    <p class="mt-4 text-center text-muted small">
+                        Already have an account? <a href="login.php" class="text-decoration-none">Login here</a>
+                    </p>
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Last Name</label>
-            <input type="text" name="lastname" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Address</label>
-            <input type="text" name="address" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Phone</label>
-            <input type="text" name="phone" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Password</label>
-            <input type="password" name="password" class="form-control" required>
-            <small class="text-muted">Password must be at least 8 characters, including uppercase, lowercase, number, and special character.</small>
-        </div>
-        <button type="submit" class="btn btn-primary">Register</button>
-    </form>
+    </div>
 </div>
-<?php include "./includes/footer.php"?>
+
+<?php include "./includes/footer.php" ?>

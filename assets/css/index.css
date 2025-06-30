@@ -1,4 +1,4 @@
-/* === Bohemian Theme for Main Page Sections (Excludes Header/Footer) === */
+
 
 section {
   padding-top: 4rem;
@@ -7,7 +7,6 @@ section {
   color: #5c3d2e;
 }
 
-/* Headings and Paragraphs */
 h2.fw-bold {
   font-family: "Georgia", serif;
   font-size: 2.2rem;
@@ -20,7 +19,6 @@ p.lead {
   color: #7b5e57;
 }
 
-/* Cards */
 .card {
   border: none;
   border-radius: 1rem;
@@ -41,7 +39,6 @@ p.lead {
   height: 200px;
 }
 
-/* Card Titles and Texts */
 .card-title {
   font-family: "Palatino Linotype", serif;
   color: #6d3f38;
@@ -55,7 +52,6 @@ p.lead {
   flex-grow: 1;
 }
 
-/* Price Styling */
 .text-primary {
   color: #a0522d !important;
 }
@@ -64,7 +60,6 @@ p.lead {
   color: #bcb4aa;
 }
 
-/* Event Bundle Details */
 ul {
   padding-left: 1rem;
   list-style-type: disc;
@@ -75,7 +70,7 @@ ul li {
   color: #5c3d2e;
 }
 
-/* Category Cards */
+
 .card h5 {
   font-family: "Georgia", serif;
   color: #5c3d2e;
@@ -95,7 +90,42 @@ ul li {
   transform: scale(1.03);
 }
 
-/* Text links */
 a.text-dark:hover {
   color: #a0522d !important;
+}
+
+
+.card.shadow-sm {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: #fffaf6;
+}
+
+.hover-shadow:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-title {
+  font-family: 'Georgia', serif;
+  font-weight: 700;
+  color: #7b3f00;
+  letter-spacing: 0.03em;
+}
+
+.card-text {
+  font-family: 'Georgia', serif;
+  font-size: 1rem;
+  color: #5e4630;
+}
+
+.text-primary {
+  color: #b95c50 !important;
+}
+
+.bg-primary-gradient {
+  background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+}
+
+.tracking-widest {
+  letter-spacing: 0.12em;
 }
