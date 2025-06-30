@@ -19,7 +19,6 @@ $page = max($page, 1);
 $offset = ($page - 1) * $itemsPerPage;
 $staffId = $_SESSION["staff_id"];
 
-// Prepare filters
 $whereClauses = [];
 $params = [];
 
@@ -332,7 +331,6 @@ $installers = $stmt5->fetchAll(PDO::FETCH_ASSOC);
     </table>
   </div>
 
-  <!-- Pagination -->
   <nav class="mt-4">
     <ul class="pagination justify-content-center">
       <?php for ($i = 1; $i <= $totalPages; $i++): ?>

@@ -4,7 +4,7 @@ include '../../configs/timezoneConfigs.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $role_name = trim($_POST['role_name']);
-    
+
     if (empty($role_name)) {
         echo "<h1>Role name cannot be empty.</h1></center>";
         exit;
@@ -14,10 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $conn->prepare("SELECT COUNT(*) FROM Role WHERE name = :name");
         $stmt->bindParam(':name', $role_name);
         $stmt->execute();
-        
+
         $role_exists = $stmt->fetchColumn();
         if ($role_exists > 0) {
-            eheader("Location: ../role.php?error=1");
+            header("Location: ../role.php?error=1");
             exit;
         }
 
@@ -39,4 +39,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header("Location: ../role.php");
     exit;
 }
-?>

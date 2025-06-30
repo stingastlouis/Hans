@@ -43,8 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $statusInsertStmt->execute([$customerId, $statusId]);
 
                         echo "<div class='alert alert-success'>Registration successful!</div>";
-                        header("Location: login.php");
-                        exit;
                     } else {
                         throw new Exception("Error: 'ACTIVE' status not found.");
                     }

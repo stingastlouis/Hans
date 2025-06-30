@@ -1,6 +1,7 @@
 <?php
 include '../configs/db.php';
 include '../configs/timezoneConfigs.php';
+include '../../utils/communicationUtils.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $orderId = trim($_POST['orderId']);
@@ -9,8 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $date = date('Y-m-d H:i:s');
 
     if (empty($orderId) || empty($staffId) || empty($installerId)) {
-        // redirectWithMessage("order.php", "Missing required fields");
-        echo "hello";
+        redirectBackWithMessage('error', 'Missing required fields.');
     }
 
     try {
@@ -28,8 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$installationRow) {
             $conn->rollBack();
-            echo "not good";
-            // redirectWithMessage("order.php", "Delivery not found for this order.");
+            redirectBackWithMessage("error", "Delivery not found for this order.");
         }
 
         $installationId = $installationRow['Id'];
@@ -38,9 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $status = $statusStmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$status) {
-            echo "not status";
             $conn->rollBack();
-            // redirectWithMessage("order.php", "Pending status not found in database");
+            redirectBackWithMessage("error", "Pending status not found in database");
         }
 
         $pendingStatusId = $status['Id'];
@@ -55,16 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $insertStmt->bindParam(':dateCreated', $date);
         $insertStmt->execute();
         $conn->commit();
-        header("Location: order.php");
-        // redirectWithMessage("order.php", "Employee assigned and status set to PENDING successfully!", true);
+        redirectBackWithMessage("success", "Employee assigned and status set to PENDING successfully!");
     } catch (PDOException $e) {
-        echo $e;
         if ($conn->inTransaction()) {
             $conn->rollBack();
         }
-        // redirectWithMessage("order.php", "Database Error: " . $e->getMessage());
+        redirectBackWithMessage("error", "Database Error: " . $e->getMessage());
     }
 } else {
-    header("Location: order.php");
-    exit;
+    redirectBackWithMessage("error", "Invalid request method.");
 }

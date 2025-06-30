@@ -62,7 +62,6 @@
                 echo '<div class="row">';
                 foreach ($events as $event) {
                     $eventDate = date('Y-m-d', strtotime($event['DateCreated']));
-                    // Escape title and description for tooltip and display
                     $safeTitle = htmlspecialchars($event['Name']);
                     $safeDesc = htmlspecialchars($event['Description']);
                     echo '<div class="col-md-4 mb-4 event-item" data-event-id="' . htmlspecialchars($event['Id']) . '" data-event-date="' . $eventDate . '">

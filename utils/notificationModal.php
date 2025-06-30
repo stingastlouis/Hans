@@ -52,7 +52,7 @@ if ($type && $message):
     <script>
         setTimeout(() => {
             const overlay = document.getElementById('modal-overlay');
-            if (overlay) overlay.remove(); // cleaner than .style.display = 'none'
+            if (overlay) overlay.remove();
 
             const url = new URL(window.location.href);
             url.searchParams.delete('success');
