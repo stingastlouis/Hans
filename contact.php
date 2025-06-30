@@ -10,7 +10,7 @@
         <div class="row d-flex justify-content-center">
             <div class="col-md-6 col-xl-4">
                 <div>
-                    <form class="p-3 p-xl-4" method="post" action="profile/addmessage.php">
+                    <form class="p-3 p-xl-4" method="post" action="profile/addMessage.php">
                         <div class="mb-3">
                             <input class="form-control" type="text" name="fullName" placeholder="Name" required>
                         </div>

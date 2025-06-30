@@ -1,5 +1,6 @@
 <?php
 include '../configs/db.php';
+include '../utils/communicationUtils.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -10,7 +11,7 @@ try {
     $message = $_POST['message'] ?? null;
 
     if (!$subject || !$message) {
-        throw new Exception('Please fill in all required fields.');
+        redirectBackWithMessage('error', 'Please fill in all required fields.');
     }
 
     $isCustomer = false;
@@ -44,10 +45,11 @@ try {
 
     if ($page === 'profile.php') {
         $redirectUrl = $redirectUrl . '#queries';
+        header("Location: $redirectUrl");
+        exit;
+    } else {
+        redirectBackWithMessage('success', 'Your message has been sent successfully.');
     }
-
-    header("Location: $redirectUrl");
-    exit;
 } catch (Exception $e) {
-    echo "<div style='color:red; font-weight:bold;'>Error: " . htmlspecialchars($e->getMessage()) . "</div>";
+    redirectBackWithMessage('error', 'An unexpected error occurred: ' . $e->getMessage());
 }

@@ -18,6 +18,5 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['query_id'])) {
     }
 }
 
-// Redirect back to query listing
 header("Location: admin-messages.php");
 exit;

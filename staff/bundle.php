@@ -172,7 +172,6 @@ $prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
                     <div class="mb-3">
                         <label for="productSelect" class="form-label">Add Product to Bundle</label>
 
-                        <!-- Product selection and quantity -->
                         <div class="d-flex mb-2 align-items-center">
                             <select id="productSelect" class="form-select me-2" style="max-width: 300px;">
                                 <option value="">-- Select Product --</option>
@@ -389,7 +388,6 @@ $prods = $productQuery->fetchAll(PDO::FETCH_ASSOC);
         document.getElementById(`edit_product_row_${productId}`).remove();
     }
 
-    // Attach values to the modal when Edit is clicked
     document.querySelectorAll('.edit-bundle-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-id');
