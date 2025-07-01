@@ -103,7 +103,7 @@ try {
                 <div class="col">
                     <a href="bundle.php" class="text-decoration-none text-dark">
                         <div class="card shadow-sm rounded-4 h-100 bg-white border-0 hover-shadow">
-                            <img src="./assets/uploads/bundles<?= htmlspecialchars($bundle['ImagePath']) ?>" class="card-img-top rounded-top-4" alt="<?= htmlspecialchars($bundle['Name']) ?>">
+                            <img src="./assets/uploads/bundles/<?= htmlspecialchars($bundle['ImagePath']) ?>" class="card-img-top rounded-top-4" alt="<?= htmlspecialchars($bundle['Name']) ?>">
                             <div class="card-body d-flex flex-column text-start">
                                 <h5 class="card-title"><?= htmlspecialchars($bundle['Name']) ?></h5>
                                 <p class="card-text flex-grow-1"><?= htmlspecialchars($bundle['Description']) ?></p>
