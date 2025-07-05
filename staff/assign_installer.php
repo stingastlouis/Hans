@@ -1,7 +1,7 @@
 <?php
 include '../configs/db.php';
 include '../configs/timezoneConfigs.php';
-include '../../utils/communicationUtils.php';
+include '../utils/communicationUtils.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $orderId = trim($_POST['orderId']);

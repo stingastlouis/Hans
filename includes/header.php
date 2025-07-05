@@ -1,11 +1,11 @@
 <?php
 include "./configs/constants.php";
+include './utils/notificationModal.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 $request = $_SERVER["REQUEST_URI"];
-$subDomain = "/hans";
 $activeClassName = 'active';
 $isLoggedIn = isset($_SESSION['customerId']);
 ?>
@@ -138,7 +138,7 @@ $isLoggedIn = isset($_SESSION['customerId']);
 <body class="main-body">
     <nav style="z-index: 100;" id="mainNav" class="navbar navbar-expand-md sticky-top shadow-sm customNavbar py-3">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center fw-bold text-dark" href="/">
+            <a class="navbar-brand d-flex align-items-center fw-bold text-dark" href="index.php">
                 <img src="assets/img/c37a6998-6f32-4fe6-93be-62914755c41f.jpg" alt="Logo" width="50" height="50" class="me-2" />
                 <span class="fs-4">Light Store</span>
             </a>
@@ -149,19 +149,19 @@ $isLoggedIn = isset($_SESSION['customerId']);
             <div class="collapse navbar-collapse" id="navcol-1">
                 <ul class="navbar-nav mx-auto mb-2 mb-md-0 fw-semibold">
                     <li class="nav-item">
-                        <a class="nav-link <?= $request == "$subDomain/" ? 'active' : ''; ?>" href="/">Home</a>
+                        <a class="nav-link <?= strpos($request, "/index.php") !== false ? 'active' : ''; ?>" href="index.php">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?= $request == "$subDomain/bundle.php" ? 'active' : ''; ?>" href="/bundle.php">Bundles</a>
+                        <a class="nav-link <?= strpos($request, "/bundle.php") !== false ? 'active' : ''; ?>" href="bundle.php">Bundles</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?= $request == "$subDomain/product.php" ? 'active' : ''; ?>" href="/product.php">Products</a>
+                        <a class="nav-link <?= strpos($request, "/product.php") !== false ? 'active' : ''; ?>" href="product.php">Products</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?= $request == "$subDomain/event.php" ? 'active' : ''; ?>" href="/event.php">Events</a>
+                        <a class="nav-link <?= strpos($request, "/event.php") !== false ? 'active' : ''; ?>" href="event.php">Events</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?= $request == "$subDomain/contact.php" ? 'active' : ''; ?>" href="/contact.php">Contact us</a>
+                        <a class="nav-link <?= strpos($request, "/contact.php") !== false ? 'active' : ''; ?>" href="contact.php">Contact us</a>
                     </li>
                 </ul>
 
@@ -173,12 +173,12 @@ $isLoggedIn = isset($_SESSION['customerId']);
                 </a>
 
                 <?php if (!$isLoggedIn): ?>
-                    <a class="btn btn-danger me-2 fw-semibold" role="button" href="/register.php">Sign up</a>
-                    <a class="btn btn-outline-danger fw-semibold" role="button" href="/login.php">Sign in</a>
+                    <a class="btn btn-danger me-2 fw-semibold" role="button" href="register.php">Sign up</a>
+                    <a class="btn btn-outline-danger fw-semibold" role="button" href="login.php">Sign in</a>
                 <?php else: ?>
                     <div class="d-flex gap-2 flex-wrap justify-content-end" style="min-width: 200px;">
-                        <a class="btn btn-danger fw-semibold flex-grow-1 flex-md-grow-0" role="button" href="/profile.php">Profile</a>
-                        <a class="btn btn-outline-danger fw-semibold flex-grow-1 flex-md-grow-0" role="button" href="/logout.php">Logout</a>
+                        <a class="btn btn-danger fw-semibold flex-grow-1 flex-md-grow-0" role="button" href="./profile.php">Profile</a>
+                        <a class="btn btn-outline-danger fw-semibold flex-grow-1 flex-md-grow-0" role="button" href="./logout.php">Logout</a>
                     </div>
                 <?php endif; ?>
             </div>

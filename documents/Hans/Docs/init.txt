@@ -1,4 +1,0 @@
-//Init status table
-INSERT INTO `status`(`Name`, `Description`, `DateCreated`) VALUES ('ACTIVE','The task or process is currently in progress and being worked on.',NOW());
-INSERT INTO `status`(`Name`, `Description`, `DateCreated`) VALUES ('INACTIVE','The task or process is not currently being worked on or is paused.',NOW());
-INSERT INTO `status`(`Name`, `Description`, `DateCreated`) VALUES ('IN PROGRESS','The task or process has started and is being actively worked on but is not yet completed.',NOW());

@@ -1,6 +1,8 @@
 CREATE DATABASE light_service;
 
 
+
+
 -- Create table for Role
 CREATE TABLE `Role`  (
     Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -223,7 +225,7 @@ CREATE TABLE `EventRental` (
     OrderItemId INT,
     RentalStartDate DATETIME,
     RentalEndDate DATETIME,
-    Return BOOLEAN NOT NULL DEFAULT FALSE,
+    `Returned` BOOLEAN NOT NULL DEFAULT FALSE,
     DateCreated DATETIME NOT NULL,
     FOREIGN KEY (OrderItemId) REFERENCES OrderItem(Id) ON DELETE CASCADE
 );

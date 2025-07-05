@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
 
                         <div class="form-floating mb-3">
-                            <input type="tel" name="phone" class="form-control" id="phone" placeholder="Phone number" minlength="4" maxlength="8" required>
+                            <input type="number" name="phone" class="form-control" id="phone" placeholder="Phone number" minlength="4" maxlength="8" required>
                             <label for="phone">Phone</label>
                         </div>
 
