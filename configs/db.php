@@ -1,9 +1,9 @@
 <?php
 
-// $host = 'sql112.infinityfree.com';
-// $username = 'if0_39354253';
-// $password = 'MEL6CIJBbWdI2H';
-// $database = 'if0_39354253_light_service';
+// $host = 'sql104.infinityfree.com';
+// $username = 'if0_39401824';
+// $password = 'ZEBKoq8xwdP';
+// $database = 'if0_39401824_light_service';
 
 $host = 'localhost';
 $username = 'root';
